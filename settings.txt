@@ -1,0 +1,1 @@
+{"ssid": "WIFIHUB_fe3393", "rotation": 0, "password": "atzjv2mi", "width": 128, "tiles": 1, "height": 32, "autostart": "", "wifi_power": 18.0}
