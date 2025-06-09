@@ -23,7 +23,7 @@ def install_app(app):
         else: downloaded_file = requests.get(file_url + file).text
         with open(str(file), "w") as f:
             f.write(downloaded_file)
-        os.chdir("/")
+    os.chdir("/")
         
 
 
