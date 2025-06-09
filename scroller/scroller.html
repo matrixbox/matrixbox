@@ -1,0 +1,90 @@
+<html>
+    <html><a href="/exit">&#x274C;</a>
+   <input type="text" id="text" name="text">
+    <script>
+        function updateVariable(event) {
+            const selectedValue = event.target.value;
+            const encodedTEXT = selectedValue.replace(/#/g, '%23');
+            fetch(`/?text=${encodedTEXT}`, {
+                method: 'POST',
+            })
+        }
+        document.getElementById("text").addEventListener("change", updateVariable);
+    </script>
+
+    <button id="mini">mini font</button>
+    <button id="small">small font</button>
+    <button id="large">large font</button>
+    <br>
+    <button id="white" style="width: 20px; height: 20px; background-color: white; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="blue" style="width: 20px; height: 20px; background-color: blue; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="red" style="width: 20px; height: 20px; background-color: red; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="yellow" style="width: 20px; height: 20px; background-color: yellow; color: white; solid-black: none; cursor: pointer;"></button>
+<button id="green" style="width: 20px; height: 20px; background-color: green; color: white; solid-black: none; cursor: pointer;"></button>
+
+    <script>
+document.getElementById("mini").addEventListener("click", function() {
+    fetch("/?size=mini", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("small").addEventListener("click", function() {
+    fetch("/?size=small", {
+        method: "POST",
+    })        
+});
+document.getElementById("large").addEventListener("click", function() {
+    fetch("/?size=large", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("blue").addEventListener("click", function() {
+    fetch("/?color=blue", {
+        method: "POST",
+    })        
+});
+document.getElementById("yellow").addEventListener("click", function() {
+    fetch("/?color=yellow", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("white").addEventListener("click", function() {
+    fetch("/?color=white", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("red").addEventListener("click", function() {
+    fetch("/?color=red", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("green").addEventListener("click", function() {
+    fetch("/?color=green", {
+        method: "POST",
+    })        
+});
+
+</script>
+<br>
+<br>
+<input type="text" id="url" name="url">
+    <script>
+function updateVariable(event) {
+    const selectedValue = event.target.value;
+    const encodedURL = selectedValue.replace(/#/g, '%23');
+    fetch("/", { // Change the endpoint as needed
+        method: "POST",
+        body: `url=${encodedURL}`, // Send data in request body
+    });
+}
+
+document.getElementById("url").addEventListener("change", updateVariable);
+
+    </script>
+
+    </html>
