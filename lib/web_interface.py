@@ -265,8 +265,10 @@ def webinterface_post(request):
         if "delete" in request.params:
             dir = request.params["delete"]
             os.chdir(dir)
-            for file in os.listdir():
-                os.remove(file)
+            try:
+                for file in os.listdir():
+                    os.remove(file)
+            except Exception as e: print(e)
             os.chdir("/")
             os.rmdir(dir)
         if "install" in request.params:
