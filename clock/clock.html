@@ -1,0 +1,200 @@
+<html>
+    <html><a href="/exit">&#x274C;</a>
+   
+    <button id="mini">mini font</button>
+    <button id="small">small font</button>
+    <button id="large">large font</button>
+    <br>
+<br>Foreground:<br>
+    <button id="f_white" style="width: 20px; height: 20px; background-color: white; color: white; border: solid-black; cursor: pointer;"></button>
+    <button id="f_grey" style="width: 20px; height: 20px; background-color: grey; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="f_blue" style="width: 20px; height: 20px; background-color: blue; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="f_red" style="width: 20px; height: 20px; background-color: red; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="f_yellow" style="width: 20px; height: 20px; background-color: yellow; color: white; solid-black: none; cursor: pointer;"></button>
+<button id="f_green" style="width: 20px; height: 20px; background-color: green; color: white; solid-black: none; cursor: pointer;"></button>
+<button id="f_black" style="width: 20px; height: 20px; background-color: black; color: white; solid-black: none; cursor: pointer;"></button>
+<br>Shading:<br>
+<button id="s_white" style="width: 20px; height: 20px; background-color: white; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="s_grey" style="width: 20px; height: 20px; background-color: grey; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="s_blue" style="width: 20px; height: 20px; background-color: blue; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="s_red" style="width: 20px; height: 20px; background-color: red; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="s_yellow" style="width: 20px; height: 20px; background-color: yellow; color: white; solid-black: none; cursor: pointer;"></button>
+<button id="s_green" style="width: 20px; height: 20px; background-color: green; color: white; solid-black: none; cursor: pointer;"></button>
+<button id="s_black" style="width: 20px; height: 20px; background-color: black; color: white; solid-black: none; cursor: pointer;"></button>
+<br>
+<br>Background:<br>
+<button id="b_white" style="width: 20px; height: 20px; background-color: white; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="b_grey" style="width: 20px; height: 20px; background-color: grey; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="b_blue" style="width: 20px; height: 20px; background-color: blue; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="b_red" style="width: 20px; height: 20px; background-color: red; color: white; border: solid-black; cursor: pointer;"></button>
+<button id="b_yellow" style="width: 20px; height: 20px; background-color: yellow; color: white; solid-black: none; cursor: pointer;"></button>
+<button id="b_green" style="width: 20px; height: 20px; background-color: green; color: white; solid-black: none; cursor: pointer;"></button>
+<button id="b_black" style="width: 20px; height: 20px; background-color: black; color: white; solid-black: none; cursor: pointer;"></button>
+<br>
+<br>
+
+    <script>
+document.getElementById("mini").addEventListener("click", function() {
+    fetch("/?size=mini", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("small").addEventListener("click", function() {
+    fetch("/?size=small", {
+        method: "POST",
+    })        
+});
+document.getElementById("large").addEventListener("click", function() {
+    fetch("/?size=large", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("f_blue").addEventListener("click", function() {
+    fetch("/?f_color=blue", {
+        method: "POST",
+    })        
+});
+document.getElementById("f_grey").addEventListener("click", function() {
+    fetch("/?f_color=grey", {
+        method: "POST",
+    })        
+});
+document.getElementById("f_yellow").addEventListener("click", function() {
+    fetch("/?f_color=yellow", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("f_white").addEventListener("click", function() {
+    fetch("/?f_color=brightwhite", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("f_red").addEventListener("click", function() {
+    fetch("/?f_color=red", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("f_green").addEventListener("click", function() {
+    fetch("/?f_color=green", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("f_black").addEventListener("click", function() {
+    fetch("/?f_color=black2", {
+        method: "POST",
+    })        
+});
+
+
+
+document.getElementById("b_blue").addEventListener("click", function() {
+    fetch("/?b_color=blue", {
+        method: "POST",
+    })        
+});
+document.getElementById("b_yellow").addEventListener("click", function() {
+    fetch("/?b_color=yellow", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("b_white").addEventListener("click", function() {
+    fetch("/?b_color=white", {
+        method: "POST",
+    })        
+});
+document.getElementById("b_grey").addEventListener("click", function() {
+    fetch("/?b_color=grey", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("b_red").addEventListener("click", function() {
+    fetch("/?b_color=red", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("b_green").addEventListener("click", function() {
+    fetch("/?b_color=green", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("b_black").addEventListener("click", function() {
+    fetch("/?b_color=black2", {
+        method: "POST",
+    })        
+});
+
+
+
+document.getElementById("s_blue").addEventListener("click", function() {
+    fetch("/?s_color=blue", {
+        method: "POST",
+    })        
+});
+document.getElementById("s_yellow").addEventListener("click", function() {
+    fetch("/?s_color=yellow", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("s_white").addEventListener("click", function() {
+    fetch("/?s_color=brightwhite", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("s_grey").addEventListener("click", function() {
+    fetch("/?s_color=grey", {
+        method: "POST",
+    })        
+});
+document.getElementById("s_red").addEventListener("click", function() {
+    fetch("/?s_color=red", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("s_green").addEventListener("click", function() {
+    fetch("/?s_color=green", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("s_black").addEventListener("click", function() {
+    fetch("/?s_color=black", {
+        method: "POST",
+    })        
+});
+
+
+
+
+
+</script>
+<br>
+<br>
+<input type="text" id="url" name="url">
+    <script>
+function updateVariable(event) {
+    const selectedValue = event.target.value;
+    const encodedURL = selectedValue.replace(/#/g, '%23');
+    fetch("/", { // Change the endpoint as needed
+        method: "POST",
+        body: `url=${encodedURL}`, // Send data in request body
+    });
+}
+
+document.getElementById("url").addEventListener("change", updateVariable);
+
+    </script>
+
+    </html>
