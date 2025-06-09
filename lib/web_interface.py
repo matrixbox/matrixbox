@@ -15,11 +15,13 @@ def install_app(app):
     for file in applist[app]:
         print("File: ", file)
         print(app + "/" + file)
+        file_url = repository["url"] + app + "/"
+        print(file_url)
         if ".mpy" in file:
-            requests.get(repository["url"] + file).content
-        else: requests.get(repository["url"] + file).text
+            downloaded_file = requests.get(file_url + file).content
+        else: downloaded_file = requests.get(file_url + file).text
         with open(str(file), "w") as f:
-            f.write(file)
+            f.write(downloaded_file)
     os.chdir("/")
         
 

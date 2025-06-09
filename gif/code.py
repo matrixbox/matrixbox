@@ -56,7 +56,9 @@ def load_img():
     )
     splash.append(face)
     refresh()
-load_img()
+
+if not os.listdir("images"): pprint("Upload image", _refresh=True)
+else: load_img()
 time.sleep(0.5)
 
 while not exit:
