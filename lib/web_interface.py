@@ -9,8 +9,8 @@ exitbutton = """<html><a href="/exit">&#x274C;</a>"""
 def install_app(app):
     applist = load_settings.latest_available_apps
     print("Applist: ", applist)
-    os.mkdir(app)
-    os.chdir(app)
+    try: os.mkdir(app)
+    except: pass
     
     for file in applist[app]:
         print("File: ", file)
