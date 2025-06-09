@@ -47,7 +47,7 @@ def list_available_apps(apps):
 
     for dir in apps:
         if dir == "/" or dir == "lib": continue
-        if dir in os.listdir():
+        if "__init__.py" in os.listdir(dir):
             applist += f"""{dir}: <button id='{dir}' onclick="delete"""+dir+"""()">Delete</button>
 
                    """ + """
