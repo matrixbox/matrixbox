@@ -1,1 +1,3 @@
-{"root": {"Root files": {"boot.py": "http://", "safemode.py": "http://"}}}
+{"root": {"/": ["boot.py", "safemode.py", "main.py"],
+"lib":["web_interface.py","/fonts/font_large.py"]
+}}
