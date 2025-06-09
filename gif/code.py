@@ -11,7 +11,10 @@ splash = displayio.Group(scale=1)
 splash.append(clock_window)
 display.root_group = splash
 clearscreen()
-if "images" not in os.listdir(): os.mkdir("images")
+if "images" not in os.listdir(): 
+    try: os.mkdir("images")
+    except: pass
+    
 
 try:
     files = os.listdir("images")
