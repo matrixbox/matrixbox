@@ -11,6 +11,7 @@ def install_app(app):
     print("Applist: ", applist)
     try: os.mkdir(app)
     except: pass
+    os.chdir(app)
     
     for file in applist[app]:
         print("File: ", file)
@@ -22,7 +23,7 @@ def install_app(app):
         else: downloaded_file = requests.get(file_url + file).text
         with open(str(file), "w") as f:
             f.write(downloaded_file)
-    os.chdir("/")
+        os.chdir("/")
         
 
 

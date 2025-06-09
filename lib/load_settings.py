@@ -7,10 +7,15 @@ def settings():
                 "rotation":0,
                 "width":128,
                 "height":32,
-                "tiles":1}
+                "tiles":1,
+                "wifi_power":10}
 
     try:
-            with open("settings.txt") as f: settings.update(json.loads(f.read()))
+            with open("settings.txt") as f: 
+                newsettings = json.loads(f.read())
+            for setting in settings:
+                try: settings[setting] = newsettings[setting]
+                except: pass
     except: print("No previous settings")
     return settings
 
