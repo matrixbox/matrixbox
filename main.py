@@ -91,7 +91,7 @@ def initialize_app():
             del sys.modules["__init__"]
             del sys.modules["code"]
         except: pass
-        display.root_group = group
+        display.root_group = rf_group
         os.chdir("/")
         clearscreen()
         pprint(str(wifi.radio.ipv4_address))
