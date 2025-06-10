@@ -1,6 +1,7 @@
 import sys, wifi, socketpool, ampule, time, os, json, microcontroller
 import load_settings
 import digitalio, board
+import adafruit_connection_manager, adafruit_requests
 settings =  load_settings.settings()
 #app_running = False # TRUE om en app startats
 main_time = 0 # uppdateras vid varje framtida fetch
@@ -19,6 +20,8 @@ socket.listen(5)
 socket_timeout = 5
 macid = "".join([hex(i) for i in wifi.radio.mac_address]).replace("0x","")[:8] # mac-id för hotspot
 wifi_status = ""
+ssl_context = adafruit_connection_manager.get_radio_ssl_context(wifi.radio)
+requests = adafruit_requests.Session(pool, ssl_context)
 #from web_interface import *
 
 def start_hotspot():
