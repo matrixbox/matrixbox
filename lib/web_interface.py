@@ -14,6 +14,7 @@ def install_app(app):
     applist = load_settings.latest_available_apps
     no_of_files = len(applist[app])
     print("Applist: ", applist, " Files: ", no_of_files)
+    os.chdir("/")
     try: os.mkdir(app)
     except: pass
     try: os.chdir(app)
