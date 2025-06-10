@@ -104,29 +104,30 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
     if color == "grey": _color = (8)
     if color == "black2": _color = (9)
     
-    
-    
     offs = 1 + top_offset
-    for lin, stringline in enumerate(_lines):
-        if line: lin = line
-        for character in str(stringline):
-            if font == font_mini: character = character.lower()
-            if not character in font: 
-                print("Invalid character: ", character, " - ", string)
-                character = "_"
-            for width in range(font[character][0]):
-                for height in range(font["fontheight"]):
-                    invertedwidth = font[character][0] - width
-                    if isinstance(font[character][1],int):
-                        bit = ((font[character][height+1] >> invertedwidth) & 1)
-                        if int(bit): window[width+pixwidth,((6*lin) + height)+offs] = _color
-                        else: 
-                            if clear: window[width+pixwidth,((6*lin) + height)+offs] = 0
-                    #else: window[width+pixwidth,(height)+offs] = int(font[character][height+1][width])
-            if isinstance(font[character][1],int): pixwidth += font[character][0]
-            else: pixwidth += len(font[character][1])
-        pixwidth = 0
-        if _refresh: refresh()
+    try:
+        for lin, stringline in enumerate(_lines):
+            if line: lin = line
+            for character in str(stringline):
+                if font == font_mini: character = character.lower()
+                if not character in font: 
+                    print("Invalid character: ", character, " - ", string)
+                    character = "_"
+                for width in range(font[character][0]):
+                    for height in range(font["fontheight"]):
+                        invertedwidth = font[character][0] - width
+                        if isinstance(font[character][1],int):
+                            bit = ((font[character][height+1] >> invertedwidth) & 1)
+                            if int(bit): window[width+pixwidth,((6*lin) + height)+offs] = _color
+                            else: 
+                                if clear: window[width+pixwidth,((6*lin) + height)+offs] = 0
+                        #else: window[width+pixwidth,(height)+offs] = int(font[character][height+1][width])
+                if isinstance(font[character][1],int): pixwidth += font[character][0]
+                else: pixwidth += len(font[character][1])
+            pixwidth = 0
+            if _refresh: refresh()
+    except Exception as e:
+        print(e)
 
 def clearscreen():
     global line_window

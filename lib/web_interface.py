@@ -19,38 +19,34 @@ def install_app(app):
     except: pass
     try: os.chdir(app)
     except: pass
-    try:
-        for x, file in enumerate(applist[app]):
-            if "/" in file:
-                directory_name = "/".join(file.split("/")[:-1])
-                print(directory_name)
-                try: os.mkdir(directory_name)
-                except: pass
-                
-            print("File: ", file)
-            print(app + "/" + file)
-            file_url = settings["repository"]["url"] + app + "/"
-            print(file_url)
-            pprint(str(x+1) + "/" + str(no_of_files) + " Downloading: ", line=0)
-            pprint(str(file) + "...")
-            downloaded_file = requests.get(file_url + file)
-            pprint(str(downloaded_file.status_code))
-            #print(dir(downloaded_file))
-            if ".mpy" in file: 
-                downloaded_file = downloaded_file.content
-                writemode = "wb"
-            else: 
-                downloaded_file = downloaded_file.text
-                writemode = "w"
-            clearscreen()
-            try: 
-                with open(str(file), writemode) as f: f.write(downloaded_file)
-            except: pprint("Read only!")
-    except Exception as e: 
-        print(e)
-        pprint("Error:")
-        pprint(str(e))
-    finally: os.chdir("/")
+    
+    for x, file in enumerate(applist[app]):
+        if "/" in file:
+            directory_name = "/".join(file.split("/")[:-1])
+            print(directory_name)
+            try: os.mkdir(directory_name)
+            except: pass
+            
+        print("File: ", file)
+        print(app + "/" + file)
+        file_url = settings["repository"]["url"] + app + "/"
+        print(file_url)
+        pprint(str(x+1) + "/" + str(no_of_files) + " Downloading: ", line=0,  _clearscreen=True)
+        pprint(str(file) + "...")
+        downloaded_file = requests.get(file_url + file)
+        pprint(str(downloaded_file.status_code))
+        if ".mpy" in file: 
+            downloaded_file = bytearray(downloaded_file.content)
+            writemode = "wb"
+        else: 
+            downloaded_file = downloaded_file.text
+            writemode = "w"
+        clearscreen()
+        try: 
+            with open(str(file), writemode) as f: f.write(downloaded_file)
+        except: pprint("Read only!", _clearscreen=True)
+
+    os.chdir("/")
         
 
 
