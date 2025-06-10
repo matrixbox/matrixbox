@@ -75,18 +75,22 @@ def strlen(_string, font_size=font_mini):
     if font_size==font_mini: _string = _string.lower()
     return sum((font_size[ascletters][0]) for ascletters in _string) # mäter längden på hel string
 
-def pprint(string, line=False, color="white", font = font_mini, _refresh = True, clear=True, top_offset=0, window=window):
+def pprint(string, line=False, color="white", font = font_mini, _refresh = True, clear=True, top_offset=0, window=window, _clearscreen=True):
     print(string)
     #string += (127 - strlen(string.lower())) * "("
     global line_window#, window
-    
+    if _clearscreen: string = string + "(" * (settings["width"] - strlen(string))
+
+
     if not "int" in str(type(line)):
         line_window.append(string)
-        while len(line_window) > 5: line_window.pop(0)
+        if len(line_window) > 5: line_window.pop(0)
         _lines = line_window
     else: 
         _lines = [string]
-        line_window = [[]* (int(line) + 1)]
+        line_window = [""* (int(line) + 1)]
+        
+    print(_lines)
     pixwidth = 0
     _color = False
     if color == "black": _color = (0)
@@ -107,7 +111,9 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
         if line: lin = line
         for character in str(stringline):
             if font == font_mini: character = character.lower()
-            if not character in font: continue
+            if not character in font: 
+                print("Invalid character: ", character, " - ", string)
+                character = "_"
             for width in range(font[character][0]):
                 for height in range(font["fontheight"]):
                     invertedwidth = font[character][0] - width

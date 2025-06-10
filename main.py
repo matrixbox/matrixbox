@@ -6,9 +6,8 @@ settings =  load_settings.settings()
 main_time = 0 # uppdateras vid varje framtida fetch
 from load_screen import *
 from check_button import *
-pprint("RetroFrame", line=0, color="red")
 pprint("RetroFrame", line=0, color="brightwhite")
-pprint("Retro", line=0, color="white")
+pprint("Retro", line=0, color="red", _clearscreen=False)
 
 wifi.radio.tx_power = 9.0 # verkar funka bäst för S3-Zero, lägg till ruting för user setting customization
 pool = socketpool.SocketPool(wifi.radio)

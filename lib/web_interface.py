@@ -7,33 +7,53 @@ import __main__
 exitbutton = """<html><a href="/exit">&#x274C;</a>"""
 
 def install_app(app):
+    if app == "system": app = "/"
+    print("Install: ", app)
     applist = load_settings.latest_available_apps
-    print("Applist: ", applist)
+    no_of_files = len(applist[app])
+    print("Applist: ", applist, " Files: ", no_of_files)
     try: os.mkdir(app)
     except: pass
-    os.chdir(app)
-    
-    for file in applist[app]:
-        print("File: ", file)
-        print(app + "/" + file)
-        file_url = repository["url"] + app + "/"
-        print(file_url)
-        if ".mpy" in file:
-            downloaded_file = requests.get(file_url + file).content
-        else: downloaded_file = requests.get(file_url + file).text
-        with open(str(file), "w") as f:
-            f.write(downloaded_file)
-    os.chdir("/")
+    try: os.chdir(app)
+    except: pass
+    try:
+        for x, file in enumerate(applist[app]):
+            if "/" in file:
+                directory_name = "/".join(file.split("/")[:-1])
+                print(directory_name)
+                try: os.mkdir(directory_name)
+                except: pass
+                
+            print("File: ", file)
+            print(app + "/" + file)
+            file_url = settings["repository"]["url"] + app + "/"
+            print(file_url)
+            pprint(str(x+1) + "/" + str(no_of_files) + " Downloading: ", line=0)
+            pprint(str(file) + "...")
+            downloaded_file = requests.get(file_url + file)
+            pprint(str(downloaded_file.status_code))
+            #print(dir(downloaded_file))
+            if ".mpy" in file: downloaded_file = downloaded_file.content
+            else: downloaded_file = downloaded_file.text
+            clearscreen()
+            try: 
+                with open(str(file), "w+") as f: f.write(downloaded_file)
+            except: pprint("Read only!")
+    except Exception as e: 
+        print(e)
+        pprint("Error:")
+        pprint(str(e))
+    finally: os.chdir("/")
         
 
 
 def get_updates():
-    return json.loads(requests.get((repository["url"]+repository["repository_txt"])).text)
+    return json.loads(requests.get((settings["repository"]["url"]+settings["repository"]["file"])).text)
     
 def list_available_apps(apps):
     load_settings.latest_available_apps = apps
     applist = """<br><br>
-    """ + f"""Root files: <button id='system' onclick="install"""+"system"+"""()">Update</button>
+    """ + f"""System: <button id='system' onclick="install"""+"system"+"""()">Update</button>
 
                    """ + """
                    <script>function install"""+"system"+"""() {

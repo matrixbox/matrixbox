@@ -8,15 +8,12 @@ def settings():
                 "width":128,
                 "height":32,
                 "tiles":1,
-                "wifi_power":10}
+                "repository":{"url":"https://raw.githubusercontent.com/alex-t-84/pixelbox/refs/heads/main/", "file":"repository.txt"},
+                "wifi_power":16}
 
     try:
-            with open("settings.txt") as f: 
-                newsettings = json.loads(f.read())
-            for setting in settings:
-                try: settings[setting] = newsettings[setting]
-                except: pass
-    except: print("No previous settings")
+            with open("settings.txt") as f: settings.update(json.loads(f.read()))
+    except: print("No previous settings!")
     return settings
 
 def savesettings(settings):
