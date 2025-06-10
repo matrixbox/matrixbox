@@ -1,4 +1,4 @@
-{"/": ["boot.py", "safemode.py", "main.py", "/lib/font_large.py"],
+{"/": ["boot.py", "safemode.py", "main.py", "lib/font_large.py"],
         
         "clock":["__init__.py","clock.html","code.py"],
         "gif":["code.py", "__init__.py", "gif_webinterface.py", "gif.html"],
