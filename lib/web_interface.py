@@ -35,11 +35,15 @@ def install_app(app):
             downloaded_file = requests.get(file_url + file)
             pprint(str(downloaded_file.status_code))
             #print(dir(downloaded_file))
-            if ".mpy" in file: downloaded_file = downloaded_file.content
-            else: downloaded_file = downloaded_file.text
+            if ".mpy" in file: 
+                downloaded_file = downloaded_file.content
+                writemode = "wb
+            else: 
+                downloaded_file = downloaded_file.text
+                writemode = "w"
             clearscreen()
             try: 
-                with open(str(file), "w+") as f: f.write(downloaded_file)
+                with open(str(file), writemode) as f: f.write(downloaded_file)
             except: pprint("Read only!")
     except Exception as e: 
         print(e)
