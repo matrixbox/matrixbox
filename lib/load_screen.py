@@ -75,7 +75,7 @@ def strlen(_string, font_size=font_mini):
     if font_size==font_mini: _string = _string.lower()
     return sum((font_size[ascletters][0]) for ascletters in _string) # mäter längden på hel string
 
-def pprint(string, line=False, color="white", font = font_mini, _refresh = True, clear=True, top_offset=0, window=window, _clearscreen=True):
+def pprint(string, line=False, color="white", font = font_mini, _refresh = True, clear=False, top_offset=0, window=window, _clearscreen=True):
     print(string)
     #string += (127 - strlen(string.lower())) * "("
     global line_window#, window
