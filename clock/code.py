@@ -37,7 +37,7 @@ def clock_webinterface_post(request):
     if "f_color" in request.params: f_color = request.params["f_color"]
     if "s_color" in request.params: b_color = request.params["s_color"]
     if "b_color" in request.params: 
-        if request.params["b_color"] == "black": color = (0)
+        if request.params["b_color"] == "black2": color = (0)
         if request.params["b_color"] == "grey": color = (30,30,30)
         if request.params["b_color"] == "red": color = (30,0,0)
         if request.params["b_color"] == "green": color = (0,30,0)
