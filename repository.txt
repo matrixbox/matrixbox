@@ -1,5 +1,5 @@
-{"/": ["boot.py", "safemode.py", "main.py"],
-        "lib":["web_interface.py","fonts/font_large.py"],
+{"/": ["boot.py", "safemode.py", "main.py", "/lib/font_large.py"],
+        
         "clock":["__init__.py","clock.html","code.py"],
         "gif":["code.py", "__init__.py", "gif_webinterface.py", "gif.html"],
         "scroller":["code.py", "__init__.py", "scroller.html", "scroller.txt"],
