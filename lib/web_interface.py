@@ -291,8 +291,11 @@ def webinterface_post(request):
             os.chdir(dir)
             try:
                 for file in os.listdir():
+                    clearscreen()
                     os.remove(file)
-            except Exception as e: print(e)
+                    pprint("Removed: ", file)
+            except Exception as e: 
+                pprint(str(e))
             os.chdir("/")
             os.rmdir(dir)
         if "install" in request.params:
