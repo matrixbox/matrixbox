@@ -90,7 +90,7 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
         _lines = [string]
         line_window = [""* (int(line) + 1)]
         
-    print(_lines)
+    
     pixwidth = 0
     _color = False
     if color == "black": _color = (0)
