@@ -37,7 +37,7 @@ def install_app(app):
             #print(dir(downloaded_file))
             if ".mpy" in file: 
                 downloaded_file = downloaded_file.content
-                writemode = "wb
+                writemode = "wb"
             else: 
                 downloaded_file = downloaded_file.text
                 writemode = "w"
