@@ -5,6 +5,8 @@ import __main__
 #import __main__
 #print(dir(__main__))
 exitbutton = """<html><a href="/exit">&#x274C;</a>"""
+backbutton = """<br><button onclick="location.href='../'">&larr; Back</button>"""
+bootloaderbutton = """<button class="center" onclick="window.location.href='/bootloader'" style='background-color:red'> Bootloader </button>"""
 
 def install_app(app):
     if app == "system": app = "/"
@@ -167,7 +169,7 @@ def header(title="Settings"):
 <body><table class="center"><tr><td>"""
 
 def footer(back=False):
-    back = """<br><button onclick="location.href='../'">&larr; Back</button>""" if back else ""
+    back = backbutton if back else ""
     return f"""{back}</td></tr></table></body></html>"""
 
 def connect_to_wifi():
@@ -256,7 +258,6 @@ def select_app():
     <br>
     <hr>
     <button class="center" onclick="window.location.href='/settings'"> Settings </button>
-    <button class="center" onclick="window.location.href='/bootloader'"> Bootloader </button>
     """ + footer()
 
 @ampule.route('/settingsx')
@@ -322,7 +323,7 @@ def _settings(request):
   {_settings}
   <button onclick="location.href='/save'">Save</button>
 </div>
-    """+footer(True)
+    """ + bootloaderbutton + footer(True)
     return (200, {}, settings_html)
 
 @ampule.route("/save")
@@ -476,7 +477,7 @@ def _cmd(request):
     return (200, {}, html)
 
 
-@ampule.route("/settings")
+@ampule.route("/settingsx")
 def showsettings(request):
     return (200, {}, str(settings))
 
