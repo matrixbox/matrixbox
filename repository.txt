@@ -1,6 +1,4 @@
-import json
-
-x = {"Official":
+{"Official":
      {"url":"https://raw.githubusercontent.com/alex-t-84/pixelbox/refs/heads/main/", "files":
         {"/": ["boot.py", "safemode.py", "main.py"],
         "lib":["web_interface.py","fonts/font_large.py"],
