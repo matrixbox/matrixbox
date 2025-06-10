@@ -342,7 +342,7 @@ def download(request):
     content = f"""
     Download:
     """ + str(list_available_apps(get_updates()))
-    return (200, {}, header("Download apps") + content + footer())
+    return (200, {}, header("Download apps") + content + backbutton + footer())
 
 
 ####################################################
