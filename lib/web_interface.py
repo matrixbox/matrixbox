@@ -14,11 +14,11 @@ unlock = """<button class="center" style='background-color:yellow' onclick="fetc
 def textbox(settings):
     settings_html = """<form action="/" method="POST">"""
     for setting in settings:
+      print("Setting: ", setting)
       settings_html += f"""<label for="{setting}">{setting}</label>
     <input type="text" id="{setting}" name="{setting}" placeholder="{str(settings[setting])}"><br>"""
     return settings_html + """<input type="submit" value="Submit" ></form>"""
-
-
+    
 def install_app(app):
     if app == "system": app = "/"
     print("Install: ", app)
@@ -62,9 +62,15 @@ def install_app(app):
 
 
 def get_updates():
-    return json.loads(requests.get((settings["repository"]["url"]+settings["repository"]["file"])).text)
+    print(settings)
+    try:
+        updates = json.loads(requests.get((settings["repository_url"]+settings["repository_file"])).text)
+    except Exception as e:
+        print(e)
+    return updates
     
 def list_available_apps(apps):
+    print("Apps: ", apps)
     load_settings.latest_available_apps = apps
     applist = """<br><br>
     """ + f"""System: <button id='system' onclick="install"""+"system"+"""()">Update</button>
@@ -348,11 +354,6 @@ def bootloader(request):
 @ampule.route("/settings")
 def _settings(request):
     global settings
-    #settings = load_settings.settings()
-    #_settings = ""
-    #for setting in settings:
-    #    _settings += f"{str(setting)} : {settings[setting]}<br>"
-    #print(_settings)
     settings_html = header("Settings")+f"""
     <div class="header">
   <h1>SETTINGS</h1>

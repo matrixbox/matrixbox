@@ -1,1 +1,1 @@
-{"ssid": "WIFIHUB_fe3393", "rotation": 0, "password": "atzjv2mi", "width": 128, "tiles": 1, "height": 32, "autostart": "", "wifi_power": 18.0}
+{"width": "128", "password": "atzjv2mi", "height": 32, "tiles": 1, "autostart": 0, "wifi_power": 20.0, "repository_url": "https://raw.githubusercontent.com/alex-t-84/pixelbox/refs/heads/main/", "repository_file":"repository.txt", "rotation": 0, "ssid": "WIFIHUB_fe3393"}
