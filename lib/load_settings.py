@@ -13,7 +13,24 @@ def settings():
 
     try:
             with open("settings.txt") as f: settings.update(json.loads(f.read()))
-    except: print("No previous settings!")
+            print("Init.settings", settings)
+            for setting in settings:
+                _type = str
+                try: 
+                     int(settings[setting])
+                     _type = int
+                except: 
+                     #float(settings[setting])
+                     #_type = float
+                     pass
+                print(_type)
+                settings[setting] = _type(settings[setting])
+                print("Conv: ", settings)
+
+
+    except Exception as e: 
+         print("No previous settings!")
+         print(e)
     return settings
 
 def savesettings(settings):

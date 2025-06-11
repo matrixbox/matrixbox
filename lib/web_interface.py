@@ -291,24 +291,23 @@ def _connectx(request):
 @ampule.route('/', method="POST")
 def webinterface_post(request):
     global settings
-    print("POSTED params:", request.params)
-    pairs = request.body.split('&')
-    parsed_data = {}
-    for pair in pairs:
-        key, value = pair.split('=')
-        parsed_data[key] = value
-    request.params = parsed_data
-    print(parsed_data)
-    print("POSTED body:", request.body)
-
-    for setting in parsed_data:
-        if parsed_data[setting]:
-            try: settings[setting] = parsed_data[setting]
-            except: pass
-    savesettings(settings)
-
-    #try: settings[request.params] = settings[request.params]
-    #except: pass
+    print("POSTED!")
+    try:
+        pairs = request.body.split('&')
+        parsed_data = {}
+        for pair in pairs:
+            key, value = pair.split('=')
+            parsed_data[key] = value
+        request.params = parsed_data
+        print(parsed_data)
+        print("POSTED body:", request.body)
+        for setting in parsed_data:
+            if parsed_data[setting]:
+                try: settings[setting] = parsed_data[setting]
+                except: pass
+        savesettings(settings)
+        return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
+    except: pass
 
     try: 
         if "unlock" in request.params:
