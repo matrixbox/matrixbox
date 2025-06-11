@@ -7,6 +7,9 @@ import __main__
 exitbutton = """<html><a href="/exit">&#x274C;</a>"""
 backbutton = """<br><button onclick="location.href='../'">&larr; Back</button>"""
 bootloaderbutton = """<button class="center" onclick="window.location.href='/bootloader'" style='background-color:red'> Bootloader </button>"""
+#unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
+unlock = """<button class="center" style='background-color:yellow' onclick="fetch('/?unlock=true', {method: 'POST'})">🔓</button>"""
+
 
 def install_app(app):
     if app == "system": app = "/"
@@ -282,6 +285,11 @@ def webinterface_post(request):
     print("POSTED:", request.params)
     
     try: 
+        if "unlock" in request.params:
+            try: 
+                with open("unlock","w") as f: f.write("")
+            except: pass
+            import safemode
         if "ssid" in request.params:
             __main__.settings["ssid"] = request.params["ssid"]
         if "password" in request.params:
@@ -327,7 +335,7 @@ def _settings(request):
   {_settings}
   <button onclick="location.href='/save'">Save</button>
 </div>
-    """ + bootloaderbutton + footer(True)
+    """ + bootloaderbutton + unlock + footer(True)
     return (200, {}, settings_html)
 
 @ampule.route("/save")
