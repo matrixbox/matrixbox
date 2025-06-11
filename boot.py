@@ -21,18 +21,23 @@ def check_if_button_pressed_on_boot():
         print(e)
         return 1
 
-storage.remount("/", False)
+def lock():
+    storage.disable_usb_drive()
+    storage.remount("/", False)
         
 boot_splash()
 
-
-if check_if_button_pressed_on_boot() or "unlock" in os.listdir():
-    pprint("Unlocking filesystem", line=1)
+if "unlock" in os.listdir():
+    lock()
     try: os.remove("unlock")
     except: pass
+    storage.enable_usb_drive()
+    pprint("Unlocking filesystem", line=1)
 
+elif check_if_button_pressed_on_boot():
+    pprint("Unlocking filesystem", line=1)
 else:
-    storage.disable_usb_drive()
+    lock()
     pprint("Locked filesystem", line=1)
     time.sleep(1)
     
