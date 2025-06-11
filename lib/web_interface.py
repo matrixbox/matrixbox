@@ -17,7 +17,7 @@ def textbox(settings):
       print("Setting: ", setting)
       settings_html += f"""<label for="{setting}">{setting}</label>
     <input type="text" id="{setting}" name="{setting}" placeholder="{str(settings[setting])}"><br>"""
-    return settings_html + """<input type="submit" value="Submit" ></form>"""
+    return settings_html + """<br><button type="submit" value="Submit">Save</button></form>"""
     
 def install_app(app):
     if app == "system": app = "/"
