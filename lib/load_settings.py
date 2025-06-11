@@ -8,7 +8,8 @@ def settings():
                 "width":128,
                 "height":32,
                 "tiles":1,
-                "repository":{"url":"https://raw.githubusercontent.com/alex-t-84/pixelbox/refs/heads/main/", "file":"repository.txt"},
+                "repository_url":"https://raw.githubusercontent.com/alex-t-84/pixelbox/refs/heads/main/", 
+                "repository_file":"repository.txt",
                 "wifi_power":16}
 
      try:
