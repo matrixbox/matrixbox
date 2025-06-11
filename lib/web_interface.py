@@ -30,8 +30,9 @@ def install_app(app):
     except: pass
     try: os.chdir(app)
     except: pass
-    
+    error_color = "green"
     for x, file in enumerate(applist[app]):
+        clearscreen()
         if "/" in file:
             directory_name = "/".join(file.split("/")[:-1])
             print(directory_name)
@@ -40,9 +41,9 @@ def install_app(app):
             
         print("File: ", file)
         print(app + "/" + file)
-        file_url = settings["repository"]["url"] + app + "/"
+        file_url = settings["repository_url"] + app + "/"
         print(file_url)
-        pprint(str(x+1) + "/" + str(no_of_files) + " Downloading: ", line=0,  _clearscreen=True)
+        pprint(str(x+1) + "/" + str(no_of_files) + " Downloading: ")#, line=0,  _clearscreen=True)
         pprint(str(file) + "...")
         downloaded_file = requests.get(file_url + file)
         pprint(str(downloaded_file.status_code))
@@ -55,8 +56,11 @@ def install_app(app):
         clearscreen()
         try: 
             with open(str(file), writemode) as f: f.write(downloaded_file)
-        except: pprint("Read only!", _clearscreen=True)
-
+        except: 
+            pprint("Read only!", color="red")
+            error_color = "red"
+    
+    pprint("Done.", color=error_color, line=4)
     os.chdir("/")
         
 
