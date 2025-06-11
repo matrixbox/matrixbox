@@ -1,4 +1,5 @@
 from fetch_data import fetch
+from load_settings import savesettings
 from __main__ import *
 import __main__
 #from main import connect_to_network
@@ -9,6 +10,13 @@ backbutton = """<br><button onclick="location.href='../'">&larr; Back</button>""
 bootloaderbutton = """<button class="center" onclick="window.location.href='/bootloader'" style='background-color:red'> Bootloader </button>"""
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
 unlock = """<button class="center" style='background-color:yellow' onclick="fetch('/?unlock=true', {method: 'POST'})">🔓</button>"""
+
+def textbox(settings):
+    settings_html = """<form action="/" method="POST">"""
+    for setting in settings:
+      settings_html += f"""<label for="{setting}">{setting}</label>
+    <input type="text" id="{setting}" name="{setting}" placeholder="{str(settings[setting])}"><br>"""
+    return settings_html + """<input type="submit" value="Submit" ></form>"""
 
 
 def install_app(app):
@@ -280,10 +288,28 @@ def _connect(request):
 def _connectx(request):
     return (200, {}, select_app() + connect_to_wifi())
 
-@ampule.route("/", method="POST")
+@ampule.route('/', method="POST")
 def webinterface_post(request):
-    print("POSTED:", request.params)
-    
+    global settings
+    print("POSTED params:", request.params)
+    pairs = request.body.split('&')
+    parsed_data = {}
+    for pair in pairs:
+        key, value = pair.split('=')
+        parsed_data[key] = value
+    request.params = parsed_data
+    print(parsed_data)
+    print("POSTED body:", request.body)
+
+    for setting in parsed_data:
+        if parsed_data[setting]:
+            try: settings[setting] = parsed_data[setting]
+            except: pass
+    savesettings(settings)
+
+    #try: settings[request.params] = settings[request.params]
+    #except: pass
+
     try: 
         if "unlock" in request.params:
             try: 
@@ -311,7 +337,7 @@ def webinterface_post(request):
             print(request.params["install"])
             install_app(request.params["install"])
     except Exception as e: print(e)
-    return (200, {}, "None")
+    return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
 
 @ampule.route('/bootloader')
 def bootloader(request):
@@ -320,19 +346,19 @@ def bootloader(request):
     microcontroller.reset()
     return (200, {}, "None")
 
-@ampule.route('/settings')
+@ampule.route("/settings")
 def _settings(request):
     global settings
     #settings = load_settings.settings()
-    _settings = ""
-    for setting in settings:
-        _settings += f"{str(setting)} : {settings[setting]}<br>"
-    print(_settings)
+    #_settings = ""
+    #for setting in settings:
+    #    _settings += f"{str(setting)} : {settings[setting]}<br>"
+    #print(_settings)
     settings_html = header("Settings")+f"""
     <div class="header">
   <h1>SETTINGS</h1>
   <p>Edit your settings and save:</p>
-  {_settings}
+  {textbox(settings)}
   <button onclick="location.href='/save'">Save</button>
 </div>
     """ + bootloaderbutton + unlock + footer(True)

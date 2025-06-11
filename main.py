@@ -61,8 +61,8 @@ def webinterface(request):
 
 @ampule.route("/", method="GET")
 def webinterface(request):
-    print(request.params)
-    print(load_settings.app_running)
+    #print(request.params)
+    #print(load_settings.app_running)
     if load_settings.app_running: 
         return (200, {}, str(exitbutton) + f"""<br> running app {load_settings.app_running}""")
     if request.params:
