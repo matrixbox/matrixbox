@@ -28,7 +28,9 @@ def start_hotspot():
     try:
         wifi.radio.start_ap(ssid=macid)
         wifi.radio.start_dhcp_ap()
-        pprint("Started AP: " + str(macid))
+        pprint("Started WIFI: ")
+        pprint(str(macid))
+        pprint(str(wifi.radio.ipv4_address_ap))
     except Exception as e: pprint(str(e))
 
 def connect_to_network(timeout=False, silent=False):

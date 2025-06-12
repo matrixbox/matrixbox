@@ -5,7 +5,7 @@ def settings():
                 "password":"dunderskurre",
                 "autostart":False,
                 "rotation":0,
-                "width":128,
+                "width":64,
                 "height":32,
                 "tiles":1,
                 "repository_url":"https://raw.githubusercontent.com/alex-t-84/pixelbox/refs/heads/main/", 
