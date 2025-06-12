@@ -121,7 +121,7 @@ def next_program_in_list(run=False):
     pprint(load_settings.installed_apps_list[0] + "               ", line=4, color="yellow", clear=True)
 
 autostart = settings["autostart"]
-wifi.radio.tx_power = settings["wifi_power"]
+wifi.radio.tx_power = float(settings["wifi_power"])
 
 from web_interface import *
 connect_to_network()
