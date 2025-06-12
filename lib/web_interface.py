@@ -31,6 +31,7 @@ def install_app(app):
     try: os.chdir(app)
     except: pass
     error_color = "green"
+    microcontroller.cpu.frequency = 240000000
     for x, file in enumerate(applist[app]):
         clearscreen()
         if "/" in file:
@@ -59,6 +60,7 @@ def install_app(app):
         except: 
             pprint("Read only!", color="red")
             error_color = "red"
+    microcontroller.cpu.frequency = 180000000 ### notering
     
     pprint("Done.", color=error_color, line=4)
     os.chdir("/")
