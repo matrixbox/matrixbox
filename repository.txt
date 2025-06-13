@@ -4,4 +4,5 @@
         "clock":["__init__.py","clock.html","code.py"],
         "gif":["code.py", "__init__.py", "gif_webinterface.py", "gif.html"],
         "scroller":["code.py", "__init__.py", "scroller.html", "scroller.txt"],
+         "typewriter":["code.py", "__init__.py", "typewriter.html"],
         "tskylt":["__init__.py", "code.py", "font_mini.mpy", "functions.mpy", "createhtml.mpy", "varinit.mpy", "safemode.py", "dicts.mpy", "ampule.mpy", "css.py"]}
