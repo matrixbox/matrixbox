@@ -43,7 +43,7 @@ rf_group = displayio.Group()
 display.root_group = rf_group
 display.refresh()
 display.root_group.hidden = True
-window = displayio.Bitmap(128, 32, 10) # själva viewporten dit pixlar skrivs
+window = displayio.Bitmap(settings["width"], settings["height"], 10) # själva viewporten dit pixlar skrivs
 line_window = [] # en lista för multi-line printout till skärmen
 palette = displayio.Palette(10, dither=False)
 
