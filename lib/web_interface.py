@@ -226,7 +226,16 @@ def connect_to_wifi():
                 })
                 }
                 document.getElementById("ssid").addEventListener("change", updateVariable);
-            </script>""" + """
+            </script>
+
+            <script>
+            document.addEventListener("DOMContentLoaded", function() {
+    const ssidDropdown = document.getElementById("ssid");
+    updateVariable({ target: ssidDropdown }); // Trigger update for single SSID
+});</script>
+
+
+            """ + """
 
             <input type="text" id="password" class="form-control" name="password" placeholder="*******" value="">
                 """ + """
@@ -273,7 +282,7 @@ def select_app():
             """
     return header("Select app") + f"""
     <div class="header">
-  <h1>EuroSign</h1>
+  <h1>MatrixBox</h1>
   <p>Choose app:</p>
 </div>
     <table class="center">{installed_apps}</table>

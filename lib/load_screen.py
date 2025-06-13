@@ -1,4 +1,4 @@
-#from __main__ import *
+from __main__ import * # antingen denna rad eller #settings = load_settings etc
 import displayio, board, framebufferio, microcontroller, load_settings, os
 from rgbmatrix import RGBMatrix
 from microcontroller import watchdog
@@ -6,7 +6,7 @@ from font_mini import font_mini
 from font_small import font_small
 from font_large import font_large
 
-settings =  load_settings.settings() # behövs för boot.py
+#settings =  load_settings.settings() # behövs för boot.py
 displayio.release_displays()
 
 #from watchdog import WatchDogMode
@@ -33,9 +33,6 @@ if os.uname().machine == "Waveshare ESP32-S3-Zero with ESP32S3":
                     serpentine=True, doublebuffer=True)
 
 microcontroller.cpu.frequency = 180000000
-
-
-
 print("--------------------------------------------------------- ")
 print(" CHIP:           ", os.uname().machine)
 print(" FREQUENCY:      ", microcontroller.cpu.frequency)
@@ -60,12 +57,12 @@ display.root_group = rf_group
 palette[0] = (0)    # vit
 palette[1] = (50,50,00)    # vit
 palette[2] = (50,50,50)    # vit
-palette[3] = 0x000765      # morkbla
+palette[3] = (0, 59, 122)      # morkbla
 palette[4] = (100,0,0)     # rod
-palette[5] = (20,20,20)    # grå
-palette[6] = (20,20,40)    # grå
-palette[7] = (0,20,0)    # grå
-palette[8] = (20,20,20)    # grå
+palette[5] = (20,20,20)    # grey
+palette[6] = (20,20,40)    #  ?
+palette[7] = (33, 255, 48)      # green
+palette[8] = (230, 28, 71)    # pink
 palette[9] = (0,0,0)    # grå
 
 currentfont = font_mini 
@@ -77,19 +74,16 @@ def strlen(_string, font_size=font_mini):
 
 def pprint(string, line=False, color="white", font = font_mini, _refresh = True, clear=True, top_offset=0, window=window, _clearscreen=True):
     print(string)
-    #string += (127 - strlen(string.lower())) * "("
-    global line_window#, window
+    global line_window
     if _clearscreen: string = string + "(" * (settings["width"] - strlen(string))
-
-
-    if not "int" in str(type(line)):
+    
+    if "int" in str(type(line)):
+        _lines = [string]
+        line_window = [""* (int(line) + 1)]
+    else:
         line_window.append(string)
         if len(line_window) > 5: line_window.pop(0)
         _lines = line_window
-    else: 
-        _lines = [string]
-        line_window = [""* (int(line) + 1)]
-        
     
     pixwidth = 0
     _color = False
@@ -103,11 +97,13 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
     if color == "green": _color = (7)
     if color == "grey": _color = (8)
     if color == "black2": _color = (9)
+    if color == "pink": _color = (10)
     
     offs = 1 + top_offset
     try:
         for lin, stringline in enumerate(_lines):
             if line: lin = line
+            if line == -1: lin = int(5*(settings["height"]*1/32)) - 1
             for character in str(stringline):
                 if font == font_mini: character = character.lower()
                 if not character in font: 
@@ -121,7 +117,7 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
                             if int(bit): window[width+pixwidth,((6*lin) + height)+offs] = _color
                             else: 
                                 if clear: window[width+pixwidth,((6*lin) + height)+offs] = 0
-                        #else: window[width+pixwidth,(height)+offs] = int(font[character][height+1][width])
+                        else: window[width+pixwidth,(height)+offs] = int(font[character][height+1][width])
                 if isinstance(font[character][1],int): pixwidth += font[character][0]
                 else: pixwidth += len(font[character][1])
             pixwidth = 0
