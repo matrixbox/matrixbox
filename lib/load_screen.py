@@ -72,10 +72,10 @@ def strlen(_string, font_size=font_mini):
     if font_size==font_mini: _string = _string.lower()
     return sum((font_size[ascletters][0]) for ascletters in _string) # mäter längden på hel string
 
-def pprint(string, line=False, color="white", font = font_mini, _refresh = True, clear=True, top_offset=0, window=window, _clearscreen=True):
+def pprint(string, line=False, color="white", font = font_mini, _refresh = True, clear=True, top_offset=0, window=window, _clearscreen=True, hr="("):
     print(string)
     global line_window
-    if _clearscreen: string = string + "(" * (settings["width"] - strlen(string))
+    if _clearscreen: string = string + hr * (settings["width"] - strlen(string))
     
     if "int" in str(type(line)):
         _lines = [string]
