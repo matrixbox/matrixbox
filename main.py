@@ -5,7 +5,7 @@ import adafruit_connection_manager, adafruit_requests
 settings =  load_settings.settings()
 from load_screen import *
 from check_button import *
-pprint("^MatrixBox", line=0, color="white", hr="¨")
+pprint("^MatrixBox(", line=0, color="white", hr="¨")
 pprint("^Matrix", line=0, color="brightwhite", _clearscreen=False)
 
 wifi.radio.tx_power = 9.0
