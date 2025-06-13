@@ -1,0 +1,33 @@
+<html>
+    <style>body {
+  background-color: rgb(37, 37, 37);
+}
+        </style>
+    
+    <html><a href="/exit">&#x274C;</a>
+    <br><br>
+<x style="color:white">MATRIXBOX:\></x><input type="text" id="text" name="text">
+<script>
+    function updateVariable(event) {
+        const selectedValue = event.target.value;
+        const encodedTEXT = encodeURIComponent(selectedValue); // Automatically encodes all special characters
+        fetch(`/?text=${encodedTEXT}`, {
+            method: 'POST',
+        });
+
+        // Clear the textbox after posting
+        document.getElementById("text").value = "";
+    }
+
+    document.getElementById("text").addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            updateVariable(event);
+            event.target.value = ""; // Clear the textbox
+        }
+    });
+</script>
+
+
+    
+
+    </html>
