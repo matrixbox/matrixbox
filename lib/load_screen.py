@@ -79,7 +79,7 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
     global line_window
     if _clearscreen: string = string + hr * (settings["width"] - strlen(string))
     
-    max_lines = int(5*(settings["height"]*1/32)) - 1
+    max_lines = int(5*(settings["height"]*1/32)) #- 1
 
     if "int" in str(type(line)):
         _lines = [string]
