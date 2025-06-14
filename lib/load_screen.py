@@ -43,7 +43,9 @@ rf_group = displayio.Group()
 display.root_group = rf_group
 display.refresh()
 display.root_group.hidden = True
-window = displayio.Bitmap(128, 32, 10) # själva viewporten dit pixlar skrivs
+rows = int((settings["height"]*1/32))
+print(rows)
+window = displayio.Bitmap(128, rows*32, 10) # själva viewporten dit pixlar skrivs
 line_window = [] # en lista för multi-line printout till skärmen
 palette = displayio.Palette(10, dither=False)
 
@@ -77,12 +79,14 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
     global line_window
     if _clearscreen: string = string + hr * (settings["width"] - strlen(string))
     
+    max_lines = int(5*(settings["height"]*1/32)) - 1
+
     if "int" in str(type(line)):
         _lines = [string]
         line_window = [""* (int(line) + 1)]
     else:
         line_window.append(string)
-        if len(line_window) > 5: line_window.pop(0)
+        if len(line_window) > max_lines: line_window.pop(0)
         _lines = line_window
     
     pixwidth = 0
@@ -103,7 +107,8 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
     try:
         for lin, stringline in enumerate(_lines):
             if line: lin = line
-            if line == -1: lin = int(5*(settings["height"]*1/32)) - 1
+            if line == -1: lin = max_lines
+            
             for character in str(stringline):
                 if font == font_mini: character = character.lower()
                 if not character in font: 
