@@ -1,4 +1,4 @@
-{"/": ["boot.py", "safemode.py", "main.py", "lib/web_interface.py", "lib/ampule.mpy", "lib/load_screen.py", "lib/downloader.py", "lib/fetch_data.py", "lib/load_settings.py", "lib/check_button.py", "lib/adafruit_requests.mpy", "lib/adafruit_connection_manager.mpy", "lib/font_mini.py", "lib/font_small.py", "lib/font_large.py"
+{"/": ["boot.py", "safemode.py", "main.py", "lib/web_interface.py", "lib/ampule.py", "lib/load_screen.py", "lib/downloader.py", "lib/fetch_data.py", "lib/load_settings.py", "lib/check_button.py", "lib/adafruit_requests.mpy", "lib/adafruit_connection_manager.mpy", "lib/font_mini.py", "lib/font_small.py", "lib/font_large.py"
 ],
         
         "clock":["__init__.py","clock.html","code.py"],
