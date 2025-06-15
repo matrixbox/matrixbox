@@ -52,7 +52,7 @@ def webinterface_post(request):
     print(request.params)
     try: load_img(request.body)
     except: print("failed to add new image")
-    print("byteslen: ", len(bytearray(request.body)))
+    #print("byteslen: ", len(bytearray(request.body)))
     try: 
         print("trying to save")
         file_bytes = bytearray(request.body)
