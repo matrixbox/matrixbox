@@ -34,18 +34,36 @@ def webinterface(request):
     exit = True
     return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
 
-@ampule.route("/")
+@ampule.route("/", method="GET")
 def gif_webinterface(request):
     return (200, {}, """
 <html>
-<a href="/exit">&#x274C;</a>
+<a href="/exit">&#x274C;</a><button style='background-color:#73a9ff' onclick="fetch('/?next=true', {method: 'POST'})">&#11179;</button>
+            
 <h1>GIF-webinterface</h1>
+
 </html>
 """)
 
+@ampule.route('/', method="POST")
+def webinterface_post(request):
+    global _index
+    print(_index)
+    print(request.params)
+    if "next" in request.params: 
+        try:
+            _index += 1
+            load_img()
+        except: 
+            _index = 0
+            load_img()
+    
+    return (200, {}, "OK")
+    return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
+    
+
 def load_img():
     odg = gifio.OnDiskGif("images/"+files[_index])
-
     start = time.monotonic()
     next_delay = odg.next_frame() # Load the first frame
     end = time.monotonic()
