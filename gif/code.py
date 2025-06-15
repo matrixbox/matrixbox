@@ -1,6 +1,6 @@
 from __main__ import *
 from load_screen import *
-import sys, board
+import sys, board, binascii
 import gifio
 import time
 from check_button import check_if_button_pressed
@@ -48,29 +48,47 @@ def gif_webinterface(request):
 @ampule.route('/', method="POST")
 def webinterface_post(request):
     global _index
+    print("POST:ed")
     print(_index)
     print(request.params)
-    try: load_img(request.body)
-    except: print("failed to add new image")
-    #print("byteslen: ", len(bytearray(request.body)))
-    try: 
-        print("trying to save")
-        file_bytes = bytearray(request.body)
-        with open("images/uploaded.gif", "wb") as f:
-            f.write(file_bytes)
-        print(f"Received {len(file_bytes)} bytes")
-    except: pass
+    print(request.body)
     
-
+    
+    
     if "next" in request.params: 
+        print(request.params["next"])
         try:
             _index += 1
             load_img()
         except: 
             _index = 0
             load_img()
+        return
     
-    return (200, {}, "OK")
+    if "sendbase64" in request.params:
+        print("SEND")
+        try:
+            img = request.body
+            print(type(img))
+            #img = bytes(request.body, 'utf-8')
+            print(len(img))
+            #img = binascii.unhexlify(img)
+            img = binascii.a2b_base64(img)
+            print(img)
+            #img = bytes(img)
+            with open("images/uploaded.gif", "wb") as f:
+                f.write(img)
+            #load_img(img)
+        except Exception as e: print(e)
+
+        #try: 
+        #    print("trying to save")
+        #    file_bytes = bytes(request.body)
+        #    with open("uploaded.gif", "wb") as f:
+        #        f.write(file_bytes)
+        #    print(f"Received {len(file_bytes)} bytes")
+        #except Exception as e: print(e)
+    #return (200, {}, "OK")
     return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
     
 

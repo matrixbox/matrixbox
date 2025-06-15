@@ -23,48 +23,49 @@
 
     <div id="drop-area">Drag & Drop a GIF file here</div>
 
-    <script>
-        const dropArea = document.getElementById("drop-area");
+<script>
+    const dropArea = document.getElementById("drop-area");
 
-        dropArea.addEventListener("dragover", (event) => {
-            event.preventDefault();
-            dropArea.style.borderColor = "#333";
-        });
+    dropArea.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        dropArea.style.borderColor = "#333";
+    });
 
-        dropArea.addEventListener("dragleave", () => {
-            dropArea.style.borderColor = "#ccc";
-        });
+    dropArea.addEventListener("dragleave", () => {
+        dropArea.style.borderColor = "#ccc";
+    });
 
-        dropArea.addEventListener("drop", (event) => {
-            event.preventDefault();
-            dropArea.style.borderColor = "#ccc";
+    dropArea.addEventListener("drop", (event) => {
+        event.preventDefault();
+        dropArea.style.borderColor = "#ccc";
 
-            const file = event.dataTransfer.files[0];
+        const file = event.dataTransfer.files[0];
 
-            if (file && file.type === "image/gif") {
-                const reader = new FileReader();
-                reader.readAsArrayBuffer(file);
+        if (file && file.type === "image/gif") {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
 
-                reader.onload = () => {
-                    const fileBytes = new Uint8Array(reader.result);
-                    sendFile(fileBytes);
-                };
-            } else {
-                alert("Please drop a GIF file.");
-            }
-        });
-
-        function sendFile(fileBytes) {
-            fetch("/?sendbytes=true", {
-                method: "POST",
-                headers: { "Content-Type": "application/octet-stream" },
-                body: fileBytes
-            })
-            .then(response => response.text())
-            .then(data => console.log("Server response:", data))
-            .catch(error => console.error("Error:", error));
+            reader.onload = () => {
+                const base64String = reader.result.split(',')[1]; // Extract Base64 content
+                sendFile(base64String);
+            };
+        } else {
+            alert("Please drop a GIF file.");
         }
-    </script>
+    });
+
+    function sendFile(base64String) {
+        fetch("/?sendbase64=true", {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
+            body: base64String
+        })
+        .then(response => response.text())
+        .then(data => console.log("Server response:", data))
+        .catch(error => console.error("Error:", error));
+    }
+</script>
+
 
 </body>
 </html>
