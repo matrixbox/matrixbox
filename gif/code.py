@@ -43,13 +43,25 @@ def gif_webinterface(request):
 <h1>GIF-webinterface</h1>
 
 </html>
-""")
+""" + html)
 
 @ampule.route('/', method="POST")
 def webinterface_post(request):
     global _index
     print(_index)
     print(request.params)
+    try: load_img(request.body)
+    except: print("failed to add new image")
+    print("byteslen: ", len(bytearray(request.body)))
+    try: 
+        print("trying to save")
+        file_bytes = bytearray(request.body)
+        with open("images/uploaded.gif", "wb") as f:
+            f.write(file_bytes)
+        print(f"Received {len(file_bytes)} bytes")
+    except: pass
+    
+
     if "next" in request.params: 
         try:
             _index += 1
@@ -62,8 +74,10 @@ def webinterface_post(request):
     return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
     
 
-def load_img():
-    odg = gifio.OnDiskGif("images/"+files[_index])
+def load_img(file=False):
+    if file: pass
+    else: file = "images/"+files[_index]
+    odg = gifio.OnDiskGif(file)
     start = time.monotonic()
     next_delay = odg.next_frame() # Load the first frame
     end = time.monotonic()

@@ -1,4 +1,70 @@
-<html>
-<a href="/exit">&#x274C;</a>
-<h1>GIF-webinterface</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIF Upload</title>
+    <style>
+        #drop-area {
+            width: 300px;
+            height: 150px;
+            border: 2px dashed #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin: 20px auto;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="drop-area">Drag & Drop a GIF file here</div>
+
+    <script>
+        const dropArea = document.getElementById("drop-area");
+
+        dropArea.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            dropArea.style.borderColor = "#333";
+        });
+
+        dropArea.addEventListener("dragleave", () => {
+            dropArea.style.borderColor = "#ccc";
+        });
+
+        dropArea.addEventListener("drop", (event) => {
+            event.preventDefault();
+            dropArea.style.borderColor = "#ccc";
+
+            const file = event.dataTransfer.files[0];
+
+            if (file && file.type === "image/gif") {
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(file);
+
+                reader.onload = () => {
+                    const fileBytes = new Uint8Array(reader.result);
+                    sendFile(fileBytes);
+                };
+            } else {
+                alert("Please drop a GIF file.");
+            }
+        });
+
+        function sendFile(fileBytes) {
+            fetch("/?sendbytes=true", {
+                method: "POST",
+                headers: { "Content-Type": "application/octet-stream" },
+                body: fileBytes
+            })
+            .then(response => response.text())
+            .then(data => console.log("Server response:", data))
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
 </html>
