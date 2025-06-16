@@ -1,16 +1,16 @@
 MatrixBox - v.0.9b
 ================================
 
-# SETUP:
+## SETUP:
 1. Connect to WIFI shown on screen
 2. Select your network + password
 3. When online, the device is assigned a new IP by your router
 
-# MANUALLY EDIT FILES:
+## MANUALLY EDIT FILES:
 1. To unlock the file system, hold down the button while connecting the device to a computer.
 2. File system will be locked again the next time you reboot the device.
 
-# MAKING CUSTOM APPS:
+## MAKING CUSTOM APPS:
 1. To get an idea of how the device recognizes an app, you can look at the provided examples apps like CLOCK or SCROLLER.
 2. A new app requires a directory in the root folder (e.g. '/appname') and an '__init__.py'.
 
