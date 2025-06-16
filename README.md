@@ -12,8 +12,8 @@ MatrixBox - v.0.9b
 
 ## MAKING CUSTOM APPS:
 1. To get an idea of how the device recognizes an app, you can look at the provided examples apps like CLOCK or SCROLLER.
-2. A new app requires a directory in the root folder (e.g. '/appname') and an '__init__.py'.
-
+2. A new app is recognized as a directory in the root folder (e.g. '/appname') with a file "&#x5F;&#x5F;init&#x5F;&#x5F;.py" inside.
+> test
 
 
 The official repository
