@@ -259,6 +259,7 @@ def connect_to_wifi():
 
 def select_app():
     installed_apps = ""
+    
     for app in os.listdir():
         if not "." in app: #installed_apps.append(app)
             if not "__init__.py" in os.listdir(app): continue
@@ -283,6 +284,7 @@ def select_app():
     return header("Select app") + f"""
     <div class="header">
   <h1>MatrixBox</h1>
+ 
   <p>Choose app:</p>
 </div>
     <table class="center">{installed_apps}</table>
@@ -344,13 +346,17 @@ def webinterface_post(request):
         if "delete" in request.params:
             dir = request.params["delete"]
             os.chdir(dir)
-            try:
-                for file in os.listdir():
-                    clearscreen()
+            
+            for file in os.listdir():
+                clearscreen()
+                try: 
                     os.remove(file)
                     pprint("Removed: ", file)
-            except Exception as e: 
-                pprint(str(e))
+                except Exception as e: 
+                    pprint(str(e))
+                
+                
+            
             os.chdir("/")
             os.rmdir(dir)
         if "install" in request.params:
@@ -374,7 +380,7 @@ def _settings(request):
   <h1>SETTINGS</h1>
   <p>Edit your settings and save:</p>
   {textbox(settings)}
-  <button onclick="location.href='/save'">Save</button>
+  
 </div>
     """ + bootloaderbutton + unlock + footer(True)
     return (200, {}, settings_html)

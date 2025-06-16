@@ -1,0 +1,11 @@
+Adafruit CircuitPython 9.1.1-dirty on 2024-12-23; Waveshare ESP32-S3-Zero with ESP32S3
+Board ID:waveshare_esp32_s3_zero
+UID:8E600959F900
+boot.py output:
+--------------------------------------------------------- 
+ CHIP:            Waveshare ESP32-S3-Zero with ESP32S3
+ FREQUENCY:       160000000
+--------------------------------------------------------- 
+1
+Booting...
+Unlocking filesystem

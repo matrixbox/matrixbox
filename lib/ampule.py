@@ -2,10 +2,10 @@
 import io
 import re
 import time
-
+#from __main__ import buffer_size
 from errno import EAGAIN, ECONNRESET
 
-BUFFER_SIZE = 10000
+BUFFER_SIZE = 1024*4
 routes = []
 variable_re = re.compile("^<([a-zA-Z]+)>$")
 
@@ -47,12 +47,13 @@ def __parse_body(reader):
 def __read_request(client):
     message = bytearray()
     socket_recv = True
+    
     for _ in range(10):
         try:
             while socket_recv:
                 buffer = bytearray(BUFFER_SIZE)
-                client.recv_into(buffer)
-                for byte in buffer:
+                num_received = client.recv_into(buffer)
+                for byte in buffer[:num_received]:
                     if byte == 0x00:
                         socket_recv = False
                         break

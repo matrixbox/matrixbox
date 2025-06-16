@@ -107,7 +107,7 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = True,
     try:
         for lin, stringline in enumerate(_lines):
             if line: lin = line
-            if line == -1: lin = max_lines - 1
+            if line == -1: lin = max_lines
             
             for character in str(stringline):
                 if font == font_mini: character = character.lower()

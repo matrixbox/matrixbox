@@ -1,4 +1,5 @@
-import sys, wifi, socketpool, ampule, time, os, json, microcontroller
+
+import sys, wifi, socketpool, time, os, json, microcontroller, ampule
 import load_settings
 import digitalio, board
 import adafruit_connection_manager, adafruit_requests
@@ -77,8 +78,11 @@ def initialize_app():
         autostart = False
         ampule.routes = ampule_routes_backup.copy()
         try: 
-            del sys.modules["__init__"]
-            del sys.modules["code"]
+            for codefile in os.listdir():
+                try: del sys.modules[codefile.replace(".py", "")]
+                except: pass
+            #del sys.modules["__init__"]
+            #del sys.modules["code"]
         except: pass
         display.root_group = rf_group
         os.chdir("/")
