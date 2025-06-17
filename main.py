@@ -86,7 +86,7 @@ def initialize_app():
         except: pass
         display.root_group = rf_group
         os.chdir("/")
-        clearscreen()
+        #clearscreen()
         pprint(str(wifi.radio.ipv4_address))
         pprint("Select app:")
         return False
