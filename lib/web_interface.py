@@ -62,7 +62,7 @@ def install_app(app):
             error_color = "red"
     microcontroller.cpu.frequency = 180000000 ### notering
     
-    pprint("Done.", color=error_color, line=4)
+    pprint("Done.", color=error_color, line=-1)
     os.chdir("/")
         
 
