@@ -32,12 +32,12 @@ if "unlock" in os.listdir():
     try: os.remove("unlock")
     except: pass
     storage.enable_usb_drive()
-    pprint("Unlocking filesystem", line=1)
+    pprint("Unlocking filesystem")
 
 elif check_if_button_pressed_on_boot():
-    pprint("Unlocking filesystem", line=1)
+    pprint("Unlocking filesystem")
 else:
     lock()
-    pprint("Locked filesystem", line=1)
+    pprint("Locked filesystem")
     time.sleep(1)
     
