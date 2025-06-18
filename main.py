@@ -108,7 +108,7 @@ def next_program_in_list(run=False):
     print(load_settings.installed_apps_list)
     load_settings.installed_apps_list.append(load_settings.installed_apps_list[0])
     load_settings.installed_apps_list.pop(0)
-    pprint(load_settings.installed_apps_list[0], line=-1, color="yellow", clear=True)
+    pprint(load_settings.installed_apps_list[0], line=-1, color="yellow", clear=True, _refresh=True)
 
 autostart = settings["autostart"]
 wifi.radio.tx_power = float(settings["wifi_power"])
