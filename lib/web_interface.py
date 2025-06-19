@@ -326,7 +326,7 @@ def webinterface_post(request):
         print("POSTED body:", request.body)
         for setting in parsed_data:
             if parsed_data[setting]:
-                try: settings[setting] = parsed_data[setting]
+                try: settings[setting] = url_decoder(parsed_data[setting])
                 except: pass
         savesettings(settings)
         return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
