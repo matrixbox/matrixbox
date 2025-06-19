@@ -320,13 +320,13 @@ def webinterface_post(request):
         parsed_data = {}
         for pair in pairs:
             key, value = pair.split('=')
-            parsed_data[key] = value
+            parsed_data[key] = url_decoder(value)
         request.params = parsed_data
         print(parsed_data)
         print("POSTED body:", request.body)
         for setting in parsed_data:
             if parsed_data[setting]:
-                try: settings[setting] = url_decoder(parsed_data[setting])
+                try: settings[setting] = parsed_data[setting]
                 except: pass
         savesettings(settings)
         return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
@@ -339,9 +339,9 @@ def webinterface_post(request):
             except: pass
             import safemode
         if "ssid" in request.params:
-            __main__.settings["ssid"] = request.params["ssid"]
+            __main__.settings["ssid"] = url_decoder(request.params["ssid"])
         if "password" in request.params:
-            __main__.settings["password"] = request.params["password"]
+            __main__.settings["password"] = url_decoder(request.params["password"])
             #wifi.radio.connect(settings["ssid"], settings["password"])
         if "delete" in request.params:
             dir = request.params["delete"]
