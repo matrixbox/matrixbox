@@ -95,7 +95,7 @@ def list_available_apps(apps):
     for dir in apps:
         if dir == "/" or dir == "lib": continue
         if dir in os.listdir() and "__init__.py" in os.listdir(dir):
-            applist += f"""{dir}: <button id='{dir}' onclick="delete"""+dir+"""()">Delete</button>
+            applist += f"""{dir}: <button id='{dir}' onclick="delete"""+dir+"""()" style="background-color: red">Delete</button>
 
                    """ + """
                    <script>function delete"""+dir+"""() {
@@ -106,7 +106,7 @@ def list_available_apps(apps):
     });
 }
 </script>"""
-        else: applist += f"""{dir}: <button id='{dir}' onclick="install"""+dir+"""()">Install</button>
+        else: applist += f"""{dir}: <button id='{dir}' onclick="install"""+dir+"""()" style="background-color: green">Install</button>
 
                    """ + """
                    <script>function install"""+dir+"""() {
