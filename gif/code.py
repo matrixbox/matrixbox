@@ -108,32 +108,25 @@ def load_img(file=False):
         ),
     )
     splash.append(face)
-    refresh()
+    return odg
 
 if not os.listdir("images"): pprint("Upload image", _refresh=True)
-else: load_img()
+else: odg = load_img()
 time.sleep(0.5)
 
 while not exit:
     ampule.listen(socket)
-    #time.sleep(0.01)
-    """x = check_if_button_pressed() 
-    if x: 
-        _index += 1
-        try: load_img()
-        except: 
-            _index = 0
-            load_img()
-        time.sleep(0.2)
-        x = check_if_button_pressed()
-        if x: sys.exit()"""
+    time.sleep(0.01)
+    odg.next_frame()
+    refresh()
+    
     b = check_if_button_pressed()
     #print(b)
     if b == 1:
         _index += 1
-        try: load_img()
+        try: odg = load_img()
         except: 
             _index = 0
-            load_img()
+            odg = load_img()
         time.sleep(0.2)
     elif b == 2: sys.exit()
