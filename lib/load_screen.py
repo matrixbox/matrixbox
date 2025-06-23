@@ -47,7 +47,7 @@ rows = int((settings["height"]*1/32))
 print(rows)
 window = displayio.Bitmap(128, rows*32, 10) # själva viewporten dit pixlar skrivs
 line_window = [] # en lista för multi-line printout till skärmen
-palette = displayio.Palette(10, dither=False)
+palette = displayio.Palette(20, dither=False)
 
 tile_group = displayio.TileGrid(window, pixel_shader=palette)
 rf_group = displayio.Group()
@@ -66,6 +66,7 @@ palette[6] = (20,20,40)    #  ?
 palette[7] = (0, 100, 10)      # green
 palette[8] = (230, 28, 71)    # pink
 palette[9] = (0,0,0)    # grå
+palette[11] = (50,30,0)    # orange
 
 currentfont = font_mini 
 currentcolor = "white"
@@ -102,6 +103,7 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = False
     if color == "grey": _color = (8)
     if color == "black2": _color = (9)
     if color == "pink": _color = (10)
+    if color == "orange": _color = (11)
     
     offs = 1 + top_offset
     try:
