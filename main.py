@@ -6,8 +6,10 @@ import adafruit_connection_manager, adafruit_requests
 settings =  load_settings.settings()
 from load_screen import *
 from check_button import *
-pprint("^MatrixBox(", line=0, color="white", hr="¨")
-pprint("^Matrix", line=0, color="brightwhite", _clearscreen=False)
+def show_logo():
+    pprint("^MatrixBox(", line=0, color="white", hr="¨")
+    pprint("^Matrix", line=0, color="brightwhite", _clearscreen=False)
+show_logo()
 
 wifi.radio.tx_power = 9.0
 pool = socketpool.SocketPool(wifi.radio)
@@ -87,6 +89,7 @@ def initialize_app():
         display.root_group = rf_group
         os.chdir("/")
         #clearscreen()
+        show_logo()
         pprint(str(wifi.radio.ipv4_address))
         pprint("Select app:")
         return False
