@@ -1,6 +1,8 @@
 <html>
     <html><a href="/exit">&#x274C;</a>
-   <input type="text" id="text" name="text">
+<br>
+TEXT:
+    <input type="text" id="text" name="text">
     <script>
         function updateVariable(event) {
             const selectedValue = event.target.value;
@@ -11,6 +13,34 @@
         }
         document.getElementById("text").addEventListener("change", updateVariable);
     </script>
+<br>
+OFFSET (0-32):
+    <input type="text" id="offset" name="offset">
+    <script>
+        function updateVariable(event) {
+            const selectedValue = event.target.value;
+            const encodedTEXT = selectedValue.replace(/#/g, '%23');
+            fetch(`/?offset=${encodedTEXT}`, {
+                method: 'POST',
+            })
+        }
+        document.getElementById("offset").addEventListener("change", updateVariable);
+    </script>
+
+    <br>
+SCALE (1-2):
+    <input type="text" id="scale" name="scale">
+    <script>
+        function updateVariable(event) {
+            const selectedValue = event.target.value;
+            const encodedTEXT = selectedValue.replace(/#/g, '%23');
+            fetch(`/?scale=${encodedTEXT}`, {
+                method: 'POST',
+            })
+        }
+        document.getElementById("scale").addEventListener("change", updateVariable);
+    </script>
+<br>
 
     <button id="mini">mini font</button>
     <button id="small">small font</button>
@@ -20,6 +50,7 @@
 <button id="blue" style="width: 20px; height: 20px; background-color: blue; color: white; border: solid-black; cursor: pointer;"></button>
 <button id="red" style="width: 20px; height: 20px; background-color: red; color: white; border: solid-black; cursor: pointer;"></button>
 <button id="yellow" style="width: 20px; height: 20px; background-color: yellow; color: white; solid-black: none; cursor: pointer;"></button>
+<button id="orange" style="width: 20px; height: 20px; background-color: rgb(255, 187, 0); color: white; solid-black: none; cursor: pointer;"></button>
 <button id="green" style="width: 20px; height: 20px; background-color: green; color: white; solid-black: none; cursor: pointer;"></button>
 
     <script>
@@ -59,6 +90,12 @@ document.getElementById("white").addEventListener("click", function() {
 
 document.getElementById("red").addEventListener("click", function() {
     fetch("/?color=red", {
+        method: "POST",
+    })        
+});
+
+document.getElementById("orange").addEventListener("click", function() {
+    fetch("/?color=orange", {
         method: "POST",
     })        
 });
