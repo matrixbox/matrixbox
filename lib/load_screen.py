@@ -45,7 +45,7 @@ display.refresh()
 display.root_group.hidden = True
 rows = int((settings["height"]*1/32))
 print(rows)
-window = displayio.Bitmap(128, rows*32, 10) # själva viewporten dit pixlar skrivs
+window = displayio.Bitmap(settings["width"], rows*32, 10) # själva viewporten dit pixlar skrivs
 line_window = [] # en lista för multi-line printout till skärmen
 palette = displayio.Palette(20, dither=False)
 
