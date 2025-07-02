@@ -97,6 +97,7 @@ def initialize_app():
 def installed_apps():
     installed_apps = []
     for app in os.listdir():
+        if app == "LICENSE": continue
         if not "." in app:
             if not "__init__.py" in os.listdir(app): continue
             installed_apps.append(app)
