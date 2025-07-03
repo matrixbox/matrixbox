@@ -8,8 +8,9 @@ from load_screen import *
 with open("clock.html") as f: html = f.read()
 
 f_color = "white"
-b_color = "yellow"
+b_color = "black"
 inverted = 0
+load_screen.currentfont = font_large
 
 @ampule.route("/exit", method="GET")
 def exit_webinterface(request):
@@ -90,8 +91,8 @@ while load_settings.app_running:
     
     timestring = hour + ":" + minute
     print_timestring(timestring)
-    refresh()
-    time.sleep(1)
+    #refresh()
+    #time.sleep(1)
     _s = int(second)
     _s += 1
     if len(str(_s)) == 1: second = "0" + str(_s)
@@ -116,4 +117,4 @@ while load_settings.app_running:
                 else: hour = str(_h)
                 if hour == "24": 
                     hour = "00"
-        print_timestring(oldtimestring, clear=True)
+        print_timestring(oldtimestring, clear=False)
