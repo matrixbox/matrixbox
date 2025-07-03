@@ -90,7 +90,8 @@ def initialize_app():
         os.chdir("/")
         #clearscreen()
         show_logo()
-        pprint(str(wifi.radio.ipv4_address))
+        _wifi_address = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
+        pprint(_wifi_address)
         pprint("Select app:")
         return False
 
@@ -114,6 +115,13 @@ def next_program_in_list(run=False):
     load_settings.installed_apps_list.pop(0)
     pprint(load_settings.installed_apps_list[0], line=-1, color="yellow", clear=True, _refresh=True)
 
+def check_for_button_next_program():
+    b = check_if_button_pressed()
+    if b == 0: pass
+    if b == 1: next_program_in_list()
+    elif b == 2: next_program_in_list(run=True)
+    if load_settings.app_running: load_settings.app_running = initialize_app()
+
 autostart = settings["autostart"]
 wifi.radio.tx_power = float(settings["wifi_power"])
 
@@ -127,6 +135,7 @@ while 1:
     
     while wifi.radio.ap_active and not wifi.radio.connected: 
         ampule.listen(socket)
+        check_for_button_next_program()
         if time.monotonic() > check_network_again_timer + 10:
             print("Attempting... " + str(wifi.radio.tx_power))
             wifi.radio.tx_power += 1
@@ -145,12 +154,9 @@ while 1:
                 print(ampule.listen(socket))
                 load_settings.app_running = autostart
             elif not load_settings.app_running: ampule.listen(socket)
-            if load_settings.app_running: 
-                load_settings.app_running = initialize_app()
+
             
-            b = check_if_button_pressed()
-            if b == 0: pass
-            if b == 1: next_program_in_list()
-            elif b == 2: next_program_in_list(run=True)
+            check_for_button_next_program()
+            
             
             
