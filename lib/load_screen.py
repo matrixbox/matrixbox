@@ -121,9 +121,13 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = False
                         invertedwidth = font[character][0] - width
                         if isinstance(font[character][1],int):
                             bit = ((font[character][height+1] >> invertedwidth) & 1)
-                            if int(bit): window[width+pixwidth,((6*lin) + height)+offs] = _color
+                            if int(bit): 
+                                try: window[width+pixwidth,((6*lin) + height)+offs] = _color
+                                except: pass
                             else: 
-                                if clear: window[width+pixwidth,((6*lin) + height)+offs] = 0
+                                try: 
+                                    if clear: window[width+pixwidth,((6*lin) + height)+offs] = 0
+                                except: pass
                         else: window[width+pixwidth,(height)+offs] = int(font[character][height+1][width])
                 if isinstance(font[character][1],int): pixwidth += font[character][0]
                 else: pixwidth += len(font[character][1])
