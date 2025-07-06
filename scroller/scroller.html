@@ -123,11 +123,22 @@ function updateVariable(event) {
 document.getElementById("url").addEventListener("change", updateVariable);
 
     </script>
+
 <br>
     <button id="btc">btc/usd</button>
     <script>
 document.getElementById("btc").addEventListener("click", function() {
     fetch("/?btc=true", {
+        method: "POST",
+    })        
+});
+</script>
+
+<br>
+    <button id="scroll">scroll/static</button>
+    <script>
+document.getElementById("scroll").addEventListener("click", function() {
+    fetch("/?scroll=true", {
         method: "POST",
     })        
 });
