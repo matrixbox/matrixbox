@@ -102,7 +102,7 @@ while not exit:
     refresh()
     b = check_if_button_pressed()
     if b == 2: sys.exit()
-    if btc and time.monotonic() > timer + 10: 
+    if btc and time.monotonic() > timer + 30: 
         timer = time.monotonic()
         set_btc()
         
