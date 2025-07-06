@@ -6,6 +6,8 @@ start_x = 300
 padding_length = 30
 default_offset = 0
 default_scale = 1
+btc = 0
+timer = time.monotonic()
 
 with open("scroller.html") as f: html = f.read()
 
@@ -22,10 +24,12 @@ def webinterface(request):
 
 @ampule.route("/", method="POST")
 def scroller_webinterface_port(request):
-    global scroller_text, exit, default_offset, default_scale
+    global scroller_text, exit, default_offset, default_scale, btc
     print("POSTED")
     print(request.params)
     print(request.body)
+    if "btc" in request.params: 
+        btc = 1 - btc
     if "text" in request.params: scroller_text = "        " + url_decoder(request.params["text"].replace("%20", " ") + "        ")
     if "size" in request.params: 
         if request.params["size"] == "mini": load_screen.currentfont = font_mini
@@ -39,6 +43,9 @@ def scroller_webinterface_port(request):
         print("URL found")
         print(request.body)
     set_text()
+
+    if btc: set_btc()
+
     return (200, {}, "OK")
 
 @ampule.route("/", method="GET")
@@ -72,6 +79,19 @@ def set_text():
     scroller_window = set_length(scroller_width)
     pprint(padding(scroller_text), line=0, font=load_screen.currentfont, color=load_screen.currentcolor,_refresh=False, window=window)
 
+def set_btc():
+    global scroller_text
+    data = requests.get("https://min-api.cryptocompare.com/data/generateAvg?fsym=BTC&tsym=USD&e=coinbase").text
+    data = json.loads(data)
+    print(data)
+    try: 
+        print("₿ USD " + data["DISPLAY"]["PRICE"].replace("$ ", ""))
+    except Exception as e: print(e)
+    scroller_text = "₿ USD " + data["DISPLAY"]["PRICE"].replace("$ ", "").split(".")[0]
+    set_text()
+
+
+
 set_text()
 
 while not exit:
@@ -80,9 +100,11 @@ while not exit:
     if scroller_window.x == -scroller_width + padding_length: scroller_window.x = start_x
     scroller_window.x -= 1
     refresh()
-    #print(default_offset)
     b = check_if_button_pressed()
     if b == 2: sys.exit()
+    if btc and time.monotonic() > timer + 10: 
+        timer = time.monotonic()
+        set_btc()
         
  
 scroller_window.x = 0

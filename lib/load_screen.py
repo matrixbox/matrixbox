@@ -123,11 +123,11 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = False
                             bit = ((font[character][height+1] >> invertedwidth) & 1)
                             if int(bit): 
                                 try: window[width+pixwidth,((6*lin) + height)+offs] = _color
-                                except: pass
+                                except: print("Out of bounds")
                             else: 
                                 try: 
                                     if clear: window[width+pixwidth,((6*lin) + height)+offs] = 0
-                                except: pass
+                                except: print("Clear-Out of bounds")
                         else: window[width+pixwidth,(height)+offs] = int(font[character][height+1][width])
                 if isinstance(font[character][1],int): pixwidth += font[character][0]
                 else: pixwidth += len(font[character][1])
