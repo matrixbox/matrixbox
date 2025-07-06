@@ -90,7 +90,7 @@ def set_btc():
         data = requests.get("https://min-api.cryptocompare.com/data/generateAvg?fsym=BTC&tsym=USD&e=coinbase").text
         data = json.loads(data)
         print(data)
-        scroller_text = "₿ USD " + data["DISPLAY"]["PRICE"].replace("$ ", "").split(".")[0]
+        scroller_text = "₿ $" + data["DISPLAY"]["PRICE"].replace("$ ", "").split(".")[0]
     except Exception as e:
         scroller_text = str(e)
     set_text()
