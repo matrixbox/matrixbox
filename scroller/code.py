@@ -97,14 +97,16 @@ set_text()
 while not exit:
     ampule.listen(socket)
     scroller_window.y = default_offset
-    if scroller_window.x == -scroller_width + padding_length: scroller_window.x = start_x
+    if scroller_window.x == -scroller_width + padding_length: 
+        if btc and time.monotonic() > timer + 30: 
+            timer = time.monotonic()
+            set_btc()
+        scroller_window.x = start_x
     scroller_window.x -= 1
     refresh()
     b = check_if_button_pressed()
     if b == 2: sys.exit()
-    if btc and time.monotonic() > timer + 30: 
-        timer = time.monotonic()
-        set_btc()
+
         
  
 scroller_window.x = 0
