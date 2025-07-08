@@ -88,6 +88,7 @@ def set_btc():
     global scroller_text
     try:
         data = requests.get("https://min-api.cryptocompare.com/data/generateAvg?fsym=BTC&tsym=USD&e=coinbase").text
+        # https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd
         data = json.loads(data)
         print(data)
         scroller_text = "₿ $" + data["DISPLAY"]["PRICE"].replace("$ ", "").split(".")[0]
