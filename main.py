@@ -42,6 +42,7 @@ def connect_to_network(timeout=False, silent=False):
         if not silent: pprint(str(settings["ssid"]))
         wifi.radio.connect(settings["ssid"],settings["password"], timeout=timeout)
         pprint(str(wifi.radio.ipv4_address))
+        savesettings(settings)
     except Exception as e: 
         if not silent: pprint(str(e))
         wifi_status = str(e)
@@ -129,6 +130,7 @@ from web_interface import *
 connect_to_network()
 
 while 1:
+    print("Entered main loop")
     while not wifi.radio.connected and not wifi.radio.ap_active:
         check_network_again_timer = time.monotonic()
         start_hotspot()
