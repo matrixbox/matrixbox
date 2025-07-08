@@ -11,6 +11,7 @@ load_screen.currentfont = font_large
 btc = 0
 timer = time.monotonic()
 currency = "usd"
+delay = 30
 
 with open("scroller.html") as f: html = f.read()
 
@@ -88,14 +89,12 @@ def set_text():
 def set_btc():
     global scroller_text
     try:
-        data = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd").text
-        # https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd
-        
+        #data = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd").text
+        data = requests.get("https://min-api.cryptocompare.com/data/generateAvg?fsym=BTC&tsym=USD&e=coinbase").text
         data = json.loads(data)
         print(data)
-        # https://min-api.cryptocompare.com/data/generateAvg?fsym=BTC&tsym=USD&e=coinbase
-        # scroller_text = "₿ $" + data["DISPLAY"]["PRICE"].replace("$ ", "").split(".")[0]
-        scroller_text = "₿ $" + str(data["bitcoin"][currency])#.replace("$ ", "").split(".")[0]
+        scroller_text = "₿ $" + data["DISPLAY"]["PRICE"].replace("$ ", "").split(".")[0]
+        #scroller_text = "₿ $" + str(data["bitcoin"][currency])#.replace("$ ", "").split(".")[0]
     except Exception as e:
         scroller_text = str(e)
     set_text()
@@ -115,7 +114,7 @@ while not exit:
             scroller_window.x = start_x
         scroller_window.x -= 1
     else:
-        if btc and time.monotonic() > timer + 30: 
+        if btc and time.monotonic() > timer + delay: 
             timer = time.monotonic()
             set_btc()
             scroller_window.x = 0-(padding_length)
