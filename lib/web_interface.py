@@ -218,21 +218,20 @@ def connect_to_wifi():
             </select> 
             
             """ + """<script>
-            function updateVariable(event) {
-            const selectedValue = event.target.value;
-            const encodedSSID = selectedValue.replace(/#/g, '%23');
-            fetch(`/?ssid=${encodedSSID}`, {
-                method: 'POST',
-                })
-                }
-                document.getElementById("ssid").addEventListener("change", updateVariable);
-            </script>
+    function updateVariable(event) {
+        const selectedValue = event.target.value;
+        const encodedSSID = selectedValue.replace(/#/g, '%23');
+        fetch(`/?ssid=${encodedSSID}`, {
+            method: 'POST',
+        });
+    }
 
-            <script>
-            document.addEventListener("DOMContentLoaded", function() {
-    const ssidDropdown = document.getElementById("ssid");
-    updateVariable({ target: ssidDropdown }); // Trigger update for single SSID
-});</script>
+    const ssidElement = document.getElementById("ssid");
+    ssidElement.addEventListener("change", updateVariable);
+    ssidElement.addEventListener("click", updateVariable); // Add this line
+</script>
+
+ 
 
 
             """ + """
@@ -315,7 +314,7 @@ def _connectx(request):
 @ampule.route('/', method="POST")
 def webinterface_post(request):
     global settings
-    print("POSTED!")
+    print("POSTED! ", request.params)
     try:
         pairs = request.body.split('&')
         parsed_data = {}
