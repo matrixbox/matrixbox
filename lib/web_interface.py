@@ -328,7 +328,9 @@ def webinterface_post(request):
             if parsed_data[setting]:
                 try: settings[setting] = parsed_data[setting]
                 except: pass
+        clearscreen(True)
         savesettings(settings)
+        clearscreen(False)
         return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
     except: pass
 
