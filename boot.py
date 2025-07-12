@@ -27,6 +27,7 @@ def lock():
         
 boot_splash()
 
+
 if "unlock" in os.listdir():
     lock()
     try: os.remove("unlock")
@@ -40,4 +41,8 @@ else:
     lock()
     pprint("Locked filesystem")
     time.sleep(1)
+
+try: clearscreen(True)
+except Exception as e: pprint(str(e))
+
     

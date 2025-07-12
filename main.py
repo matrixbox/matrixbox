@@ -67,7 +67,7 @@ def initialize_app():
     ampule_routes_backup = ampule.routes.copy()
     
     try: 
-        clearscreen()
+        clearscreen(lines=True)
         pprint(f"Starting {load_settings.app_running}...")
         os.chdir(load_settings.app_running)
         time.sleep(0.5)
@@ -95,6 +95,16 @@ def initialize_app():
         pprint(_wifi_address)
         pprint("Select app:")
         return False
+
+def savesettings(settings):
+    print("Saving...")
+    clearscreen(True)
+    try:
+        with open("settings.txt","w") as f:
+            f.write(json.dumps(settings))
+    except:
+         print("Read only!")
+    clearscreen(False)
 
 def installed_apps():
     installed_apps = []
