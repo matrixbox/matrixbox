@@ -29,7 +29,8 @@ def scroller_webinterface(request):
     return (200, {}, html)
 
 
-clearscreen()
+clearscreen(lines=True)
+
 
 while not exit:
     ampule.listen(socket)
@@ -38,4 +39,3 @@ while not exit:
         
  
 
-clearscreen()
