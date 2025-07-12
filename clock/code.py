@@ -4,7 +4,7 @@ import sys, time
 import load_screen
 from check_button import check_if_button_pressed
 from load_screen import *
-
+microcontroller.cpu.frequency = 180000000
 with open("clock.html") as f: html = f.read()
 
 f_color = "white"
@@ -34,7 +34,7 @@ def clock_webinterface_post(request):
         if request.params["size"] == "mini": load_screen.currentfont = font_mini
         if request.params["size"] == "small": load_screen.currentfont = font_small
         if request.params["size"] == "large": load_screen.currentfont = font_large
-        clearscreen()
+        window.fill(0)
     if "f_color" in request.params: f_color = request.params["f_color"]
     if "s_color" in request.params: b_color = request.params["s_color"]
     if "b_color" in request.params: 
@@ -72,16 +72,18 @@ clock_window = displayio.TileGrid(window, pixel_shader=palette)
 clock_screen = displayio.Group(scale=2)
 clock_screen.append(clock_window)
 display.root_group = clock_screen
-clearscreen()
+window.fill(0)
 
 def print_timestring(timestring, clear=False):
     global f_color, b_color
     if clear == True:
-        pprint(timestring, 0, font=load_screen.currentfont, color="black", _refresh=False, top_offset=2)
-        pprint("("+ timestring, 0, font=load_screen.currentfont, clear=False, color="black", top_offset=1, _refresh=False)
+        #pprint(timestring, 0, font=load_screen.currentfont, color=b_color, _refresh=False, top_offset=2)
+        pprint("("+ timestring, 0, font=load_screen.currentfont, clear=True, color=b_color, top_offset=1, _refresh=False)
     else:
-        pprint(timestring, 0, font=load_screen.currentfont, color=b_color, _refresh=False, top_offset=2)
+        #pprint(timestring, 0, font=load_screen.currentfont, color=b_color, _refresh=False, top_offset=2)
         pprint("("+ timestring, 0, font=load_screen.currentfont, clear=False, color=f_color, top_offset=1, _refresh=False)
+
+delay = 1
 
 while load_settings.app_running:
     ampule.listen(socket)
@@ -90,15 +92,17 @@ while load_settings.app_running:
     if b == 2: sys.exit()
     
     timestring = hour + ":" + minute
-    print_timestring(timestring)
+    
     #refresh()
-    #time.sleep(1)
+    
     _s = int(second)
     _s += 1
     if len(str(_s)) == 1: second = "0" + str(_s)
     else: second = str(_s)
     if second == "60": 
-        oldtimestring = timestring
+        #oldtimestring = timestring
+        print_timestring(timestring, clear=True)
+        delay = 0
         second = "00"
         try: 
             _time = update_time()
@@ -117,4 +121,8 @@ while load_settings.app_running:
                 else: hour = str(_h)
                 if hour == "24": 
                     hour = "00"
-        print_timestring(oldtimestring, clear=False)
+        
+    if delay: print_timestring(timestring)
+    refresh()
+    time.sleep(delay)
+    if not delay: delay = 1
