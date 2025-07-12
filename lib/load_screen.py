@@ -9,6 +9,8 @@ from font_large import font_large
 #settings =  load_settings.settings() # behövs för boot.py
 displayio.release_displays()
 
+
+
 #from watchdog import WatchDogMode
 #watchdog.timeout = 60
 #watchdog.mode = WatchDogMode.RESET
@@ -140,10 +142,18 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = False
     except Exception as e:
         print(e)
 
-def clearscreen():
+"""def clearscreen():
     global line_window
     window.fill(0)
     line_window = []
-    refresh()
+    refresh()"""
 
 def refresh(): display.refresh()
+
+def clearscreen(on_or_off=False, lines=False):
+    global line_window
+    display.root_group.hidden = on_or_off
+    if lines: 
+        window.fill(0)
+        line_window = []
+    refresh()

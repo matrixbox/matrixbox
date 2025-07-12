@@ -1,3 +1,4 @@
+import json
 from __main__ import *
 
 def settings(): 
@@ -28,13 +29,7 @@ def settings():
          print(e)
      return settings
 
-def savesettings(settings):
-    print("Saving...")
-    try:
-        with open("settings.txt","w") as f:
-            f.write(json.dumps(settings))
-    except:
-         print("Read only!")
+
     
 
 app_running = False
