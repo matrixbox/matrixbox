@@ -56,9 +56,7 @@ def install_app(app):
             writemode = "w"
         clearscreen()
         try: 
-            clearscreen(True)
             with open(str(file), writemode) as f: f.write(downloaded_file)
-            clearscreen(False)
         except: 
             pprint("Read only!", color="red")
             error_color = "red"
@@ -330,16 +328,16 @@ def webinterface_post(request):
             if parsed_data[setting]:
                 try: settings[setting] = parsed_data[setting]
                 except: pass
+        clearscreen(True)
         savesettings(settings)
+        clearscreen(False)
         return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
     except: pass
 
     try: 
         if "unlock" in request.params:
             try: 
-                clearscreen(True)
                 with open("unlock","w") as f: f.write("")
-                clearscreen(False)
             except: pass
             import safemode
         if "ssid" in request.params:
@@ -352,13 +350,17 @@ def webinterface_post(request):
             os.chdir(dir)
             
             for file in os.listdir():
-                clearscreen(True)
+                
                 try: 
+                    clearscreen(True)
                     os.remove(file)
-                    pprint("Removed: ", file)
-                except Exception as e: 
+                    clearscreen(False)
+                    pprint("Removed: " + str(file))
+                except Exception as e:
+                    clearscreen(False)
                     pprint(str(e))
-                clearscreen(False)
+                
+                
                 
             
             os.chdir("/")
