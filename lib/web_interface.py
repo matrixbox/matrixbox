@@ -56,8 +56,11 @@ def install_app(app):
             writemode = "w"
         clearscreen()
         try: 
+            clearscreen(True)
             with open(str(file), writemode) as f: f.write(downloaded_file)
+            clearscreen(False)
         except: 
+            clearscreen(False)
             pprint("Read only!", color="red")
             error_color = "red"
     microcontroller.cpu.frequency = 180000000 ### notering
