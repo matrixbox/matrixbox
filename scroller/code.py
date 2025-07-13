@@ -74,6 +74,7 @@ def set_length(scroller_width):
     scroller_screen.append(scroller_window)
     display.root_group = scroller_screen
     scroller_window.x = start_x
+    scroller_window.y = default_offset
     microcontroller.cpu.frequency = 160000000
     if settings["width"] == 192: microcontroller.cpu.frequency = 240000000
     if settings["height"] == 64: microcontroller.cpu.frequency = 240000000
