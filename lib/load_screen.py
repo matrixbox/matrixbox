@@ -157,3 +157,6 @@ def clearscreen(on_or_off=False, lines=False):
         window.fill(0)
         line_window = []
     refresh()
+
+def pset(x,y,c):
+    window[x,y] = c
