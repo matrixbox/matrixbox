@@ -183,7 +183,7 @@ document.getElementById("s_black").addEventListener("click", function() {
 </script>
 <br>
 <br>
-<input type="text" id="url" name="url">
+<!--<input type="text" id="url" name="url">
     <script>
 function updateVariable(event) {
     const selectedValue = event.target.value;
@@ -196,6 +196,15 @@ function updateVariable(event) {
 
 document.getElementById("url").addEventListener("change", updateVariable);
 
-    </script>
+    </script>-->
+<br>
+<button id="save">save</button>
+    <script>
+document.getElementById("save").addEventListener("click", function() {
+    fetch("/?save=true", {
+        method: "POST",
+    })        
+});
+</script>
 
     </html>

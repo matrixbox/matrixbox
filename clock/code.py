@@ -7,10 +7,24 @@ from load_screen import *
 microcontroller.cpu.frequency = 180000000
 with open("clock.html") as f: html = f.read()
 
-f_color = "white"
-b_color = "black"
-inverted = 0
-load_screen.currentfont = font_large
+try:
+    with open("clocksettings.txt") as f:
+        clocksettings = json.loads(f.read())
+except:
+    clocksettings = {"f_color":"white",
+    "b_color":"black",
+    "inverted":0,
+    "font":font_large
+    }
+
+colorscheme = {"black2": (0),
+        "black": (0),
+         "grey": (30,30,30),
+        "red": (30,0,0),
+         "green": (0,30,0),
+         "blue": (0,0,30),
+         "yellow":(30,30,0),
+         "white": (40,40,40)}
 
 @ampule.route("/exit", method="GET")
 def exit_webinterface(request):
@@ -23,28 +37,37 @@ def webinterface(request):
 
 @ampule.route("/", method="POST")
 def clock_webinterface_post(request):
-    global f_color, b_color, inverted
+    #global f_color, b_color, inverted
+    global clocksettings, delay
     print("POSTED")
     print(request.params)
     print(request.body)
+    if "save" in request.params:
+        #clearscreen(True)
+        with open("clocksettings.txt", "w") as f:
+            f.write(json.dumps(clocksettings))
+        #clearscreen(False)
+        delay = 0
     if "invert" in request.params: 
-        inverted = 1 - inverted
-        palette[0] = (30,30, 30) if inverted else (0)
+        clocksettings["inverted"] = 1 - clocksettings["inverted"]
+        palette[0] = (30,30, 30) if clocksettings["inverted"] else (0)
     if "size" in request.params: 
-        if request.params["size"] == "mini": load_screen.currentfont = font_mini
-        if request.params["size"] == "small": load_screen.currentfont = font_small
-        if request.params["size"] == "large": load_screen.currentfont = font_large
+        if request.params["size"] == "mini": clocksettings["font"] = font_mini
+        if request.params["size"] == "small": clocksettings["font"] = font_small
+        if request.params["size"] == "large": clocksettings["font"] = font_large
         window.fill(0)
-    if "f_color" in request.params: f_color = request.params["f_color"]
-    if "s_color" in request.params: b_color = request.params["s_color"]
+    if "f_color" in request.params: clocksettings["f_color"] = request.params["f_color"]
+    if "s_color" in request.params: clocksettings["b_color"] = request.params["s_color"]
     if "b_color" in request.params: 
-        if request.params["b_color"] == "black2": color = (0)
+        """if request.params["b_color"] == "black2": color = (0)
         if request.params["b_color"] == "grey": color = (30,30,30)
         if request.params["b_color"] == "red": color = (30,0,0)
         if request.params["b_color"] == "green": color = (0,30,0)
         if request.params["b_color"] == "blue": color = (0,0,30)
         if request.params["b_color"] == "yellow": color = (30,30,0)
-        if request.params["b_color"] == "white": color = (40,40,40)
+        if request.params["b_color"] == "white": color = (40,40,40)"""
+        clocksettings["b_color"] = request.params["b_color"]
+        color = colorscheme[request.params["b_color"]]
         palette[0] = (color)
         
 
@@ -72,16 +95,17 @@ clock_window = displayio.TileGrid(window, pixel_shader=palette)
 clock_screen = displayio.Group(scale=2)
 clock_screen.append(clock_window)
 display.root_group = clock_screen
-window.fill(0)
+window.fill(colorscheme[clocksettings["b_color"]])
 
 def print_timestring(timestring, clear=False):
-    global f_color, b_color
+    #global f_color, b_color
+    global clocksettings
     if clear == True:
         #pprint(timestring, 0, font=load_screen.currentfont, color=b_color, _refresh=False, top_offset=2)
-        pprint("("+ timestring, 0, font=load_screen.currentfont, clear=True, color=b_color, top_offset=1, _refresh=False)
+        pprint("("+ timestring, 0, font=clocksettings["font"], clear=True, color=clocksettings["b_color"], top_offset=1, _refresh=False)
     else:
         #pprint(timestring, 0, font=load_screen.currentfont, color=b_color, _refresh=False, top_offset=2)
-        pprint("("+ timestring, 0, font=load_screen.currentfont, clear=False, color=f_color, top_offset=1, _refresh=False)
+        pprint("("+ timestring, 0, font=clocksettings["font"], clear=False, color=clocksettings["f_color"], top_offset=1, _refresh=False)
 
 delay = 1
 
