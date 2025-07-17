@@ -122,7 +122,9 @@ while not exit:
         
     refresh()
     b = check_if_button_pressed()
+    if b == 1: scroll = 1 - scroll
     if b == 2: sys.exit()
+        
 
         
  
