@@ -129,11 +129,14 @@ def next_program_in_list(run=False):
     pprint(load_settings.installed_apps_list[0], line=-1, color="yellow", clear=True, _refresh=True)
 
 def check_for_button_next_program():
+    global screensaver
     b = check_if_button_pressed()
     if b == 0: pass
     if b == 1: next_program_in_list()
     elif b == 2: next_program_in_list(run=True)
-    if load_settings.app_running: load_settings.app_running = initialize_app()
+    if load_settings.app_running: 
+        load_settings.app_running = initialize_app()
+        screensaver = time.monotonic()
 
 autostart = settings["autostart"]
 wifi.radio.tx_power = float(settings["wifi_power"])
@@ -171,10 +174,9 @@ while 1:
             check_for_button_next_program()
 
             if time.monotonic() > screensaver + 60:
-                screensaver = time.monotonic()
                 try: load_settings.app_running = "starcloud"
-                except Exception as e: pass
-                
+                except Exception as e: pprint(e)
+                screensaver = time.monotonic()
 
             
             
