@@ -56,4 +56,4 @@ while load_settings.app_running:
     ampule.listen(socket)
 
     b = check_if_button_pressed()
-    if b == 2: sys.exit()
+    if b: sys.exit()

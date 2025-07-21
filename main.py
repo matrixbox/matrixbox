@@ -24,6 +24,7 @@ wifi_status = ""
 ssl_context = adafruit_connection_manager.get_radio_ssl_context(wifi.radio)
 requests = adafruit_requests.Session(pool, ssl_context)
 first_start = True
+screensaver = time.monotonic()
 
 def start_hotspot():
     try:
@@ -167,9 +168,13 @@ while 1:
                 print(ampule.listen(socket))
                 load_settings.app_running = autostart
             elif not load_settings.app_running: ampule.listen(socket)
-
-            
             check_for_button_next_program()
+
+            if time.monotonic() > screensaver + 60:
+                try: load_settings.app_running = "starcloud"
+                except Exception as e: pass
+                screensaver = time.monotonic()
+
             
             
             
