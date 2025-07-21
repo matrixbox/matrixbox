@@ -3,7 +3,7 @@ import sys, time, random
 import load_screen
 from check_button import check_if_button_pressed
 from load_screen import *
-microcontroller.cpu.frequency = 180000000
+microcontroller.cpu.frequency = 240000000
 import math, random
 
 @ampule.route("/", method="GET")
@@ -57,3 +57,29 @@ while load_settings.app_running:
 
     b = check_if_button_pressed()
     if b == 2: sys.exit()
+    while 1:
+        center_x = settings["width"] // 2
+        center_y = settings["height"] // 2
+        num_lines = 60
+        line_length = min(center_x, center_y)
+
+        angles = [random.uniform(0, 2 * math.pi) for _ in range(num_lines)]
+
+        while load_settings.app_running:
+            window.fill(0)
+
+            for i, angle in enumerate(angles):
+                # Dynamic movement
+                angle += random.uniform(-0.01, 0.01)
+                angles[i] = angle
+
+                x = int(center_x + math.cos(angle) * line_length)
+                y = int(center_y + math.sin(angle) * line_length)
+                color = random.randint(1, 15)
+                
+                # Draw line from center to endpoint
+                line(center_x, center_y, x, y, color)
+
+            refresh()
+
+
