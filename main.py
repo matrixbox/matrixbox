@@ -171,9 +171,10 @@ while 1:
             check_for_button_next_program()
 
             if time.monotonic() > screensaver + 60:
+                screensaver = time.monotonic()
                 try: load_settings.app_running = "starcloud"
                 except Exception as e: pass
-                screensaver = time.monotonic()
+                
 
             
             
