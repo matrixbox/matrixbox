@@ -20,7 +20,7 @@ import math, random
 
 center_x = settings["width"] // 2
 center_y = settings["height"] // 2
-num_stars = 40
+num_stars = 10
 
 # Initialize stars with random positions and orbital speeds
 stars = []
@@ -28,7 +28,7 @@ for _ in range(num_stars):
     angle = random.uniform(0, 2 * math.pi)
     radius = random.uniform(5, min(center_x, center_y) - 2)
     speed = random.uniform(0.01, 0.05)
-    color = random.randint(1, 15)
+    color = random.randint(1, 3)
     stars.append([angle, radius, speed, color])
 
 while load_settings.app_running:
@@ -57,29 +57,3 @@ while load_settings.app_running:
 
     b = check_if_button_pressed()
     if b == 2: sys.exit()
-    while 1:
-        center_x = settings["width"] // 2
-        center_y = settings["height"] // 2
-        num_lines = 60
-        line_length = min(center_x, center_y)
-
-        angles = [random.uniform(0, 2 * math.pi) for _ in range(num_lines)]
-
-        while load_settings.app_running:
-            window.fill(0)
-
-            for i, angle in enumerate(angles):
-                # Dynamic movement
-                angle += random.uniform(-0.01, 0.01)
-                angles[i] = angle
-
-                x = int(center_x + math.cos(angle) * line_length)
-                y = int(center_y + math.sin(angle) * line_length)
-                color = random.randint(1, 15)
-                
-                # Draw line from center to endpoint
-                line(center_x, center_y, x, y, color)
-
-            refresh()
-
-
