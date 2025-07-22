@@ -19,6 +19,6 @@
 # The official repository
 If you wish to contribute to the official repository (the system, apps, UI) drop us a message through one of our channels.
 
-Instagram: @tskylt  
-web: t-skylt.se  
-email: info@t-skylt.se  
+Instagram: @matrixbox  
+web: matrixbox.io  
+
