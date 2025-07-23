@@ -21,4 +21,4 @@ If you wish to contribute to the official repository (the system, apps, UI) drop
 
 Instagram: @matrixbox  
 web: matrixbox.io  
-
+e-mail: info@matrixbox.io  
