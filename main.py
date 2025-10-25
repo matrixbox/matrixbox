@@ -152,6 +152,9 @@ while 1:
     
     while wifi.radio.ap_active and not wifi.radio.connected: 
         ampule.listen(socket)
+        if autostart:
+            print(ampule.listen(socket))
+            load_settings.app_running = autostart
         check_for_button_next_program()
         if time.monotonic() > check_network_again_timer + 10:
             print("Attempting... " + str(wifi.radio.tx_power))
