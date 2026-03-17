@@ -1,148 +1,203 @@
-<html>
-    <html><a href="/exit">&#x274C;</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scroller Control</title>
+
+<style>
+    body {
+        background: #0d0d0d;
+        color: #e6e6e6;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h1 {
+        margin-bottom: 10px;
+        font-weight: 300;
+        letter-spacing: 1px;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 500px;
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    label {
+        display: block;
+        margin-top: 15px;
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #bfbfbf;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: none;
+        background: #333;
+        color: #fff;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    button {
+        background: #333;
+        color: #fff;
+        border: none;
+        padding: 10px 14px;
+        margin: 5px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-size: 14px;
+    }
+
+    button:hover {
+        background: #555;
+    }
+
+    .color-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        border: 2px solid #444;
+        padding: 0;
+    }
+
+    .top-right {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #888;
+        text-decoration: none;
+        font-size: 20px;
+    }
+</style>
+</head>
+
+<body>
+
+<a href="/exit" class="top-right">✖</a>
+
+<h1>Scroller Control</h1>
+
+<div class="container">
+
+    <label>Text</label>
+    <input type="text" id="text">
+
+    <label>Offset (0–32)</label>
+    <input type="text" id="offset">
+
+    <label>Scale (1–2)</label>
+    <input type="text" id="scale">
+
+    <div style="margin-top: 10px;">
+        <button id="mini">Mini</button>
+        <button id="small">Small</button>
+        <button id="large">Large</button>
+    </div>
+
+    <div style="margin-top: 10px;">
+        <button id="white"  class="color-btn" style="background:white;"></button>
+        <button id="blue"   class="color-btn" style="background:blue;"></button>
+        <button id="red"    class="color-btn" style="background:red;"></button>
+        <button id="yellow" class="color-btn" style="background:yellow;"></button>
+        <button id="orange" class="color-btn" style="background:orange;"></button>
+        <button id="green"  class="color-btn" style="background:green;"></button>
+    </div>
+
+
 <br>
-TEXT:
-    <input type="text" id="text" name="text">
-    <script>
-        function updateVariable(event) {
-            const selectedValue = event.target.value;
-            const encodedTEXT = selectedValue.replace(/#/g, '%23');
-            fetch(`/?text=${encodedTEXT}`, {
-                method: 'POST',
-            })
-        }
-        document.getElementById("text").addEventListener("change", updateVariable);
-    </script>
-<br>
-OFFSET (0-32):
-    <input type="text" id="offset" name="offset">
-    <script>
-        function updateVariable(event) {
-            const selectedValue = event.target.value;
-            const encodedTEXT = selectedValue.replace(/#/g, '%23');
-            fetch(`/?offset=${encodedTEXT}`, {
-                method: 'POST',
-            })
-        }
-        document.getElementById("offset").addEventListener("change", updateVariable);
-    </script>
+<label style="margin-top: 20px;">Shadow Color</label>
+<div style="margin-top: 10px;">
+    <button id="shadow_black"     class="color-btn" style="background:black;"></button>
+    <button id="shadow_yellow"    class="color-btn" style="background:yellow;"></button>
+    <button id="shadow_brightwhite" class="color-btn" style="background:white;"></button>
+    <button id="shadow_blue"      class="color-btn" style="background:blue;"></button>
+    <button id="shadow_red"       class="color-btn" style="background:red;"></button>
+    <button id="shadow_white"     class="color-btn" style="background:#ddd;"></button>
+    <button id="shadow_light_blue" class="color-btn" style="background:lightblue;"></button>
+    <button id="shadow_green"     class="color-btn" style="background:green;"></button>
+    <button id="shadow_grey"      class="color-btn" style="background:grey;"></button>
+    <button id="shadow_black2"    class="color-btn" style="background:#222;"></button>
+    <button id="shadow_pink"      class="color-btn" style="background:pink;"></button>
+    <button id="shadow_orange"    class="color-btn" style="background:orange;"></button>
+</div>
 
-    <br>
-SCALE (1-2):
-    <input type="text" id="scale" name="scale">
-    <script>
-        function updateVariable(event) {
-            const selectedValue = event.target.value;
-            const encodedTEXT = selectedValue.replace(/#/g, '%23');
-            fetch(`/?scale=${encodedTEXT}`, {
-                method: 'POST',
-            })
-        }
-        document.getElementById("scale").addEventListener("change", updateVariable);
-    </script>
-<br>
 
-    <button id="mini">mini font</button>
-    <button id="small">small font</button>
-    <button id="large">large font</button>
-    <br>
-    <button id="white" style="width: 20px; height: 20px; background-color: white; color: white; border: solid-black; cursor: pointer;"></button>
-<button id="blue" style="width: 20px; height: 20px; background-color: blue; color: white; border: solid-black; cursor: pointer;"></button>
-<button id="red" style="width: 20px; height: 20px; background-color: red; color: white; border: solid-black; cursor: pointer;"></button>
-<button id="yellow" style="width: 20px; height: 20px; background-color: yellow; color: white; solid-black: none; cursor: pointer;"></button>
-<button id="orange" style="width: 20px; height: 20px; background-color: rgb(255, 187, 0); color: white; solid-black: none; cursor: pointer;"></button>
-<button id="green" style="width: 20px; height: 20px; background-color: green; color: white; solid-black: none; cursor: pointer;"></button>
+    <label style="margin-top: 20px;">URL</label>
+    <input type="text" id="url">
 
-    <script>
-document.getElementById("mini").addEventListener("click", function() {
-    fetch("/?size=mini", {
-        method: "POST",
-    })        
-});
+    <div style="margin-top: 20px;">
+        <button id="reverse">Reverse Direction</button>
+        <button id="scroll">Scroll / Static</button>
+    </div>
 
-document.getElementById("small").addEventListener("click", function() {
-    fetch("/?size=small", {
-        method: "POST",
-    })        
-});
-document.getElementById("large").addEventListener("click", function() {
-    fetch("/?size=large", {
-        method: "POST",
-    })        
-});
-
-document.getElementById("blue").addEventListener("click", function() {
-    fetch("/?color=blue", {
-        method: "POST",
-    })        
-});
-document.getElementById("yellow").addEventListener("click", function() {
-    fetch("/?color=yellow", {
-        method: "POST",
-    })        
-});
-
-document.getElementById("white").addEventListener("click", function() {
-    fetch("/?color=white", {
-        method: "POST",
-    })        
-});
-
-document.getElementById("red").addEventListener("click", function() {
-    fetch("/?color=red", {
-        method: "POST",
-    })        
-});
-
-document.getElementById("orange").addEventListener("click", function() {
-    fetch("/?color=orange", {
-        method: "POST",
-    })        
-});
-
-document.getElementById("green").addEventListener("click", function() {
-    fetch("/?color=green", {
-        method: "POST",
-    })        
-});
-
+</div>
+<script>
+[
+    "black","yellow","brightwhite","blue","red","white",
+    "light_blue","green","grey","black2","pink","orange"
+].forEach(c =>
+    document.getElementById("shadow_" + c).addEventListener("click", () =>
+        fetch("/?shadow_color=" + c, { method: "POST" })
+    )
+);
 </script>
-<br>
-<br>
-<input type="text" id="url" name="url">
-    <script>
-function updateVariable(event) {
-    const selectedValue = event.target.value;
-    const encodedURL = selectedValue.replace(/#/g, '%23');
-    fetch("/", { // Change the endpoint as needed
-        method: "POST",
-        body: `url=${encodedURL}`, // Send data in request body
-    });
+
+
+<script>
+function postParam(param, value) {
+    fetch(`/?${param}=${value}`, { method: "POST" });
 }
 
-document.getElementById("url").addEventListener("change", updateVariable);
+document.getElementById("text").addEventListener("change", e =>
+    postParam("text", e.target.value.replace(/#/g, "%23"))
+);
 
-    </script>
+document.getElementById("offset").addEventListener("change", e =>
+    postParam("offset", e.target.value)
+);
 
-<br>
-    <button id="btc">btc/usd</button>
-    <script>
-document.getElementById("btc").addEventListener("click", function() {
-    fetch("/?btc=true", {
-        method: "POST",
-    })        
-});
+document.getElementById("scale").addEventListener("change", e =>
+    postParam("scale", e.target.value)
+);
+
+document.getElementById("url").addEventListener("change", e =>
+    fetch("/", { method: "POST", body: `url=${e.target.value}` })
+);
+
+["mini","small","large"].forEach(id =>
+    document.getElementById(id).addEventListener("click", () =>
+        postParam("size", id)
+    )
+);
+
+["white","blue","red","yellow","orange","green"].forEach(id =>
+    document.getElementById(id).addEventListener("click", () =>
+        postParam("color", id)
+    )
+);
+
+document.getElementById("reverse").addEventListener("click", () =>
+    postParam("reverse", "true")
+);
+
+document.getElementById("scroll").addEventListener("click", () =>
+    postParam("scroll", "true")
+);
 </script>
 
-<br>
-    <button id="scroll">scroll/static</button>
-    <script>
-document.getElementById("scroll").addEventListener("click", function() {
-    fetch("/?scroll=true", {
-        method: "POST",
-    })        
-});
-</script>
- 
-
-    </html>
+</body>
+</html>
