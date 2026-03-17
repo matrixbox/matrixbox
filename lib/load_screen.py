@@ -77,10 +77,13 @@ def strlen(_string, font_size=font_mini):
     if font_size==font_mini: _string = _string.lower()
     return sum((font_size[ascletters][0]) for ascletters in _string) # mäter längden på hel string
 
-def pprint(string, line=False, color="white", font = font_mini, _refresh = False, clear=True, top_offset=0, window=window, _clearscreen=True, hr="(", slow=False):
+def pprint(string, line=False, color="white", font = font_mini, _refresh = False, clear=True, top_offset=0, window=window, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0):
     print(string)
     global line_window
-    if _clearscreen: string = string + hr * (settings["width"] - strlen(string))
+    print(line_window)
+    if _clearscreen: 
+        
+        string = string + hr * (settings["width"] - strlen(string))
     
     max_lines = int(5*(settings["height"]*1/32)) #- 1
 
@@ -123,13 +126,27 @@ def pprint(string, line=False, color="white", font = font_mini, _refresh = False
                         invertedwidth = font[character][0] - width
                         if isinstance(font[character][1],int):
                             bit = ((font[character][height+1] >> invertedwidth) & 1)
-                            if int(bit): 
-                                try: window[width+pixwidth,((6*lin) + height)+offs] = _color
-                                except: pass
-                            else: 
-                                try: 
+                            if int(bit):
+                                #try:
+                                    # MAIN PIXEL
+                                    window[width + pixwidth, ((6 * lin) + height) + offs] = _color
+
+                                    # SHADOW PIXEL (block mode)
+                                    if block:
+                                        #continue
+                                        sx = width + pixwidth + 1
+                                        sy = ((6 * lin) + height) + offs + 1
+                                        # Only draw shadow if inside bounds
+                                        if 0 <= sx < window.width and 0 <= sy < window.height:
+                                            window[sx, sy] = shadow_color
+                                #except:
+                                    
+                            else:
+                                if not block:
                                     if clear: window[width+pixwidth,((6*lin) + height)+offs] = 0
-                                except: pass
+                                    
+                                    
+
                         else: window[width+pixwidth,(height)+offs] = int(font[character][height+1][width])
                 if slow: refresh()
                 if isinstance(font[character][1],int): pixwidth += font[character][0]
