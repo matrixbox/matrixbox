@@ -19,7 +19,7 @@ socket.setsockopt(pool.SOL_SOCKET, pool.SO_REUSEADDR, 1)
 socket.bind(('', 80))
 socket.listen(5)
 socket_timeout = 5
-macid = "".join([hex(i) for i in wifi.radio.mac_address]).replace("0x","")[:8] # mac-id för hotspot
+macid = "matrixbos-" + "".join([hex(i) for i in wifi.radio.mac_address]).replace("0x","")[:3] # mac-id för hotspot
 wifi_status = ""
 ssl_context = adafruit_connection_manager.get_radio_ssl_context(wifi.radio)
 requests = adafruit_requests.Session(pool, ssl_context)
@@ -41,7 +41,11 @@ def connect_to_network(timeout=False, silent=False):
     print("Connecting...")
     try: 
         if not silent: pprint(str(settings["ssid"]))
-        wifi.radio.connect(settings["ssid"],settings["password"], timeout=timeout)
+        channel = settings.get("channel", 0)
+        if channel:
+            wifi.radio.connect(settings["ssid"], settings["password"], channel=int(channel), timeout=timeout)
+        else:
+            wifi.radio.connect(settings["ssid"], settings["password"], timeout=timeout)
         pprint(str(wifi.radio.ipv4_address))
         savesettings(settings)
     except Exception as e: 
@@ -139,6 +143,7 @@ def check_for_button_next_program():
         screensaver = time.monotonic()
 
 autostart = settings["autostart"]
+screensaver_app = settings.get("screensaver", "starcloud")
 wifi.radio.tx_power = float(settings["wifi_power"])
 
 from web_interface import *
@@ -176,8 +181,8 @@ while 1:
             elif not load_settings.app_running: ampule.listen(socket)
             check_for_button_next_program()
 
-            if time.monotonic() > screensaver + 60:
-                try: load_settings.app_running = "starcloud"
+            if screensaver_app and time.monotonic() > screensaver + 60:
+                try: load_settings.app_running = screensaver_app
                 except Exception as e: pprint(e)
                 screensaver = time.monotonic()
 

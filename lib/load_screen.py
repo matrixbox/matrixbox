@@ -77,7 +77,11 @@ def strlen(_string, font_size=font_mini):
     if font_size==font_mini: _string = _string.lower()
     return sum((font_size[ascletters][0]) for ascletters in _string) # mäter längden på hel string
 
-def pprint(string, line=False, color="white", font = font_mini, _refresh = False, clear=True, top_offset=0, window=window, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0):
+def _current_window():
+    return window
+
+def pprint(string, line=False, color="white", font = font_mini, _refresh = False, clear=True, top_offset=0, window=None, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0):
+    if window is None: window = _current_window()
     print(string)
     global line_window
     print(line_window)
@@ -177,3 +181,16 @@ def clearscreen(on_or_off=False, lines=False):
 
 def pset(x,y,c):
     window[x,y] = c
+
+def apply_display_settings():
+    try: wifi.radio.tx_power = float(settings["wifi_power"])
+    except: pass
+
+    new_r = int(settings["rotation"])
+    if display.rotation != new_r:
+        display.rotation = new_r
+
+    needs_reboot = (matrix.width != int(settings["width"]) or
+                    matrix.height != int(settings["height"]))
+    if needs_reboot:
+        microcontroller.reset()

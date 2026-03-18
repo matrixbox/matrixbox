@@ -5,6 +5,7 @@ def settings():
      settings = {"ssid":"T-Skylt WIFI",                                                      # Default settings:
                 "password":"dunderskurre",
                 "autostart":False,
+                "screensaver":"starcloud",
                 "rotation":0,
                 "width":64,
                 "height":32,

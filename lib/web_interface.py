@@ -5,19 +5,99 @@ import __main__
 #from main import connect_to_network
 #import __main__
 #print(dir(__main__))
-exitbutton = """<html><a href="/exit">&#x274C;</a>"""
-backbutton = """<br><button onclick="location.href='../'">&larr; Back</button>"""
-bootloaderbutton = """<button class="center" onclick="window.location.href='/bootloader'" style='background-color:red'> Bootloader </button>"""
+exitbutton = """<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0d0d12;color:#e8e8f0;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;margin:0}a.xbtn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#ff4b4b,#ff7070);color:#fff;font-weight:700;font-size:1rem;text-decoration:none}.lbl{color:#888;font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px}</style></head><body><p class="lbl">App Running</p><a class="xbtn" href="/exit">&#x2715; Exit App</a>"""
+backbutton = """<a class="back-btn" href="../">&#8592; Back</a>"""
+bootloaderbutton = """<button class="btn btn-danger" onclick="window.location.href='/bootloader'">&#x26A1; Bootloader</button>"""
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
-unlock = """<button class="center" style='background-color:yellow' onclick="fetch('/?unlock=true', {method: 'POST'})">🔓</button>"""
+unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {method: 'POST'})">&#x1F513; Unlock</button>"""
+
+def _get_installed_apps():
+    apps = []
+    for app in os.listdir():
+        if app == "LICENSE": continue
+        if not "." in app:
+            if not "__init__.py" in os.listdir(app): continue
+            apps.append(app)
+    return apps
+
+def _dir_size(path):
+    total = 0
+    try:
+        for f in os.listdir(path):
+            fp = path + "/" + f
+            try:
+                s = os.stat(fp)
+                if s[0] & 0x4000:  # directory
+                    total += _dir_size(fp)
+                else:
+                    total += s[6]
+            except: pass
+    except: pass
+    return total
+
+def _fmt_size(b):
+    if b < 1024: return str(b) + " B"
+    elif b < 1024*1024: return str(b // 1024) + " KB"
+    else: return "{:.1f} MB".format(b / (1024*1024))
+
+def _free_space():
+    s = os.statvfs("/")
+    return s[0] * s[3]  # block size * free blocks
 
 def textbox(settings):
+    slider_cfg = {
+        "wifi_power": {"min": 7, "max": 20, "step": 1},
+        "rotation": {"min": 0, "max": 270, "step": 90},
+        "width": {"min": 64, "max": 640, "step": 64},
+        "height": {"min": 32, "max": 320, "step": 32},
+    }
     settings_html = """<form action="/" method="POST">"""
     for setting in settings:
-      print("Setting: ", setting)
-      settings_html += f"""<label for="{setting}">{setting}</label>
-    <input type="text" id="{setting}" name="{setting}" placeholder="{str(settings[setting])}"><br>"""
-    return settings_html + """<br><button type="submit" value="Submit">Save</button></form>"""
+        print("Setting: ", setting)
+        val = settings[setting]
+        if setting == "autostart":
+            apps = _get_installed_apps()
+            checked = "checked" if val else ""
+            disabled = "" if val else "disabled"
+            opts = ""
+            for a in apps:
+                sel = "selected" if str(val) == a else ""
+                opts += f'<option value="{a}" {sel}>{a}</option>'
+            settings_html += f"""<label>{setting}</label>
+<div class="toggle-row">
+<input type="checkbox" id="as_chk" {checked} onchange="var s=document.getElementById('as_sel');var h=document.getElementById('autostart');s.disabled=!this.checked;if(!this.checked){{s.value='';h.value='';}}">
+<label for="as_chk">Enable autostart</label>
+</div>
+<input type="hidden" id="autostart" name="autostart" value="{val if val else ''}">
+<select id="as_sel" {disabled} onchange="document.getElementById('autostart').value=this.value"><option value="">-- none --</option>{opts}</select>"""
+        elif setting == "screensaver":
+            apps = _get_installed_apps()
+            checked = "checked" if val else ""
+            disabled = "" if val else "disabled"
+            opts = ""
+            for a in apps:
+                sel = "selected" if str(val) == a else ""
+                opts += f'<option value="{a}" {sel}>{a}</option>'
+            settings_html += f"""<label>{setting}</label>
+<div class="toggle-row">
+<input type="checkbox" id="ss_chk" {checked} onchange="var s=document.getElementById('ss_sel');var h=document.getElementById('screensaver');s.disabled=!this.checked;if(!this.checked){{s.value='';h.value='';}}">
+<label for="ss_chk">Enable screensaver</label>
+</div>
+<input type="hidden" id="screensaver" name="screensaver" value="{val if val else ''}">
+<select id="ss_sel" {disabled} onchange="document.getElementById('screensaver').value=this.value"><option value="">-- none --</option>{opts}</select>"""
+        elif setting in slider_cfg:
+            c = slider_cfg[setting]
+            try: cur = int(float(val))
+            except: cur = c["min"]
+            settings_html += f"""<label>{setting}</label>
+<div class="range-wrap">
+<input type="range" id="{setting}" name="{setting}" min="{c['min']}" max="{c['max']}" step="{c['step']}" value="{cur}" oninput="document.getElementById('v_{setting}').textContent=this.value">
+<span class="range-val" id="v_{setting}">{cur}</span>
+</div>"""
+        else:
+            settings_html += f"""<label for="{setting}">{setting}</label>
+<input type="text" id="{setting}" name="{setting}" placeholder="{str(val)}">"""
+    return settings_html + """<button class="btn btn-full" type="submit">Save Settings</button></form>"""
     
 def install_app(app):
     if app == "system": app = "/"
@@ -81,48 +161,29 @@ def get_updates():
 def list_available_apps(apps):
     print("Apps: ", apps)
     load_settings.latest_available_apps = apps
-    applist = """<br><br>
-    """ + f"""System: <button id='system' onclick="install"""+"system"+"""()">Update</button>
-
-                   """ + """
-                   <script>function install"""+"system"+"""() {
-    fetch("/?install="""+"system"+"""", { method: "POST" }).then(() => {
-        setTimeout(() => {
-            window.location.href = "/download"; // Redirect after 2 seconds
-        }, 10); // 2000 milliseconds = 2 seconds
-    });
-}
-</script><br>"""
-
+    applist = """<div class="download-item">
+    <span class="download-name">&#x1F4E6; System</span>
+    <button class="btn btn-sm btn-warning" onclick="installsystem()">&#x21BB; Update</button>
+    <script>function installsystem() {
+    fetch("/?install=system", { method: "POST" }).then(() => {
+        setTimeout(() => { window.location.href = "/download"; }, 10);
+    });}</script></div>"""
 
     for dir in apps:
         if dir == "/" or dir == "lib": continue
         if dir in os.listdir() and "__init__.py" in os.listdir(dir):
-            applist += f"""{dir}: <button id='{dir}' onclick="delete"""+dir+"""()" style="background-color: red">Delete</button>
-
-                   """ + """
-                   <script>function delete"""+dir+"""() {
+            sz = _fmt_size(_dir_size(dir))
+            applist += f'<div class="download-item"><div><span class="download-name">&#x2713; {dir}</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">{sz}</div></div>' + """<button class="btn btn-sm btn-danger" onclick="delete"""+dir+"""()">Delete</button>
+<script>function delete"""+dir+"""() {
     fetch("/?delete="""+dir+"""", { method: "POST" }).then(() => {
-        setTimeout(() => {
-            window.location.href = "/download"; // Redirect after 2 seconds
-        }, 10); // 2000 milliseconds = 2 seconds
-    });
-}
-</script>"""
-        else: applist += f"""{dir}: <button id='{dir}' onclick="install"""+dir+"""()" style="background-color: green">Install</button>
-
-                   """ + """
-                   <script>function install"""+dir+"""() {
+        setTimeout(() => { window.location.href = "/download"; }, 10);
+    });}</script></div>"""
+        else:
+            applist += f'<div class="download-item"><span class="download-name">{dir}</span>' + """<button class="btn btn-sm btn-success" onclick="install"""+dir+"""()">&#x2B07; Install</button>
+<script>function install"""+dir+"""() {
     fetch("/?install="""+dir+"""", { method: "POST" }).then(() => {
-        setTimeout(() => {
-            window.location.href = "/download"; // Redirect after 2 seconds
-        }, 10); // 2000 milliseconds = 2 seconds
-    });
-}
-</script>"""
-        applist += "<br>"
-        #for file in apps[dir]:
-        #    print(dir + "/" + file)
+        setTimeout(() => { window.location.href = "/download"; }, 10);
+    });}</script></div>"""
     return applist
 
 
@@ -131,172 +192,151 @@ def latest_wifi_error():
 
 def css():
     return """
-@charset "UTF-8";
-body {
-            margin: 0;
-            background-color: black;
-
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: white;
-            font-family: Arial, sans-serif;
-            }
-button {
-         
-         margin: 0 auto;
-        }
-.header {
-  padding: 10px;
-  text-align: center;
-  background: #black;
-  color: white;
-  font-size: 30px;
-}
-
-.content {padding:20px;}
-        .dropdown-container {
-            display: flex;
-            align-items: center;
-        }
-        select {
-            border-radius: 10px;
-            padding: 8px;
-            border: none;
-            outline: none;
-            font-size: 16px;
-        }
-        button {
-            margin-left: 10px;
-            padding: 8px 16px;
-            border: none;
-            background-color: #0081e3;
-            color: white;
-            font-size: 16px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #028ef7;
-        }
-
-.center {
-  margin-left: auto;
-  margin-right: auto;
-}
+:root{--bg:#0d0d12;--surface:#18181f;--surface2:#22223a;--accent:#6c63ff;--accent2:#00bfff;--text:#e8e8f0;--muted:#888899;--border:rgba(255,255,255,.07);--r:12px;--r-lg:18px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding-bottom:32px}
+.navbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:0 12px;display:flex;align-items:center;height:44px;gap:6px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nav-brand{font-weight:800;font-size:.95rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-right:8px;text-decoration:none}
+.nav-link{color:var(--muted);text-decoration:none;font-size:.78rem;padding:6px 10px;border-radius:8px;transition:color .2s,background .2s;font-weight:500}
+.nav-link:hover{color:var(--text);background:var(--surface2)}
+.nav-spacer{flex:1}
+.nav-info{color:var(--muted);font-size:.7rem;letter-spacing:.3px;text-align:right;line-height:1.3}
+.nav-info span{display:block}
+.nav-x{color:#ff5555;font-size:1.1rem;font-weight:700;text-decoration:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background .2s;margin-left:6px}
+.nav-x:hover{background:rgba(255,85,85,.15)}
+.page{max-width:480px;margin:0 auto;padding:16px}
+.logo{text-align:center;padding:28px 0 20px}
+.logo h1{font-size:1.9rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
+.logo p{color:var(--muted);font-size:.85rem;margin-top:5px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:12px}
+.section-title{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:12px}
+.app-item,.download-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)}
+.app-item:last-child,.download-item:last-child{border-bottom:none}
+.app-name,.download-name{font-size:.95rem;font-weight:500;text-transform:capitalize;color:var(--text)}
+label{display:block;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 5px;font-weight:600}
+input[type="text"],select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:.95rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
+input[type="text"]:focus,select:focus{border-color:var(--accent)}
+select option{background:var(--surface2)}
+.range-wrap{display:flex;align-items:center;gap:10px;margin-top:4px}
+.range-wrap input[type="range"]{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--surface2);outline:none}
+.range-wrap input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;border:2px solid var(--bg)}
+.range-val{min-width:36px;text-align:center;font-size:.88rem;font-weight:700;color:var(--accent2);background:var(--surface2);padding:4px 8px;border-radius:8px}
+.toggle-row{display:flex;align-items:center;gap:10px;margin:10px 0}
+.toggle-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent)}
+.toggle-row label{margin:0;font-size:.85rem;color:var(--text);text-transform:none;letter-spacing:0;font-weight:500}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:var(--r);font-size:.88rem;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));text-decoration:none}
+.btn:hover{opacity:.85;transform:translateY(-1px)}
+.btn:active{transform:translateY(0);opacity:1}
+.btn-sm{padding:7px 13px;font-size:.82rem}
+.btn-full{width:100%;padding:12px;font-size:.95rem;margin-top:10px}
+.btn-danger{background:linear-gradient(135deg,#ff4b4b,#ff7070)}
+.btn-success{background:linear-gradient(135deg,#00c85d,#00e676);color:#000}
+.btn-warning{background:linear-gradient(135deg,#f5a623,#f8ca55);color:#111}
+.btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--accent)}
+.action-row{display:flex;gap:10px;flex-wrap:wrap}
+.back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.85rem;padding:8px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-top:14px;transition:color .2s,border-color .2s}
+.back-btn:hover{color:var(--text);border-color:var(--accent)}
+.error-msg{color:#ff7070;font-size:.82rem;margin-top:10px;text-align:center}
 """
 
+def navbar():
+    ip = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
+    return f"""<nav class="navbar">
+<a class="nav-brand" href="http://matrixbox.io">MatrixBox</a>
+<a class="nav-link" href="/">Apps</a>
+<a class="nav-link" href="/download">Store</a>
+<a class="nav-link" href="/settings">Settings</a>
+<div class="nav-spacer"></div>
+<div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
+<a class="nav-x" href="/reset" title="Restart">&#x2715;</a>
+</nav>
+<script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
+
 def header(title="Settings"):
-    return f"""<html>
+    return f"""<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
-<style> {css()} </style>
-<body><table class="center"><tr><td>"""
+    <style>{css()}</style>
+</head>
+<body>{navbar()}<div class="page">"""
 
 def footer(back=False):
-    back = backbutton if back else ""
-    return f"""{back}</td></tr></table></body></html>"""
+    back_html = backbutton if back else ""
+    return f"""{back_html}</div></body></html>"""
 
 def connect_to_wifi():
-#def select_app():
     def scan():
         networks = ""
         for network in wifi.radio.start_scanning_networks(start_channel=1, stop_channel=14):
-            networks += f"<option value='{network.ssid}'>{network.ssid}</option>"
-            print(network.ssid)
+            networks += f"<option value='{network.ssid}' data-ch='{network.channel}'>{network.ssid} (ch {network.channel})</option>"
+            print(network.ssid, "ch", network.channel)
         wifi.radio.stop_scanning_networks()
         return networks
     networks = scan()
-    
-    return header("Connect to WIFI") + f"""
-  
-  <h1>Select network:</h1>
-  <br>
-  
-          <div class="dropdown-container">
-            <select id="ssid" name="ssid">
-            {networks}
-            </select> 
-            
-            """ + """<script>
-    function updateVariable(event) {
-        const selectedValue = event.target.value;
-        const encodedSSID = selectedValue.replace(/#/g, '%23');
-        fetch(`/?ssid=${encodedSSID}`, {
-            method: 'POST',
-        });
-    }
-
-    const ssidElement = document.getElementById("ssid");
-    ssidElement.addEventListener("change", updateVariable);
-    ssidElement.addEventListener("click", updateVariable); // Add this line
-</script>
-
- 
-
-
-            """ + """
-
-            <input type="text" id="password" class="form-control" name="password" placeholder="*******" value="">
-                """ + """
-                <script>
-                function updateVariable(event) {
-                    const password = event.target.value;
-                    const encodedPassword = password.replace(/#/g, '%23');
-                    fetch(`/?password=${encodeURIComponent(encodedPassword)}`, {
-                        method: 'POST',
-                    })
-                }
-                document.getElementById("password").addEventListener("blur", updateVariable);
-                </script> """ + """
-
-
-            
-            <button onclick="location.href='/connect'">Connect</button>
-        </div>
-    <br>
-    """ + latest_wifi_error() + footer()
+    wifi_error = latest_wifi_error()
+    error_html = f'<p class="error-msg">{wifi_error}</p>' if wifi_error else ""
+    return header("Connect to WiFi") + f"""<div class="logo">
+    <h1>WiFi Setup</h1>
+    <p>Connect to a wireless network</p>
+</div>
+<div class="card">
+    <label for="ssid">Network</label>
+    <select id="ssid" name="ssid">{networks}</select>
+    <script>
+    var _ssid = document.getElementById("ssid");
+    function _sendSSID(el) {{
+        var opt = el.options[el.selectedIndex];
+        var v = opt.value.replace(/#/g, "%23");
+        var ch = opt.getAttribute("data-ch") || "";
+        fetch("/?ssid=" + v + "&channel=" + ch, {{ method: "POST" }});
+    }}
+    _ssid.addEventListener("change", function() {{ _sendSSID(_ssid); }});
+    _ssid.addEventListener("click",  function() {{ _sendSSID(_ssid); }});
+    </script>
+    <label for="password">Password</label>
+    <input type="text" id="password" name="password" placeholder="Enter password">
+    <script>
+    document.getElementById("password").addEventListener("blur", function(e) {{
+        var p = e.target.value.replace(/#/g, "%23");
+        fetch("/?password=" + encodeURIComponent(p), {{ method: "POST" }});
+    }});
+    </script>
+    <button class="btn btn-full" onclick="location.href='/connect'">Connect</button>
+    {error_html}
+</div>""" + footer()
 
 def select_app():
     installed_apps = ""
-    
     for app in os.listdir():
         if app == "LICENSE": continue
-        if not "." in app: #installed_apps.append(app)
+        if not "." in app:
             if not "__init__.py" in os.listdir(app): continue
-            installed_apps += f"""
-                <tr>
-                <td>{app}</td>
-                <td>
-                   <button id='{app}' onclick="run"""+app+"""()">Run</button>
-
-                   """ + """
-                   <script>function run"""+app+"""() {
+            installed_apps += f'<div class="app-item"><span class="app-name">{app}</span>' + """<button class="btn btn-sm" onclick="run"""+app+"""()">&#9654; Run</button>
+<script>function run"""+app+"""() {
     fetch("/?run="""+app+"""", { method: "GET" }).then(() => {
-        setTimeout(() => {
-            window.location.href = "/"; // Redirect after 2 seconds
-        }, 10); // 2000 milliseconds = 2 seconds
-    });
-}
-</script>""" + """
-                </td>
-            </tr>
-            """
-    return header("Select app") + f"""
-    <div class="header">
-  <h1>MatrixBox</h1>
- 
-  <p>Choose app:</p>
+        setTimeout(() => { window.location.href = "/"; }, 10);
+    });}</script></div>"""
+    if not installed_apps:
+        installed_apps = '<p style="color:var(--muted);text-align:center;padding:20px 0;font-size:.9rem">No apps installed yet</p>'
+    return header("MatrixBox") + """<div class="logo">
+    <h1>MatrixBox</h1>
+    <p>Select an app to launch</p>
 </div>
-    <table class="center">{installed_apps}</table>
-    <br>
-    <button class="center" onclick="window.location.href='/download'"> Download </button>
-    <br>
-    <hr>
-    <button class="center" onclick="window.location.href='/settings'"> Settings </button>
-    """ + footer()
+<div class="card">
+    <div class="section-title">Installed Apps</div>
+    """ + installed_apps + """
+</div>
+<button class="btn btn-full" onclick="window.location.href='/download'">&#x2B07; Download Apps</button>
+<button class="btn btn-full btn-ghost" onclick="window.location.href='/settings'">&#9881; Settings</button>
+<div class="card" style="margin-top:10px;border:1px dashed var(--muted)">
+    <div class="section-title" style="color:var(--muted)">Built-in Tools</div>
+    <div class="app-item"><span class="app-name" style="color:var(--muted)">&#x1F4BB; Terminal</span><button class="btn btn-sm" style="background:var(--muted);color:var(--bg)" onclick="window.location.href='/cmd'">Open</button></div>
+</div>
+""" + footer()
 
 @ampule.route('/settingsx')
 def _settings(request):
@@ -328,12 +368,16 @@ def webinterface_post(request):
         print(parsed_data)
         print("POSTED body:", request.body)
         for setting in parsed_data:
-            if parsed_data[setting]:
+            if parsed_data[setting] or setting in ("autostart", "screensaver"):
                 try: settings[setting] = parsed_data[setting]
                 except: pass
         clearscreen(True)
         savesettings(settings)
         clearscreen(False)
+        __main__.autostart = settings.get("autostart", False)
+        __main__.screensaver_app = settings.get("screensaver", "")
+        try: apply_display_settings()
+        except Exception as e: print("apply_display_settings:", e)
         return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
     except: pass
 
@@ -345,6 +389,9 @@ def webinterface_post(request):
             import safemode
         if "ssid" in request.params:
             __main__.settings["ssid"] = url_decoder(request.params["ssid"])
+        if "channel" in request.params:
+            try: __main__.settings["channel"] = int(request.params["channel"])
+            except: pass
         if "password" in request.params:
             __main__.settings["password"] = url_decoder(request.params["password"])
             #wifi.radio.connect(settings["ssid"], settings["password"])
@@ -384,14 +431,9 @@ def bootloader(request):
 @ampule.route("/settings")
 def _settings(request):
     global settings
-    settings_html = header("Settings")+f"""
-    <div class="header">
-  <h1>SETTINGS</h1>
-  <p>Edit your settings and save:</p>
-  {textbox(settings)}
-  
-</div>
-    """ + bootloaderbutton + unlock + footer(True)
+    settings_html = header("Settings") + """<div class="logo"><h1>Settings</h1><p>Configure your device</p></div>
+<div class="card"><div class="section-title">Device Settings</div>""" + f"""{textbox(settings)}</div>
+<div class="card action-row">""" + bootloaderbutton + " " + unlock + """</div>""" + footer(True)
     return (200, {}, settings_html)
 
 @ampule.route("/save")
@@ -404,145 +446,18 @@ def _save(request):
 
 @ampule.route('/download')
 def download(request):
-    content = f"""
-    Download:
-    """ + str(list_available_apps(get_updates()))
-    return (200, {}, header("Download apps") + content + backbutton + footer())
+    free = _fmt_size(_free_space())
+    content = """<div class="logo"><h1>App Store</h1><p>Install or update apps</p></div>
+<div class="card" style="text-align:center;padding:12px"><span style="font-size:.8rem;color:var(--muted)">Available space: </span><span style="font-size:.9rem;font-weight:700;color:var(--accent2)">""" + free + """</span></div>
+<div class="card"><div class="section-title">Available</div>""" + str(list_available_apps(get_updates())) + """</div>"""
+    return (200, {}, header("Download apps") + content + footer(True))
 
 
 ####################################################
 # DEBUG FUNKTIONER
 ####################################################
 
-@ampule.route('/cmd', method='POST')
-def execute_command(request):
-    command = request.headers["x-command"]
-    _c = str(command)
-    _e = ""
-    try:
-        exec(command)
-    except Exception as e:
-        _e = str(e)
-    html = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console and Command</title>
-    <style>
-        ...
-    </style>
-</head>
-<body>
-""" + e + """<br>""" + _c + """
-    <div id="console-output"></div>
-    <input id="command-input" type="text" placeholder="Enter command...">
-    <button id="command-button">Execute</button>
-<script>
-    let outputConsole = document.getElementById('console-output');
-    let commandInput = document.getElementById('command-input');
-    let commandButton = document.getElementById('command-button');
-
-    console.log('JavaScript is running...');
-
-    commandButton.addEventListener('click', async () => {
-        console.log('Button clicked...');
-        let command = commandInput.value;
-        console.log('Command:', command);
-
-        if (command) {
-            console.log('Sending command to server...');
-            const endpoint = 'cmd';
-
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Command': command,
-                    },
-                    body: null,
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Response from server:', data);
-
-                outputConsole.innerHTML += `${command}\n`;
-            } catch (error) {
-                console.error('Error sending command:', error);
-            }
-        }
-    });
-</script>
-</body>
-</html>"""    
-    
-    return (200, {}, html)
-
-
-@ampule.route("/cmd", method="GET")
-def _cmd(request):
-    html = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console and Command</title>
-    <style>
-        ...
-    </style>
-</head>
-<body>
-    <div id="console-output"></div>
-    <input id="command-input" type="text" placeholder="Enter command...">
-    <button id="command-button">Execute</button>
-<script>
-    let outputConsole = document.getElementById('console-output');
-    let commandInput = document.getElementById('command-input');
-    let commandButton = document.getElementById('command-button');
-
-    console.log('JavaScript is running...');
-
-    commandButton.addEventListener('click', async () => {
-        console.log('Button clicked...');
-        let command = commandInput.value;
-        console.log('Command:', command);
-
-        if (command) {
-            console.log('Sending command to server...');
-            const endpoint = 'cmd';
-
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Command': command,
-                    },
-                    body: null,
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Response from server:', data);
-
-                outputConsole.innerHTML += `${command}\n`;
-            } catch (error) {
-                console.error('Error sending command:', error);
-            }
-        }
-    });
-</script>
-</body>
-</html>"""
-    return (200, {}, html)
+import cmd
 
 
 @ampule.route("/settingsx")

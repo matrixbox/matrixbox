@@ -6,6 +6,7 @@ import time
 from errno import EAGAIN, ECONNRESET
 
 BUFFER_SIZE = 1024*4
+_recv_buffer = bytearray(BUFFER_SIZE)
 routes = []
 variable_re = re.compile("^<([a-zA-Z]+)>$")
 
@@ -51,23 +52,29 @@ def __read_request(client):
     for _ in range(10):
         try:
             while socket_recv:
-                buffer = bytearray(BUFFER_SIZE)
-                num_received = client.recv_into(buffer)
-                for byte in buffer[:num_received]:
-                    if byte == 0x00:
-                        socket_recv = False
+                num_received = client.recv_into(_recv_buffer)
+                chunk = _recv_buffer[:num_received]
+                null_pos = -1
+                for i in range(num_received):
+                    if chunk[i] == 0x00:
+                        null_pos = i
                         break
-                    else:
-                        message.append(byte)
+                if null_pos >= 0:
+                    message.extend(chunk[:null_pos])
+                    socket_recv = False
+                else:
+                    message.extend(chunk)
                 break
         except OSError as error:
-            #print("." * _)
             time.sleep(0.01)
             continue
 
     reader = io.BytesIO(message)
     line = str(reader.readline(), "utf-8")
-    (method, full_path, _) = line.rstrip("\r\n").split(None, 2)
+    parts = line.rstrip("\r\n").split(None, 2)
+    if len(parts) < 3:
+        return None
+    (method, full_path, _) = parts
 
     request = Request(method, full_path)
     request.headers = __parse_headers(reader)
@@ -76,54 +83,41 @@ def __read_request(client):
     return request
 
 def __send_response(client, code, headers, data):
-    #headers["Server"] = "Apache/2.2.14 (Win32)"
-    headers["Date"] = "Sat, 23 Mar 2024 08:56:53 GMT"
     headers['Access-Control-Allow-Origin'] = '*'
-    #headers["Last-Modified"] = "Sat, 20 Nov 2004 07:16:26 GMT"
-    #headers["ETag"] = "10000000565a5-2c-3e94b66c2e680"
-    #headers["Accept-Ranges"] = "bytes"
-    #headers["Content-Length"] = len(data)
-    #headers["Connection"] = "close"
-    #headers["X-Pad"] = "avoid browser bug"
     headers["Content-Type"] = "text/html"
     headers["Server"] = "Ampule/0.0.1-alpha (CircuitPython)"
     headers["Connection"] = "close"
+    if isinstance(data, str):
+        data = data.encode()
     headers["Content-Length"] = len(data)
 
-    with io.BytesIO() as response:
-        response.write(("HTTP/1.0 %i OK\r\n" % code).encode())
-        for k, v in headers.items():
-            response.write(("%s: %s\r\n" % (k, v)).encode())
+    parts = []
+    parts.append(("HTTP/1.0 %i OK\r\n" % code).encode())
+    for k, v in headers.items():
+        parts.append(("%s: %s\r\n" % (k, v)).encode())
+    parts.append(b"\r\n")
+    parts.append(data)
+    parts.append(b"\r\n")
+    response_buffer = b"".join(parts)
 
-        response.write(b"\r\n")
-        if(isinstance(data, str)):
-            response.write(data.encode())
-        else:
-            response.write(data)
-        response.write(b"\r\n")
-
-        response.flush()
-        response.seek(0)
-        response_buffer = response.read()
-
-        # unreliable sockets on ESP32-S2: see https://github.com/adafruit/circuitpython/issues/4420#issuecomment-814695753
-        response_length = len(response_buffer)
-        bytes_sent_total = 0
-        while True:
-            try:
-                bytes_sent = client.send(response_buffer)
-                bytes_sent_total += bytes_sent
-                if bytes_sent_total >= response_length:
-                    return bytes_sent_total
-                else:
-                    response_buffer = response_buffer[bytes_sent:]
-                    continue
-            except OSError as e:
-                if e.errno == 11:       # EAGAIN: no bytes have been transfered
-                    time.sleep(0.1)
-                    continue
-                else:
-                    return bytes_sent_total
+    # unreliable sockets on ESP32-S2: see https://github.com/adafruit/circuitpython/issues/4420#issuecomment-814695753
+    response_length = len(response_buffer)
+    bytes_sent_total = 0
+    while True:
+        try:
+            bytes_sent = client.send(response_buffer)
+            bytes_sent_total += bytes_sent
+            if bytes_sent_total >= response_length:
+                return bytes_sent_total
+            else:
+                response_buffer = response_buffer[bytes_sent:]
+                continue
+        except OSError as e:
+            if e.errno == 11:       # EAGAIN: no bytes have been transfered
+                time.sleep(0.1)
+                continue
+            else:
+                return bytes_sent_total
 
 def __on_request(method, rule, request_handler):
     regex = "^"
@@ -162,6 +156,9 @@ def listen(socket):
 
     try:
         request = __read_request(client)
+        if request is None:
+            client.close()
+            return
         match = __match_route(request.path, request.method)
         if match:
             args, route = match
@@ -170,20 +167,11 @@ def listen(socket):
         else:
             __send_response(client, 404, {}, "Not found")
     except BaseException as e:
-        #print("Error with request:", e)
-        fel = """<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="refresh" content="1">
-</head>
-<body>
-
-<p>Laddar...</p>
-
-</body>
-</html>"""
-        client.close()
-        __send_response(client, 500, {}, fel)
+        print("Error with request:", e)
+        try:
+            __send_response(client, 500, {}, "Error")
+        except:
+            pass
     client.close()
 
 def route(rule, method='GET'):
