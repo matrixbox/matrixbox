@@ -15,24 +15,15 @@ displayio.release_displays()
 #watchdog.timeout = 60
 #watchdog.mode = WatchDogMode.RESET
 #def wd(): return watchdog.feed()
-
-if "DevKit" in os.uname().machine:
-    _bit_depth = 4
-    #_bit_depth = 5
-    matrix = RGBMatrix(width=settings["width"], height=settings["height"], bit_depth=_bit_depth,
-                    rgb_pins=[board.IO1,board.IO42,board.IO2, board.IO41,board.IO39,board.IO40],
-                    addr_pins=[board.IO3, board.IO8, board.IO18, board.IO17],
-                    clock_pin=board.IO12, latch_pin=board.IO13, output_enable_pin=board.IO14, tile=settings["tiles"],
-                    serpentine=True, doublebuffer=True)
-    
-
 if os.uname().machine == "Waveshare ESP32-S3-Zero with ESP32S3": 
     _bit_depth = 5
+    addr_pins_placeholder = [board.IO7, board.IO8, board.IO9, board.IO10]
+    if settings["height"] == 64: addr_pins_placeholder.append(board.IO17)
     matrix = RGBMatrix(width=settings["width"], height=settings["height"], bit_depth=_bit_depth,
                     rgb_pins=[board.IO1,board.IO3,board.IO2, board.IO4,board.IO6,board.IO5],
-                    addr_pins=[board.IO7, board.IO8, board.IO9, board.IO10, board.IO17],
+                    addr_pins = addr_pins_placeholder,
                     clock_pin=board.IO11, latch_pin=board.IO12, output_enable_pin=board.IO13, tile=settings["tiles"],
-                    serpentine=True, doublebuffer=True)
+                    serpentine=False, doublebuffer=True)
 
 microcontroller.cpu.frequency = 180000000
 print("--------------------------------------------------------- ")
