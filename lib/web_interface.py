@@ -136,47 +136,46 @@ def install_app(app):
     try: os.chdir(app)
     except: pass
     error_color = "green"
-    microcontroller.cpu.frequency = 240000000
-    clearscreen(False)
-    # Pass 1: download all files, verify each returns 200
-    downloads = []
-    for x, file in enumerate(applist[app]):
-        if "/" in file:
-            directory_name = "/".join(file.split("/")[:-1])
-            try: os.mkdir(directory_name)
-            except: pass
-        print("File: ", file)
-        file_url = settings["repository_url"] + app + "/"
-        _draw_progress(x, no_of_files, file)
-        resp = requests.get(file_url + file)
-        print(resp.status_code)
-        if resp.status_code != 200:
-            _draw_progress(x + 1, no_of_files, file, True)
-            try: resp.close()
-            except: pass
-            microcontroller.cpu.frequency = 180000000
-            pprint("http " + str(resp.status_code), color="red", line=-1, _refresh=True)
-            os.chdir("/")
-            return
-        if ".mpy" in file:
-            downloads.append((file, bytearray(resp.content), "wb"))
-        else:
-            downloads.append((file, resp.text, "w"))
-        _draw_progress(x + 1, no_of_files, file)
-    # Pass 2: all downloads OK, write to disk
-    for fname, data, mode in downloads:
-        try:
-            clearscreen(True)
-            with open(str(fname), mode) as f: f.write(data)
-            clearscreen(False)
-        except:
-            clearscreen(False)
-            error_color = "red"
-    downloads = None
-    gc.collect()
-    microcontroller.cpu.frequency = 180000000
-    pprint("done!", color=error_color, line=-1, _refresh=True)
-    os.chdir("/")
+    try:
+        microcontroller.cpu.frequency = 240000000
+        clearscreen(False)
+        # Pass 1: download all files, verify each returns 200
+        downloads = []
+        for x, file in enumerate(applist[app]):
+            if "/" in file:
+                directory_name = "/".join(file.split("/")[:-1])
+                try: os.mkdir(directory_name)
+                except: pass
+            print("File: ", file)
+            file_url = settings["repository_url"] + app + "/"
+            _draw_progress(x, no_of_files, file)
+            resp = requests.get(file_url + file)
+            print(resp.status_code)
+            if resp.status_code != 200:
+                _draw_progress(x + 1, no_of_files, file, True)
+                try: resp.close()
+                except: pass
+                pprint("http " + str(resp.status_code), color="red", line=-1, _refresh=True)
+                return
+            if ".mpy" in file:
+                downloads.append((file, bytearray(resp.content), "wb"))
+            else:
+                downloads.append((file, resp.text, "w"))
+            _draw_progress(x + 1, no_of_files, file)
+        # Pass 2: all downloads OK, write to disk
+        clearscreen(True)
+        for fname, data, mode in downloads:
+            try:
+                with open(str(fname), mode) as f: f.write(data)
+            except:
+                error_color = "red"
+        clearscreen(False)
+        downloads = None
+        gc.collect()
+        pprint("done!", color=error_color, line=-1, _refresh=True)
+    finally:
+        microcontroller.cpu.frequency = 180000000
+        os.chdir("/")
         
 
 
@@ -427,23 +426,25 @@ def webinterface_post(request):
             #wifi.radio.connect(settings["ssid"], settings["password"])
         if "delete" in request.params:
             dir = request.params["delete"]
-            os.chdir(dir)
-            files = os.listdir()
-            total = len(files)
             error_color = "green"
-            clearscreen(False)
-            for x, file in enumerate(files):
-                _draw_progress(x, total, file, label="deleting")
-                try:
-                    clearscreen(True)
-                    os.remove(file)
-                    clearscreen(False)
-                except Exception as e:
-                    clearscreen(False)
-                    error_color = "red"
-                    print(e)
-                _draw_progress(x + 1, total, file, error_color == "red", label="deleting")
-            os.chdir("/")
+            try:
+                os.chdir(dir)
+                files = os.listdir()
+                total = len(files)
+                clearscreen(False)
+                for x, file in enumerate(files):
+                    _draw_progress(x, total, file, label="deleting")
+                clearscreen(True)
+                for x, file in enumerate(files):
+                    try:
+                        os.remove(file)
+                    except Exception as e:
+                        error_color = "red"
+                        print(e)
+                clearscreen(False)
+                _draw_progress(total, total, files[-1] if files else "", error_color == "red", label="deleting")
+            finally:
+                os.chdir("/")
             try: os.rmdir(dir)
             except: pass
             pprint("done!", color=error_color, line=-1, _refresh=True)
