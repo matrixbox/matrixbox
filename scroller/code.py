@@ -5,7 +5,7 @@ import wifi
 
 import load_screen
 from __main__ import *
-
+microcontroller.cpu.frequency = 240000000
 exit = False
 padding_length = 20
 default_offset = 0
