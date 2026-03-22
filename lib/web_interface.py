@@ -99,6 +99,34 @@ def textbox(settings):
 <input type="text" id="{setting}" name="{setting}" placeholder="{str(val)}">"""
     return settings_html + """<button class="btn btn-full" type="submit">Save Settings</button></form>"""
     
+def _draw_progress(current, total, filename, error=False):
+    from load_screen import window, pset, font_mini
+    w = settings["width"]
+    window.fill(0)
+    # Line 1: "Installing 3/7"
+    pprint("installing " + str(current) + "/" + str(total), 0, _clearscreen=False)
+    # Line 2: filename (truncated if needed)
+    name = filename.split("/")[-1]
+    pprint(name, 1, _clearscreen=False, color="yellow" if not error else "red")
+    # Progress bar on line 3 (y=19..23)
+    bar_y = 19
+    bar_h = 4
+    bar_x = 1
+    bar_w = w - 2
+    # border
+    for px in range(bar_x, bar_x + bar_w):
+        pset(px, bar_y, 5)
+        pset(px, bar_y + bar_h, 5)
+    for py in range(bar_y, bar_y + bar_h + 1):
+        pset(bar_x, py, 5)
+        pset(bar_x + bar_w - 1, py, 5)
+    # fill
+    fill_w = int((bar_w - 2) * current / max(total, 1))
+    for px in range(bar_x + 1, bar_x + 1 + fill_w):
+        for py in range(bar_y + 1, bar_y + bar_h):
+            pset(px, py, 7)
+    refresh()
+
 def install_app(app):
     if app == "system": app = "/"
     print("Install: ", app)
@@ -112,40 +140,34 @@ def install_app(app):
     except: pass
     error_color = "green"
     microcontroller.cpu.frequency = 240000000
+    clearscreen(False)
     for x, file in enumerate(applist[app]):
-        clearscreen()
         if "/" in file:
             directory_name = "/".join(file.split("/")[:-1])
             print(directory_name)
             try: os.mkdir(directory_name)
             except: pass
-            
         print("File: ", file)
-        print(app + "/" + file)
         file_url = settings["repository_url"] + app + "/"
-        print(file_url)
-        pprint(str(x+1) + "/" + str(no_of_files) + " Downloading: ")#, line=0,  _clearscreen=True)
-        pprint(str(file) + "...")
+        _draw_progress(x, no_of_files, file)
         downloaded_file = requests.get(file_url + file)
-        pprint(str(downloaded_file.status_code))
-        if ".mpy" in file: 
+        print(downloaded_file.status_code)
+        if ".mpy" in file:
             downloaded_file = bytearray(downloaded_file.content)
             writemode = "wb"
-        else: 
+        else:
             downloaded_file = downloaded_file.text
             writemode = "w"
-        clearscreen()
-        try: 
+        try:
             clearscreen(True)
             with open(str(file), writemode) as f: f.write(downloaded_file)
             clearscreen(False)
-        except: 
+        except:
             clearscreen(False)
-            pprint("Read only!", color="red")
             error_color = "red"
-    microcontroller.cpu.frequency = 180000000 ### notering
-    
-    pprint("Done.", color=error_color, line=-1, _refresh=True)
+        _draw_progress(x + 1, no_of_files, file, error_color == "red")
+    microcontroller.cpu.frequency = 180000000
+    pprint("done!", color=error_color, line=-1, _refresh=True)
     os.chdir("/")
         
 
