@@ -398,7 +398,11 @@ def webinterface_post(request):
         print("POSTED body:", request.body)
         for setting in parsed_data:
             if parsed_data[setting] or setting in ("autostart", "screensaver"):
-                try: settings[setting] = parsed_data[setting]
+                try:
+                    val = parsed_data[setting]
+                    if setting in settings and isinstance(settings[setting], int):
+                        val = int(val)
+                    settings[setting] = val
                 except: pass
         clearscreen(True)
         savesettings(settings)
