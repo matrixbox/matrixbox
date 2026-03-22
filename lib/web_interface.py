@@ -99,12 +99,11 @@ def textbox(settings):
 <input type="text" id="{setting}" name="{setting}" placeholder="{str(val)}">"""
     return settings_html + """<button class="btn btn-full" type="submit">Save Settings</button></form>"""
     
-def _draw_progress(current, total, filename, error=False):
+def _draw_progress(current, total, filename, error=False, label="installing"):
     from load_screen import window, pset, font_mini
     w = settings["width"]
     window.fill(0)
-    # Line 1: "Installing 3/7"
-    pprint("installing " + str(current) + "/" + str(total), 0, _clearscreen=False)
+    pprint(label + " " + str(current) + "/" + str(total), 0, _clearscreen=False)
     # Line 2: filename (truncated if needed)
     name = filename.split("/")[-1]
     pprint(name, 1, _clearscreen=False, color="yellow" if not error else "red")
@@ -141,31 +140,42 @@ def install_app(app):
     error_color = "green"
     microcontroller.cpu.frequency = 240000000
     clearscreen(False)
+    # Pass 1: download all files, verify each returns 200
+    downloads = []
     for x, file in enumerate(applist[app]):
         if "/" in file:
             directory_name = "/".join(file.split("/")[:-1])
-            print(directory_name)
             try: os.mkdir(directory_name)
             except: pass
         print("File: ", file)
         file_url = settings["repository_url"] + app + "/"
         _draw_progress(x, no_of_files, file)
-        downloaded_file = requests.get(file_url + file)
-        print(downloaded_file.status_code)
+        resp = requests.get(file_url + file)
+        print(resp.status_code)
+        if resp.status_code != 200:
+            _draw_progress(x + 1, no_of_files, file, True)
+            try: resp.close()
+            except: pass
+            microcontroller.cpu.frequency = 180000000
+            pprint("http " + str(resp.status_code), color="red", line=-1, _refresh=True)
+            os.chdir("/")
+            return
         if ".mpy" in file:
-            downloaded_file = bytearray(downloaded_file.content)
-            writemode = "wb"
+            downloads.append((file, bytearray(resp.content), "wb"))
         else:
-            downloaded_file = downloaded_file.text
-            writemode = "w"
+            downloads.append((file, resp.text, "w"))
+        _draw_progress(x + 1, no_of_files, file)
+    # Pass 2: all downloads OK, write to disk
+    for fname, data, mode in downloads:
         try:
-            from load_screen import window
-            window.fill(0)
-            refresh()
-            with open(str(file), writemode) as f: f.write(downloaded_file)
+            clearscreen(True)
+            with open(str(fname), mode) as f: f.write(data)
+            clearscreen(False)
         except:
+            clearscreen(False)
             error_color = "red"
-        _draw_progress(x + 1, no_of_files, file, error_color == "red")
+    downloads = None
+    gc.collect()
     microcontroller.cpu.frequency = 180000000
     pprint("done!", color=error_color, line=-1, _refresh=True)
     os.chdir("/")
@@ -420,23 +430,25 @@ def webinterface_post(request):
         if "delete" in request.params:
             dir = request.params["delete"]
             os.chdir(dir)
-            
-            for file in os.listdir():
-                
-                try: 
+            files = os.listdir()
+            total = len(files)
+            error_color = "green"
+            clearscreen(False)
+            for x, file in enumerate(files):
+                _draw_progress(x, total, file, label="deleting")
+                try:
                     clearscreen(True)
                     os.remove(file)
                     clearscreen(False)
-                    pprint("Removed: " + str(file))
                 except Exception as e:
                     clearscreen(False)
-                    pprint(str(e))
-                
-                
-                
-            
+                    error_color = "red"
+                    print(e)
+                _draw_progress(x + 1, total, file, error_color == "red", label="deleting")
             os.chdir("/")
-            os.rmdir(dir)
+            try: os.rmdir(dir)
+            except: pass
+            pprint("done!", color=error_color, line=-1, _refresh=True)
         if "install" in request.params:
             print(request.params["install"])
             install_app(request.params["install"])
