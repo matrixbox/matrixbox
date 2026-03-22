@@ -159,11 +159,11 @@ def install_app(app):
             downloaded_file = downloaded_file.text
             writemode = "w"
         try:
-            clearscreen(True)
+            from load_screen import window
+            window.fill(0)
+            refresh()
             with open(str(file), writemode) as f: f.write(downloaded_file)
-            clearscreen(False)
         except:
-            clearscreen(False)
             error_color = "red"
         _draw_progress(x + 1, no_of_files, file, error_color == "red")
     microcontroller.cpu.frequency = 180000000
