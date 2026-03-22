@@ -103,28 +103,26 @@ def _draw_progress(current, total, filename, error=False, label="installing"):
     from load_screen import window, pset, font_mini
     w = settings["width"]
     window.fill(0)
-    pprint(label + " " + str(current) + "/" + str(total), 0, _clearscreen=False)
-    # Line 2: filename (truncated if needed)
+    # Draw filename on line 1 first (line=1 does NOT auto-refresh)
     name = filename.split("/")[-1]
     pprint(name, 1, _clearscreen=False, color="yellow" if not error else "red")
-    # Progress bar on line 3 (y=19..23)
+    # Draw progress bar (no refresh yet)
     bar_y = 19
     bar_h = 4
     bar_x = 1
     bar_w = w - 2
-    # border
     for px in range(bar_x, bar_x + bar_w):
         pset(px, bar_y, 5)
         pset(px, bar_y + bar_h, 5)
     for py in range(bar_y, bar_y + bar_h + 1):
         pset(bar_x, py, 5)
         pset(bar_x + bar_w - 1, py, 5)
-    # fill
     fill_w = int((bar_w - 2) * current / max(total, 1))
     for px in range(bar_x + 1, bar_x + 1 + fill_w):
         for py in range(bar_y + 1, bar_y + bar_h):
             pset(px, py, 7)
-    refresh()
+    # Draw label on line 0 LAST (line=0 auto-refreshes, showing complete frame)
+    pprint(label + " " + str(current) + "/" + str(total), 0, _clearscreen=False)
 
 def install_app(app):
     if app == "system": app = "/"
