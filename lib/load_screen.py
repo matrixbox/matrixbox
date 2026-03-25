@@ -18,9 +18,12 @@ displayio.release_displays()
 if os.uname().machine == "Waveshare ESP32-S3-Zero with ESP32S3": 
     _bit_depth = 5
     addr_pins_placeholder = [board.IO7, board.IO8, board.IO9, board.IO10]
-    if settings["height"] == 64: addr_pins_placeholder.append(board.IO17)
+    rgb_pins_placeholder = [board.IO1,board.IO3,board.IO2, board.IO4,board.IO6,board.IO5]
+    if settings["height"] == 64: 
+        addr_pins_placeholder.append(board.IO17)
+        rgb_pins_placeholder = [board.IO1,board.IO2,board.IO3, board.IO4,board.IO5,board.IO6]
     matrix = RGBMatrix(width=settings["width"], height=settings["height"], bit_depth=_bit_depth,
-                    rgb_pins=[board.IO1,board.IO2,board.IO3, board.IO4,board.IO5,board.IO6],
+                    rgb_pins=rgb_pins_placeholder,
                     addr_pins = addr_pins_placeholder,
                     clock_pin=board.IO11, latch_pin=board.IO12, output_enable_pin=board.IO13, tile=settings["tiles"],
                     serpentine=False, doublebuffer=True)
