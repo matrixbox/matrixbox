@@ -24,6 +24,15 @@ if os.uname().machine == "Waveshare ESP32-S3-Zero with ESP32S3":
                     addr_pins = addr_pins_placeholder,
                     clock_pin=board.IO11, latch_pin=board.IO12, output_enable_pin=board.IO13, tile=settings["tiles"],
                     serpentine=False, doublebuffer=True)
+elif "N8R8" in os.uname().machine: 
+    _bit_depth = 4
+    addr_pins_placeholder = [board.GPIO3, board.GPIO8, board.GPIO18, board.GPIO17]
+    if settings["height"] == 64: addr_pins_placeholder.append(board.GPIO21)
+    matrix = RGBMatrix(width=settings["width"], height=settings["height"], bit_depth=_bit_depth,
+                    rgb_pins=[board.GPIO1,board.GPIO2,board.GPIO42, board.GPIO41,board.GPIO40,board.GPIO39],
+                    addr_pins = addr_pins_placeholder,
+                    clock_pin=board.GPIO12, latch_pin=board.GPIO13, output_enable_pin=board.GPIO14, tile=settings["tiles"],
+                    serpentine=False, doublebuffer=True)
 
 microcontroller.cpu.frequency = 180000000
 print("--------------------------------------------------------- ")
