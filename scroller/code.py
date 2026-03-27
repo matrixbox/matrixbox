@@ -158,7 +158,10 @@ def scroller_post(request):
 
     if "scroll" in request.params:
         scroll = 1 - scroll
-        scroll_x = DISPLAY_WIDTH
+        if scroll:
+            scroll_x = DISPLAY_WIDTH
+        else:
+            scroll_x = strlen(" " * padding_length, load_screen.currentfont)
         return (200, {}, "OK")
 
     if "text" in request.params:
