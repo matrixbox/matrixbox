@@ -54,8 +54,8 @@ viewport_tg = None         # TileGrid for viewport
 scroller_width = 0         # width of big_bitmap
 scroll_x = 0               # current scroll offset
 
-DISPLAY_WIDTH = 128
-DISPLAY_HEIGHT = 32
+DISPLAY_WIDTH = settings["width"]
+DISPLAY_HEIGHT = settings["height"]
 PALETTE_SIZE = 10          # matches your existing palette
 
 # ---------------------------------------------------------
