@@ -196,10 +196,12 @@ def install_app(app):
             except:
                 error_color = "red"
         downloads = None
-        gc.collect()
+        #gc.collect()
     finally:
         microcontroller.cpu.frequency = 180000000
         os.chdir("/")
+        window.fill(0)
+        pprint("Done.", 1, _clearscreen=True)
         __main__.show_logo()
         
 
