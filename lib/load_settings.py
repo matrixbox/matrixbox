@@ -11,7 +11,6 @@ def settings():
                 "height":32,
                 "tiles":1,
                 "repository_url":"https://raw.githubusercontent.com/matrixbox/matrixbox/refs/heads/main/", 
-                "repository_file":"repository.txt",
                 "wifi_power":16}
 
      try:

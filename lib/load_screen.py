@@ -50,7 +50,8 @@ display.refresh()
 display.root_group.hidden = True
 rows = int((settings["height"]*1/32))
 print(rows)
-window = displayio.Bitmap(settings["width"], rows*32, 10) # själva viewporten dit pixlar skrivs
+_max_dim = max(settings["width"], settings["height"] * rows)
+window = displayio.Bitmap(_max_dim, _max_dim, 10) # viewport large enough for any rotation
 line_window = [] # en lista för multi-line printout till skärmen
 palette = displayio.Palette(20, dither=False)
 
@@ -76,6 +77,12 @@ palette[11] = (50,30,0)    # orange
 currentfont = font_mini 
 currentcolor = "white"
 
+def display_width():
+    return display.width
+
+def display_height():
+    return display.height
+
 def strlen(_string, font_size=font_mini): 
     if font_size==font_mini: _string = _string.lower()
     return sum((font_size[ascletters][0]) for ascletters in _string) # mäter längden på hel string
@@ -83,88 +90,135 @@ def strlen(_string, font_size=font_mini):
 def _current_window():
     return window
 
-def pprint(string, line=False, color="white", font = font_mini, _refresh = False, clear=True, top_offset=0, window=None, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0):
+_color_map = {"black":0,"yellow":1,"brightwhite":2,"blue":3,"red":4,"white":5,"light_blue":6,"green":7,"grey":8,"black2":9,"pink":10,"orange":11}
+
+def _pprint(string, line=False, color="white", font=font_mini, _refresh=False, clear=True, top_offset=0, window=None, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0):
+    """Original pprint with debug output — use for diagnostics."""
     if window is None: window = _current_window()
     print(string)
     global line_window
     print(line_window)
-    if _clearscreen: 
-        
+    if _clearscreen:
         string = string + hr * (settings["width"] - strlen(string))
-    
-    max_lines = int(5*(settings["height"]*1/32)) #- 1
-
+    max_lines = int(5*(settings["height"]*1/32))
     if "int" in str(type(line)):
         _lines = [string]
-        line_window = [""* (int(line) + 1)]
+        line_window = ["" * (int(line) + 1)]
     else:
         line_window.append(string)
         if len(line_window) > max_lines: line_window.pop(0)
         _lines = line_window
-    
     pixwidth = 0
-    _color = False
-    if color == "black": _color = (0)
-    if color == "yellow": _color = (1)
-    if color == "brightwhite": _color = (2)
-    if color == "blue": _color = (3)
-    if color == "red": _color = (4)
-    if color == "white": _color = (5)
-    if color == "light_blue": _color = (6)
-    if color == "green": _color = (7)
-    if color == "grey": _color = (8)
-    if color == "black2": _color = (9)
-    if color == "pink": _color = (10)
-    if color == "orange": _color = (11)
-    
+    _color = _color_map.get(color, 5)
     offs = 1 + top_offset
     try:
         for lin, stringline in enumerate(_lines):
             if line: lin = line
-            if line == -1: lin = max_lines -1
+            if line == -1: lin = max_lines - 1
             print(lin, len(_lines))
             for character in str(stringline):
                 if font == font_mini: character = character.lower()
-                if not character in font: 
-                    print("Invalid character: ", character, " - ", string)
-                    character = "_"
+                if character not in font: character = "_"
                 for width in range(font[character][0]):
                     for height in range(font["fontheight"]):
                         invertedwidth = font[character][0] - width
-                        if isinstance(font[character][1],int):
+                        if isinstance(font[character][1], int):
                             bit = ((font[character][height+1] >> invertedwidth) & 1)
                             if int(bit):
-                                #try:
-                                    # MAIN PIXEL
-                                    window[width + pixwidth, ((6 * lin) + height) + offs] = _color
-
-                                    # SHADOW PIXEL (block mode)
-                                    if block:
-                                        #continue
-                                        sx = width + pixwidth + 1
-                                        sy = ((6 * lin) + height) + offs + 1
-                                        # Only draw shadow if inside bounds
-                                        if 0 <= sx < window.width and 0 <= sy < window.height:
-                                            window[sx, sy] = shadow_color
-                                #except:
-                                    
+                                window[width + pixwidth, ((6 * lin) + height) + offs] = _color
+                                if block:
+                                    sx = width + pixwidth + 1
+                                    sy = ((6 * lin) + height) + offs + 1
+                                    if 0 <= sx < window.width and 0 <= sy < window.height:
+                                        window[sx, sy] = shadow_color
                             else:
                                 if not block:
-                                    if clear: window[width+pixwidth,((6*lin) + height)+offs] = 0
-                                    
-                                    
-
-                        else: window[width+pixwidth,(height)+offs] = int(font[character][height+1][width])
+                                    if clear: window[width+pixwidth, ((6*lin) + height)+offs] = 0
+                        else: window[width+pixwidth, (height)+offs] = int(font[character][height+1][width])
                 if slow: refresh()
-                if isinstance(font[character][1],int): pixwidth += font[character][0]
+                if isinstance(font[character][1], int): pixwidth += font[character][0]
                 else: pixwidth += len(font[character][1])
             pixwidth = 0
             if _refresh: refresh()
         if lin + 1 == len(_lines): refresh()
-                #print("FULL STOP")
-
     except Exception as e:
         print(e)
+
+def pprint(string, line=False, color="white", font=font_mini, _refresh=True, clear=True, top_offset=0, window=None, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0):
+    if window is None: window = _current_window()
+    _is_mini = (font == font_mini)
+    global line_window
+    _c = _color_map.get(color, 5)
+    fh = font["fontheight"]
+    max_lines = int(5 * (display.height * 1 / 32))
+    offs = 1 + top_offset
+
+    # Pad string with hr chars when hr is a visible fill character
+    if _clearscreen and hr != "(":
+        pad_char = hr.lower() if _is_mini else hr
+        if pad_char in font:
+            cw = font[pad_char][0]
+            remaining = settings["width"] - strlen(string, font)
+            if remaining > 0 and cw > 0:
+                string = string + hr * (remaining // cw)
+
+    if "int" in str(type(line)):
+        lin = line if line else 0
+        if line == -1: lin = max_lines - 1
+        while len(line_window) <= lin:
+            line_window.append("")
+        line_window[lin] = string
+        _draw_line(window, string, lin, _c, font, _is_mini, fh, offs, clear, block, shadow_color)
+        if _clearscreen and hr == "(":
+            _clear_row_remainder(window, strlen(string, font), lin, fh, offs)
+    else:
+        line_window.append(string)
+        if len(line_window) > max_lines: line_window.pop(0)
+        for lin, stringline in enumerate(line_window):
+            _draw_line(window, stringline, lin, _c, font, _is_mini, fh, offs, clear, block, shadow_color)
+            if _clearscreen:
+                _clear_row_remainder(window, strlen(stringline, font), lin, fh, offs)
+
+    if slow or _refresh: refresh()
+
+def _draw_line(win, string, lin, _c, font, _is_mini, fh, offs, clear, block, shadow_color):
+    px = 0
+    y_base = (6 * lin) + offs
+    for ch in str(string):
+        if _is_mini: ch = ch.lower()
+        if ch not in font: ch = "_"
+        glyph = font[ch]
+        gw = glyph[0]
+        is_bitmap = isinstance(glyph[1], int)
+        if is_bitmap:
+            for w in range(gw):
+                inv_w = gw - w
+                for h in range(fh):
+                    y = y_base + h
+                    bit = (glyph[h + 1] >> inv_w) & 1
+                    if bit:
+                        win[w + px, y] = _c
+                        if block:
+                            sx = w + px + 1
+                            sy = y + 1
+                            if 0 <= sx < win.width and 0 <= sy < win.height:
+                                win[sx, sy] = shadow_color
+                    elif clear:
+                        win[w + px, y] = 0
+            px += gw
+        else:
+            for w in range(gw):
+                for h in range(fh):
+                    win[w + px, h + offs] = int(glyph[h + 1][w])
+            px += len(glyph[1])
+
+def _clear_row_remainder(win, text_px_width, lin, fh, offs):
+    y_base = (6 * lin) + offs
+    x_start = text_px_width
+    x_end = min(win.width, settings["width"])
+    for x in range(x_start, x_end):
+        for h in range(fh):
+            win[x, y_base + h] = 0
 
 """def clearscreen():
     global line_window

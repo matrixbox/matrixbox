@@ -51,10 +51,16 @@ def textbox(settings):
         "width": {"min": 64, "max": 640, "step": 64},
         "height": {"min": 32, "max": 320, "step": 32},
     }
+    advanced_keys = {"width", "height", "tiles", "repository_url"}
+    advanced_order = ["width", "height", "tiles", "repository_url"]
+    main_html = ""
+    adv_items = {}
     settings_html = """<form action="/" method="POST">"""
     for setting in settings:
         print("Setting: ", setting)
         val = settings[setting]
+        is_adv = setting in advanced_keys
+        chunk = ""
         if setting == "autostart":
             apps = _get_installed_apps()
             checked = "checked" if val else ""
@@ -63,7 +69,7 @@ def textbox(settings):
             for a in apps:
                 sel = "selected" if str(val) == a else ""
                 opts += f'<option value="{a}" {sel}>{a}</option>'
-            settings_html += f"""<label>{setting}</label>
+            chunk = f"""<label>{setting}</label>
 <div class="toggle-row">
 <input type="checkbox" id="as_chk" {checked} onchange="var s=document.getElementById('as_sel');var h=document.getElementById('autostart');s.disabled=!this.checked;if(!this.checked){{s.value='';h.value='';}}">
 <label for="as_chk">Enable autostart</label>
@@ -78,7 +84,7 @@ def textbox(settings):
             for a in apps:
                 sel = "selected" if str(val) == a else ""
                 opts += f'<option value="{a}" {sel}>{a}</option>'
-            settings_html += f"""<label>{setting}</label>
+            chunk = f"""<label>{setting}</label>
 <div class="toggle-row">
 <input type="checkbox" id="ss_chk" {checked} onchange="var s=document.getElementById('ss_sel');var h=document.getElementById('screensaver');s.disabled=!this.checked;if(!this.checked){{s.value='';h.value='';}}">
 <label for="ss_chk">Enable screensaver</label>
@@ -89,14 +95,29 @@ def textbox(settings):
             c = slider_cfg[setting]
             try: cur = int(float(val))
             except: cur = c["min"]
-            settings_html += f"""<label>{setting}</label>
+            if setting == "rotation":
+                chunk = f"""<label>{setting}</label>
+<div class="range-wrap">
+<input type="range" id="{setting}" name="{setting}" min="{c['min']}" max="{c['max']}" step="{c['step']}" value="{cur}" oninput="document.getElementById('v_{setting}').textContent=this.value" onchange="fetch('/rotate?v='+this.value)">
+<span class="range-val" id="v_{setting}">{cur}</span>
+</div>"""
+            else:
+                chunk = f"""<label>{setting}</label>
 <div class="range-wrap">
 <input type="range" id="{setting}" name="{setting}" min="{c['min']}" max="{c['max']}" step="{c['step']}" value="{cur}" oninput="document.getElementById('v_{setting}').textContent=this.value">
 <span class="range-val" id="v_{setting}">{cur}</span>
 </div>"""
         else:
-            settings_html += f"""<label for="{setting}">{setting}</label>
+            chunk = f"""<label for="{setting}">{setting}</label>
 <input type="text" id="{setting}" name="{setting}" placeholder="{str(val)}">"""
+        if is_adv:
+            adv_items[setting] = chunk
+        else:
+            main_html += chunk
+    settings_html += main_html
+    adv_html = "".join(adv_items[k] for k in advanced_order if k in adv_items)
+    if adv_html:
+        settings_html += """<div style="margin-top:12px"><button type="button" class="btn btn-sm" onclick="var a=document.getElementById('adv_section');a.style.display=a.style.display==='none'?'block':'none'">&#9881; Advanced</button></div><div id="adv_section" style="display:none">""" + adv_html + """</div>"""
     return settings_html + """<button class="btn btn-full" type="submit">Save Settings</button></form>"""
     
 def _draw_progress(current, total, filename, error=False, label="installing"):
@@ -131,10 +152,11 @@ def install_app(app):
     no_of_files = len(applist[app])
     print("Applist: ", applist, " Files: ", no_of_files)
     os.chdir("/")
-    try: os.mkdir(app)
-    except: pass
-    try: os.chdir(app)
-    except: pass
+    if app != "/":
+        try: os.mkdir(app)
+        except: pass
+        try: os.chdir(app)
+        except: pass
     error_color = "green"
     try:
         microcontroller.cpu.frequency = 240000000
@@ -147,7 +169,8 @@ def install_app(app):
                 try: os.mkdir(directory_name)
                 except: pass
             print("File: ", file)
-            file_url = settings["repository_url"] + app + "/"
+            file_url = settings["repository_url"]
+            if app != "/": file_url += app + "/"
             _draw_progress(x, no_of_files, file)
             resp = requests.get(file_url + file)
             print(resp.status_code)
@@ -179,13 +202,48 @@ def install_app(app):
         
 
 
+def _repo_api_base():
+    """Derive GitHub API repo path from repository_url.
+    e.g. 'https://raw.githubusercontent.com/matrixbox/matrixbox/refs/heads/main/'
+    -> owner='matrixbox', repo='matrixbox'
+    """
+    url = settings["repository_url"]
+    parts = url.replace("https://", "").split("/")
+    return parts[1], parts[2]
+
 def get_updates():
     print(settings)
     try:
-        updates = json.loads(requests.get((settings["repository_url"]+settings["repository_file"])).text)
+        owner, repo = _repo_api_base()
+        url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/main?recursive=1"
+        resp = requests.get(url, headers={"User-Agent": "MatrixBox"})
+        tree = json.loads(resp.text)["tree"]
+        resp.close()
+        apps = {}
+        root_files = []
+        for item in tree:
+            if item["type"] != "blob": continue
+            path = item["path"]
+            parts = path.split("/")
+            if len(parts) == 1:
+                root_files.append(parts[0])
+                continue
+            dirname = parts[0]
+            filename = "/".join(parts[1:])
+            if dirname not in apps: apps[dirname] = []
+            apps[dirname].append(filename)
+        # System = root files + lib folder
+        system_files = root_files[:]
+        if "lib" in apps:
+            for f in apps["lib"]:
+                system_files.append("lib/" + f)
+        apps["/"] = system_files
+        # Keep only dirs with __init__.py, "lib", or root "/"
+        apps = {k: v for k, v in apps.items() if k in ("/", "lib") or "__init__.py" in v}
     except Exception as e:
-        print(e)
-    return updates
+        print("get_updates error:", e)
+        apps = {}
+    return apps
     
 def list_available_apps(apps):
     print("Apps: ", apps)
@@ -465,11 +523,50 @@ def bootloader(request):
     microcontroller.reset()
     return (200, {}, "None")
 
+@ampule.route("/preset")
+def _preset(request):
+    presets = {"xs": (64, 32), "x": (128, 32), "xl": (192, 32), "2x": (128, 64)}
+    if request.params and "s" in request.params:
+        p = request.params["s"]
+        if p in presets:
+            w, h = presets[p]
+            settings["width"] = w
+            settings["height"] = h
+            settings["tiles"] = 1
+            try: load_settings.savesettings(settings)
+            except: pass
+            microcontroller.reset()
+    return (200, {}, "")
+
+@ampule.route("/rotate")
+def _rotate(request):
+    if request.params and "v" in request.params:
+        new_r = int(request.params["v"])
+    else:
+        new_r = (display.rotation + 90) % 360
+    settings["rotation"] = new_r
+    display.rotation = new_r
+    clearscreen(lines=True)
+    try: __main__.show_logo()
+    except:
+        pprint("Rotated: " + str(new_r), line=0)
+        pprint(str(display.width) + "x" + str(display.height))
+    return (200, {}, "")
+
 @ampule.route("/settings")
 def _settings(request):
     global settings
+    rotate_btn = '<button class="btn btn-sm" onclick="fetch(\'/rotate\').then(()=>{{var v=document.getElementById(\'v_rotation\');if(v){{var c=parseInt(v.textContent)||0;c=(c+90)%360;v.textContent=c;var s=document.getElementById(\'rotation\');if(s)s.value=c;}}}});">&#128260; 90&deg;</button>'
+    preset_btns = ''.join([
+        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XS (64x32)? Device will reboot.\'))fetch(\'/preset?s=xs\')" title="XS 64x32"><svg width="20" height="16" viewBox="0 0 20 16"><rect x="4" y="4" width="12" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XS</span></button>',
+        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to X (128x32)? Device will reboot.\'))fetch(\'/preset?s=x\')" title="X 128x32"><svg width="28" height="16" viewBox="0 0 28 16"><rect x="2" y="4" width="24" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">X</span></button>',
+        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XL (192x32)? Device will reboot.\'))fetch(\'/preset?s=xl\')" title="XL 192x32"><svg width="36" height="16" viewBox="0 0 36 16"><rect x="2" y="4" width="32" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XL</span></button>',
+        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to 2X (128x64)? Device will reboot.\'))fetch(\'/preset?s=2x\')" title="2X 128x64"><svg width="24" height="18" viewBox="0 0 24 18"><rect x="2" y="1" width="20" height="16" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">2X</span></button>',
+    ])
     settings_html = header("Settings") + """<div class="logo"><h1>Settings</h1><p>Configure your device</p></div>
+<div class="card"><div class="section-title">Quick Actions</div><div class="action-row">""" + rotate_btn + preset_btns + """</div></div>
 <div class="card"><div class="section-title">Device Settings</div>""" + f"""{textbox(settings)}</div>
+
 <div class="card action-row">""" + bootloaderbutton + " " + unlock + """</div>""" + footer(True)
     return (200, {}, settings_html)
 

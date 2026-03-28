@@ -8,7 +8,7 @@ from load_screen import *
 from check_button import *
 def show_logo():
     pprint("^MatrixBox(", line=0, color="white", hr="¨")
-    pprint("^Matrix", line=0, color="brightwhite", _clearscreen=False)
+    #pprint("^Matrix", line=0, color="brightwhite", _clearscreen=False)
 show_logo()
 
 wifi.radio.tx_power = 9.0
@@ -19,7 +19,7 @@ socket.setsockopt(pool.SOL_SOCKET, pool.SO_REUSEADDR, 1)
 socket.bind(('', 80))
 socket.listen(5)
 socket_timeout = 5
-macid = "matrixbos-" + "".join([hex(i) for i in wifi.radio.mac_address]).replace("0x","")[:3] # mac-id för hotspot
+macid = "matrixbox-" + "".join([hex(i) for i in wifi.radio.mac_address]).replace("0x","")[:3] # mac-id för hotspot
 wifi_status = ""
 ssl_context = adafruit_connection_manager.get_radio_ssl_context(wifi.radio)
 requests = adafruit_requests.Session(pool, ssl_context)
