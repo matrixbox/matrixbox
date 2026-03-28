@@ -185,7 +185,7 @@ def install_app(app):
                 except: pass
                 pprint("http " + str(resp.status_code), color="red", line=-1, _refresh=True)
                 return
-            if ".mpy" in file:
+            if file.rsplit(".", 1)[-1] in ("mpy", "gif", "bmp", "png", "jpg", "bin", "raw"):
                 downloads.append((file, bytearray(resp.content), "wb"))
             else:
                 downloads.append((file, resp.text, "w"))
