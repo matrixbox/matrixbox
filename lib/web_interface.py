@@ -159,6 +159,7 @@ def install_app(app):
         try: os.chdir(app)
         except: pass
     error_color = "green"
+    from load_screen import window
     try:
         microcontroller.cpu.frequency = 240000000
         clearscreen(False)
@@ -166,9 +167,12 @@ def install_app(app):
         downloads = []
         for x, file in enumerate(applist[app]):
             if "/" in file:
-                directory_name = "/".join(file.split("/")[:-1])
-                try: os.mkdir(directory_name)
-                except: pass
+                parts = file.split("/")[:-1]
+                path = ""
+                for part in parts:
+                    path = path + "/" + part if path else part
+                    try: os.mkdir(path)
+                    except: pass
             print("File: ", file)
             file_url = settings["repository_url"]
             if app != "/": file_url += app + "/"
@@ -187,7 +191,6 @@ def install_app(app):
                 downloads.append((file, resp.text, "w"))
             _draw_progress(x + 1, no_of_files, file)
         # Pass 2: all downloads OK, write to disk
-        from load_screen import window
         window.fill(0)
         display.refresh()
         for fname, data, mode in downloads:
