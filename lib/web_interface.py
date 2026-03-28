@@ -7,7 +7,7 @@ import __main__
 #print(dir(__main__))
 exitbutton = """<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0d0d12;color:#e8e8f0;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;margin:0}a.xbtn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#ff4b4b,#ff7070);color:#fff;font-weight:700;font-size:1rem;text-decoration:none}.lbl{color:#888;font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px}</style></head><body><p class="lbl">App Running</p><a class="xbtn" href="/exit">&#x2715; Exit App</a>"""
 backbutton = """<a class="back-btn" href="../">&#8592; Back</a>"""
-bootloaderbutton = """<button class="btn btn-danger" onclick="if(confirm('Enter bootloader mode? Device will reboot.'))fetch('/bootloader',{method:'POST'}).then(()=>document.body.innerHTML='<p style=&quot;color:#888;text-align:center;margin-top:40vh&quot;>Rebooting into bootloader&hellip;</p>')">&#x26A1; Bootloader</button>"""
+bootloaderbutton = """<button class="btn btn-danger" onclick="if(confirm('Enter bootloader mode?'))fetch('/bootloader',{method:'POST'})">&#x26A1; Bootloader</button>"""
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
 unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {method: 'POST'})">&#x1F513; Unlock</button>"""
 
@@ -289,7 +289,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .nav-spacer{flex:1}
 .nav-info{color:var(--muted);font-size:.7rem;letter-spacing:.3px;text-align:right;line-height:1.3}
 .nav-info span{display:block}
-.nav-x{color:#ff5555;font-size:1.1rem;font-weight:700;text-decoration:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background .2s;margin-left:6px;border:none;background:none;cursor:pointer;padding:0}
+.nav-x{color:#ff5555;font-size:1.1rem;font-weight:700;text-decoration:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background .2s;margin-left:6px}
 .nav-x:hover{background:rgba(255,85,85,.15)}
 .page{max-width:480px;margin:0 auto;padding:16px}
 .logo{text-align:center;padding:28px 0 20px}
@@ -336,7 +336,7 @@ def navbar():
 <a class="nav-link" href="/settings">Settings</a>
 <div class="nav-spacer"></div>
 <div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
-<button class="nav-x" onclick="if(confirm('Restart device?'))fetch('/reset',{{method:'POST'}}).then(()=>document.body.innerHTML='<p style=&quot;color:#888;text-align:center;margin-top:40vh&quot;>Restarting&hellip;</p>')" title="Restart">&#x2715;</button>
+<button class="nav-x" onclick="if(confirm('Restart?'))fetch('/reset',{{method:'POST'}})" title="Restart">&#x2715;</button>
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
 
@@ -558,10 +558,10 @@ def _settings(request):
     global settings
     rotate_btn = '<button class="btn btn-sm" onclick="fetch(\'/rotate\',{method:\'POST\'}).then(()=>{{var v=document.getElementById(\'v_rotation\');if(v){{var c=parseInt(v.textContent)||0;c=(c+90)%360;v.textContent=c;var s=document.getElementById(\'rotation\');if(s)s.value=c;}}}});">&#128260; 90&deg;</button>'
     preset_btns = ''.join([
-        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XS (64x32)? Device will reboot.\'))fetch(\'/preset?s=xs\',{method:\'POST\'}).then(()=>document.body.innerHTML=\'<p style=color:#888;text-align:center;margin-top:40vh>Rebooting&hellip;</p>\')" title="XS 64x32"><svg width="20" height="16" viewBox="0 0 20 16"><rect x="4" y="4" width="12" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XS</span></button>',
-        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to X (128x32)? Device will reboot.\'))fetch(\'/preset?s=x\',{method:\'POST\'}).then(()=>document.body.innerHTML=\'<p style=color:#888;text-align:center;margin-top:40vh>Rebooting&hellip;</p>\')" title="X 128x32"><svg width="28" height="16" viewBox="0 0 28 16"><rect x="2" y="4" width="24" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">X</span></button>',
-        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XL (192x32)? Device will reboot.\'))fetch(\'/preset?s=xl\',{method:\'POST\'}).then(()=>document.body.innerHTML=\'<p style=color:#888;text-align:center;margin-top:40vh>Rebooting&hellip;</p>\')" title="XL 192x32"><svg width="36" height="16" viewBox="0 0 36 16"><rect x="2" y="4" width="32" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XL</span></button>',
-        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to 2X (128x64)? Device will reboot.\'))fetch(\'/preset?s=2x\',{method:\'POST\'}).then(()=>document.body.innerHTML=\'<p style=color:#888;text-align:center;margin-top:40vh>Rebooting&hellip;</p>\')" title="2X 128x64"><svg width="24" height="18" viewBox="0 0 24 18"><rect x="2" y="1" width="20" height="16" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">2X</span></button>',
+        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XS (64x32)? Device will reboot.\'))fetch(\'/preset?s=xs\',{method:\'POST\'})" title="XS 64x32"><svg width="20" height="16" viewBox="0 0 20 16"><rect x="4" y="4" width="12" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XS</span></button>',
+        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to X (128x32)? Device will reboot.\'))fetch(\'/preset?s=x\',{method:\'POST\'})" title="X 128x32"><svg width="28" height="16" viewBox="0 0 28 16"><rect x="2" y="4" width="24" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">X</span></button>',
+        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XL (192x32)? Device will reboot.\'))fetch(\'/preset?s=xl\',{method:\'POST\'})" title="XL 192x32"><svg width="36" height="16" viewBox="0 0 36 16"><rect x="2" y="4" width="32" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XL</span></button>',
+        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to 2X (128x64)? Device will reboot.\'))fetch(\'/preset?s=2x\',{method:\'POST\'})" title="2X 128x64"><svg width="24" height="18" viewBox="0 0 24 18"><rect x="2" y="1" width="20" height="16" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">2X</span></button>',
     ])
     settings_html = header("Settings") + """<div class="logo"><h1>Settings</h1><p>Configure your device</p></div>
 <div class="card"><div class="section-title">Quick Actions</div><div class="action-row">""" + rotate_btn + preset_btns + """</div></div>

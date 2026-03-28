@@ -143,7 +143,7 @@ def check_for_button_next_program():
         screensaver = time.monotonic()
 
 autostart = settings["autostart"]
-screensaver_app = settings.get("screensaver", 0)
+screensaver_app = settings.get("screensaver", "starcloud")
 wifi.radio.tx_power = float(settings["wifi_power"])
 
 from web_interface import *
