@@ -184,7 +184,10 @@ def install_app(app):
                 downloads.append((file, resp.text, "w"))
             _draw_progress(x + 1, no_of_files, file)
         # Pass 2: all downloads OK, write to disk
-        clearscreen(True)
+        import supervisor
+        supervisor.runtime.autoreload = False
+        clearscreen(False)
+        pprint("Do not turn off", color="red", line=0, _clearscreen=False)
         for fname, data, mode in downloads:
             try:
                 with open(str(fname), mode) as f: f.write(data)
@@ -197,7 +200,8 @@ def install_app(app):
     finally:
         microcontroller.cpu.frequency = 180000000
         os.chdir("/")
-        
+        try: supervisor.runtime.autoreload = True
+        except: pass
 
 
 def _repo_api_base():
@@ -325,7 +329,7 @@ def navbar():
 <a class="nav-link" href="/settings">Settings</a>
 <div class="nav-spacer"></div>
 <div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
-<a class="nav-x" href="/reset" title="Restart">&#x2715;</a>
+<a class="nav-x" href="#" onclick="fetch('/reset',{{method:'POST'}});return false" title="Restart">&#x2715;</a>
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
 
@@ -587,7 +591,7 @@ import cmd
 def showsettings(request):
     return (200, {}, str(settings))
 
-@ampule.route('/reset')
+@ampule.route('/reset', method="POST")
 def reset(request): microcontroller.reset()
 
 
