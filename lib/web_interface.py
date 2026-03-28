@@ -152,10 +152,11 @@ def install_app(app):
     no_of_files = len(applist[app])
     print("Applist: ", applist, " Files: ", no_of_files)
     os.chdir("/")
-    try: os.mkdir(app)
-    except: pass
-    try: os.chdir(app)
-    except: pass
+    if app != "/":
+        try: os.mkdir(app)
+        except: pass
+        try: os.chdir(app)
+        except: pass
     error_color = "green"
     try:
         microcontroller.cpu.frequency = 240000000
@@ -168,7 +169,8 @@ def install_app(app):
                 try: os.mkdir(directory_name)
                 except: pass
             print("File: ", file)
-            file_url = settings["repository_url"] + app + "/"
+            file_url = settings["repository_url"]
+            if app != "/": file_url += app + "/"
             _draw_progress(x, no_of_files, file)
             resp = requests.get(file_url + file)
             print(resp.status_code)
@@ -184,11 +186,7 @@ def install_app(app):
                 downloads.append((file, resp.text, "w"))
             _draw_progress(x + 1, no_of_files, file)
         # Pass 2: all downloads OK, write to disk
-        import supervisor
-        supervisor.runtime.autoreload = False
         clearscreen(True)
-        clearscreen(False)
-        pprint("Do not turn off", color="red", line=0)
         for fname, data, mode in downloads:
             try:
                 with open(str(fname), mode) as f: f.write(data)
@@ -201,8 +199,7 @@ def install_app(app):
     finally:
         microcontroller.cpu.frequency = 180000000
         os.chdir("/")
-        try: supervisor.runtime.autoreload = True
-        except: pass
+        
 
 
 def _repo_api_base():
@@ -223,17 +220,26 @@ def get_updates():
         tree = json.loads(resp.text)["tree"]
         resp.close()
         apps = {}
+        root_files = []
         for item in tree:
             if item["type"] != "blob": continue
             path = item["path"]
             parts = path.split("/")
-            if len(parts) < 2: continue
+            if len(parts) == 1:
+                root_files.append(parts[0])
+                continue
             dirname = parts[0]
             filename = "/".join(parts[1:])
             if dirname not in apps: apps[dirname] = []
             apps[dirname].append(filename)
-        # Keep only dirs with __init__.py or named "lib"
-        apps = {k: v for k, v in apps.items() if k == "lib" or "__init__.py" in v}
+        # System = root files + lib folder
+        system_files = root_files[:]
+        if "lib" in apps:
+            for f in apps["lib"]:
+                system_files.append("lib/" + f)
+        apps["/"] = system_files
+        # Keep only dirs with __init__.py, "lib", or root "/"
+        apps = {k: v for k, v in apps.items() if k in ("/", "lib") or "__init__.py" in v}
     except Exception as e:
         print("get_updates error:", e)
         apps = {}
@@ -330,7 +336,7 @@ def navbar():
 <a class="nav-link" href="/settings">Settings</a>
 <div class="nav-spacer"></div>
 <div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
-<a class="nav-x" href="#" onclick="fetch('/reset',{{method:'POST'}});return false" title="Restart">&#x2715;</a>
+<a class="nav-x" href="/reset" title="Restart">&#x2715;</a>
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
 
@@ -592,7 +598,7 @@ import cmd
 def showsettings(request):
     return (200, {}, str(settings))
 
-@ampule.route('/reset', method="POST")
+@ampule.route('/reset')
 def reset(request): microcontroller.reset()
 
 
