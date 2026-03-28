@@ -122,14 +122,15 @@ def textbox(settings):
     
 def _draw_progress(current, total, filename, error=False, label="installing"):
     from load_screen import window, pset, font_mini
-    w = settings["width"]
+    w = display.width
+    h = display.height
     window.fill(0)
     # Draw filename on line 1 first (line=1 does NOT auto-refresh)
     name = filename.split("/")[-1]
     pprint(name, 1, _clearscreen=False, color="yellow" if not error else "red")
     # Draw progress bar (no refresh yet)
-    bar_y = 19
     bar_h = 4
+    bar_y = h - bar_h - 9
     bar_x = 1
     bar_w = w - 2
     for px in range(bar_x, bar_x + bar_w):
@@ -186,19 +187,20 @@ def install_app(app):
                 downloads.append((file, resp.text, "w"))
             _draw_progress(x + 1, no_of_files, file)
         # Pass 2: all downloads OK, write to disk
-        clearscreen(True)
+        from load_screen import window
+        window.fill(0)
+        display.refresh()
         for fname, data, mode in downloads:
             try:
                 with open(str(fname), mode) as f: f.write(data)
             except:
                 error_color = "red"
-        clearscreen(False)
         downloads = None
         gc.collect()
-        pprint("done!", color=error_color, line=-1, _refresh=True)
     finally:
         microcontroller.cpu.frequency = 180000000
         os.chdir("/")
+        __main__.show_logo()
         
 
 
