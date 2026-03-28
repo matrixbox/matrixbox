@@ -152,11 +152,10 @@ def install_app(app):
     no_of_files = len(applist[app])
     print("Applist: ", applist, " Files: ", no_of_files)
     os.chdir("/")
-    if app != "/":
-        try: os.mkdir(app)
-        except: pass
-        try: os.chdir(app)
-        except: pass
+    try: os.mkdir(app)
+    except: pass
+    try: os.chdir(app)
+    except: pass
     error_color = "green"
     try:
         microcontroller.cpu.frequency = 240000000
@@ -169,8 +168,7 @@ def install_app(app):
                 try: os.mkdir(directory_name)
                 except: pass
             print("File: ", file)
-            file_url = settings["repository_url"]
-            if app != "/": file_url += app + "/"
+            file_url = settings["repository_url"] + app + "/"
             _draw_progress(x, no_of_files, file)
             resp = requests.get(file_url + file)
             print(resp.status_code)
@@ -220,26 +218,17 @@ def get_updates():
         tree = json.loads(resp.text)["tree"]
         resp.close()
         apps = {}
-        root_files = []
         for item in tree:
             if item["type"] != "blob": continue
             path = item["path"]
             parts = path.split("/")
-            if len(parts) == 1:
-                root_files.append(parts[0])
-                continue
+            if len(parts) < 2: continue
             dirname = parts[0]
             filename = "/".join(parts[1:])
             if dirname not in apps: apps[dirname] = []
             apps[dirname].append(filename)
-        # System = root files + lib folder
-        system_files = root_files[:]
-        if "lib" in apps:
-            for f in apps["lib"]:
-                system_files.append("lib/" + f)
-        apps["/"] = system_files
-        # Keep only dirs with __init__.py, "lib", or root "/"
-        apps = {k: v for k, v in apps.items() if k in ("/", "lib") or "__init__.py" in v}
+        # Keep only dirs with __init__.py or named "lib"
+        apps = {k: v for k, v in apps.items() if k == "lib" or "__init__.py" in v}
     except Exception as e:
         print("get_updates error:", e)
         apps = {}
