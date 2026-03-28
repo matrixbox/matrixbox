@@ -186,8 +186,9 @@ def install_app(app):
         # Pass 2: all downloads OK, write to disk
         import supervisor
         supervisor.runtime.autoreload = False
+        clearscreen(True)
         clearscreen(False)
-        pprint("Do not turn off", color="red", line=0, _clearscreen=False)
+        pprint("Do not turn off", color="red", line=0)
         for fname, data, mode in downloads:
             try:
                 with open(str(fname), mode) as f: f.write(data)
