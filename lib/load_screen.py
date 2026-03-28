@@ -184,11 +184,14 @@ def pprint(string, line=False, color="white", font=font_mini, _refresh=True, cle
 def _draw_line(win, string, lin, _c, font, _is_mini, fh, offs, clear, block, shadow_color):
     px = 0
     y_base = (6 * lin) + offs
+    max_x = win.width
     for ch in str(string):
         if _is_mini: ch = ch.lower()
         if ch not in font: ch = "_"
         glyph = font[ch]
         gw = glyph[0]
+        if px + gw > max_x:
+            break
         is_bitmap = isinstance(glyph[1], int)
         if is_bitmap:
             for w in range(gw):
