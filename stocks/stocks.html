@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stocks</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#1a1a2e;color:#f0f0f0;padding:16px;max-width:420px;margin:0 auto}
+a.x{color:#ff4444;text-decoration:none;font-size:20px}
+.card{background:#252542;border:1px solid #3a3a5c;border-radius:10px;padding:14px;margin-bottom:12px}
+h2{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#888;margin-bottom:8px;font-weight:600}
+label{display:block;font-size:.75rem;color:#888;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+input[type=text]{width:100%;padding:10px;background:#1e1e35;color:#f0f0f0;border:1px solid #4a4a6a;border-radius:6px;font-size:14px}
+.f{display:flex;gap:6px;margin-top:6px}
+.f button{padding:7px 14px;background:#303050;color:#f0f0f0;border:1px solid #4a4a6a;border-radius:6px;cursor:pointer;font-size:13px;transition:.15s}
+.f button:hover{background:#404068}
+.f button.a{background:#2563eb;border-color:#2563eb}
+.b{width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-top:8px}
+.b:hover{background:#1d4ed8}
+.q{padding:8px 0;border-bottom:1px solid #333;display:flex;justify-content:space-between;align-items:center}
+.q:last-child{border:none}
+.qs{font-weight:700;font-size:14px}
+.qp{font-size:14px;font-weight:600}
+.qc{font-size:12px;padding:2px 6px;border-radius:4px;font-weight:600}
+.up{color:#00e676;background:rgba(0,230,118,.12)}
+.dn{color:#ff5252;background:rgba(255,82,82,.12)}
+</style>
+</head>
+<body>
+<a href="/exit" class="x">&#x274C;</a>
+<div class="card">
+<h2>Live Quotes</h2>
+<div id="ql"><p style="color:#666;font-size:13px">Loading...</p></div>
+</div>
+<div class="card">
+<h2>Symbols</h2>
+<label>Comma-separated tickers</label>
+<input type="text" id="sym" placeholder="AAPL,MSFT,GOOG">
+<button class="b" onclick="ss()">Update Symbols</button>
+</div>
+<div class="card">
+<h2>Font Size</h2>
+<div class="f">
+<button id="f_small" onclick="sf('small')">Small</button>
+<button id="f_large" onclick="sf('large')">Large</button>
+</div>
+</div>
+<div class="card">
+<h2>Scroll Speed</h2>
+<div class="f">
+<button id="s1" onclick="sp(1)">Slow</button>
+<button id="s2" onclick="sp(2)">Medium</button>
+<button id="s3" onclick="sp(3)">Fast</button>
+</div>
+</div>
+<div class="card">
+<h2>Refresh Interval</h2>
+<div class="f">
+<button onclick="si(30)">30s</button>
+<button onclick="si(60)">1m</button>
+<button onclick="si(300)">5m</button>
+</div>
+</div>
+<button class="b" onclick="sv()">&#128190; Save Settings</button>
+<script>
+function p(d){fetch("/?"+d,{method:"POST"})}
+function ss(){var v=document.getElementById("sym").value;if(v)p("symbols="+encodeURIComponent(v));setTimeout(lq,3000)}
+function sp(n){p("speed="+n);document.querySelectorAll(".f button[id]").forEach(function(b){b.className=b.id==="s"+n?"a":"";})}
+function si(n){p("interval="+n)}
+function sf(f){p("font="+f);document.querySelectorAll("[id^=f_]").forEach(function(b){b.className=b.id==="f_"+f?"a":"";})}
+function sv(){p("save=1")}
+function lq(){
+fetch("/quotes").then(function(r){return r.json()}).then(function(d){
+var h="";
+if(!d.length){h='<p style="color:#666;font-size:13px">No data yet</p>';}
+for(var i=0;i<d.length;i++){
+var q=d[i],sym=q[0],price=q[1],pct=q[2],up=pct>=0;
+var ps=String(price);if(ps.indexOf(".")>-1)ps=ps.split(".")[0]+"."+ps.split(".")[1].substring(0,2);
+var sign=up?"+":"";
+h+='<div class="q"><span class="qs">'+sym+'</span><span class="qp">'+(up?"&#9650;":"&#9660;")+" $"+ps+'</span><span class="qc '+(up?"up":"dn")+'">'+sign+pct.toFixed(2)+"%</span></div>";}
+document.getElementById("ql").innerHTML=h;
+}).catch(function(){});}
+function ls(){
+fetch("/settings").then(function(r){return r.json()}).then(function(d){
+document.getElementById("sym").value=d.symbols||"";
+var f=d.font||"small";document.querySelectorAll("[id^=f_]").forEach(function(b){b.className=b.id==="f_"+f?"a":"";});
+var s=d.speed||2;document.querySelectorAll(".f button[id]").forEach(function(b){b.className=b.id==="s"+s?"a":"";});
+}).catch(function(){});}
+ls();lq();setInterval(lq,15000);
+</script>
+</body>
+</html>
