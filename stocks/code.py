@@ -78,77 +78,29 @@ def build_ticker_string():
         parts.append((sym.upper(), p_str, sign + "{:.1f}".format(pct) + "%", pct >= 0))
     return parts
 
-def _safe_pset(x, y, c):
-    if 0 <= x < DISP_W and 0 <= y < DISP_H:
-        pset(x, y, c)
+def _safe_pset_bmp(bmp, x, y, c, bmp_w, bmp_h):
+    if 0 <= x < bmp_w and 0 <= y < bmp_h:
+        bmp[x, y] = c
 
-def draw_arrow_up(x, y, color):
-    """5px tall up arrow."""
-    _safe_pset(x + 2, y, color)
-    _safe_pset(x + 1, y + 1, color)
-    _safe_pset(x + 2, y + 1, color)
-    _safe_pset(x + 3, y + 1, color)
-    _safe_pset(x + 2, y + 2, color)
-    _safe_pset(x + 2, y + 3, color)
-    _safe_pset(x + 2, y + 4, color)
+def _draw_arrow_up(bmp, x, y, color, bmp_w, bmp_h):
+    _safe_pset_bmp(bmp, x + 2, y, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 1, y + 1, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 2, y + 1, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 3, y + 1, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 2, y + 2, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 2, y + 3, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 2, y + 4, color, bmp_w, bmp_h)
 
-def draw_arrow_down(x, y, color):
-    """5px tall down arrow."""
-    _safe_pset(x + 2, y, color)
-    _safe_pset(x + 2, y + 1, color)
-    _safe_pset(x + 2, y + 2, color)
-    _safe_pset(x + 1, y + 3, color)
-    _safe_pset(x + 2, y + 3, color)
-    _safe_pset(x + 3, y + 3, color)
-    _safe_pset(x + 2, y + 4, color)
+def _draw_arrow_down(bmp, x, y, color, bmp_w, bmp_h):
+    _safe_pset_bmp(bmp, x + 2, y, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 2, y + 1, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 2, y + 2, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 1, y + 3, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 2, y + 3, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 3, y + 3, color, bmp_w, bmp_h)
+    _safe_pset_bmp(bmp, x + 2, y + 4, color, bmp_w, bmp_h)
 
-def draw_ticker(scroll_x):
-    """Draw the scrolling ticker. Returns total pixel width."""
-    window.fill(0)
-    parts = build_ticker_string()
-    if not parts:
-        pprint("no data", 0)
-        return DISP_W
-
-    f = current_font
-    fh = f["fontheight"]
-    y_center = max(0, (DISP_H - fh) // 2)
-    gap = 8  # pixels between items
-    arrow_w = 6  # arrow is 5px wide + 1 gap
-
-    # Measure total width
-    total_w = 0
-    for sym, price, pct_str, up in parts:
-        total_w += strlen(sym + " " + price + " ", f) + arrow_w + strlen(pct_str, f) + gap
-
-    px = -scroll_x
-    for sym, price, pct_str, up in parts:
-        color = 7 if up else 4
-        # Draw symbol in white
-        _draw_text(sym + " ", px, y_center, 5)
-        px += strlen(sym + " ", f)
-        # Draw price in color
-        _draw_text(price + " ", px, y_center, color)
-        px += strlen(price + " ", f)
-        # Draw arrow
-        if 0 <= px < DISP_W + 6:
-            if up:
-                draw_arrow_up(px, y_center, color)
-            else:
-                draw_arrow_down(px, y_center, color)
-        px += arrow_w
-        # Draw percent
-        _draw_text(pct_str, px, y_center, color)
-        px += strlen(pct_str, f)
-        # Gap
-        px += gap
-
-    refresh()
-    return total_w
-
-def _draw_text(string, start_x, y_top, color_idx):
-    """Render text at pixel position into window. Clips to display."""
-    f = current_font
+def _render_text_to_bmp(bmp, string, start_x, y_top, color_idx, f, bmp_w, bmp_h):
     fh = f["fontheight"]
     px = start_x
     for ch in str(string):
@@ -156,26 +108,71 @@ def _draw_text(string, start_x, y_top, color_idx):
             ch = "_"
         glyph = f[ch]
         gw = glyph[0]
-        if px + gw < 0:
-            px += gw
-            continue
-        if px >= DISP_W:
-            break
         is_bitmap = isinstance(glyph[1], int)
         if is_bitmap:
             for w in range(gw):
                 sx = px + w
-                if sx < 0 or sx >= DISP_W:
+                if sx < 0 or sx >= bmp_w:
                     continue
                 inv_w = gw - w
                 for h in range(fh):
                     sy = y_top + h
-                    if sy < 0 or sy >= DISP_H:
+                    if sy < 0 or sy >= bmp_h:
                         continue
                     bit = (glyph[h + 1] >> inv_w) & 1
                     if bit:
-                        window[sx, sy] = color_idx
+                        bmp[sx, sy] = color_idx
         px += gw
+    return px
+
+ticker_bmp = None
+ticker_tg = None
+ticker_w = 0
+
+def build_ticker_bitmap():
+    """Render all quotes into a wide bitmap. Called once when data or font changes."""
+    global ticker_bmp, ticker_tg, ticker_w
+    parts = build_ticker_string()
+    if not parts:
+        ticker_w = 0
+        return
+
+    f = current_font
+    fh = f["fontheight"]
+    gap = 8
+    arrow_w = 6
+    y_center = max(0, (DISP_H - fh) // 2)
+
+    # Measure total width
+    total_w = DISP_W  # start with padding so text scrolls in from right
+    for sym, price, pct_str, up in parts:
+        total_w += strlen(sym + " " + price + " ", f) + arrow_w + strlen(pct_str, f) + gap
+    total_w += DISP_W  # end padding so last item scrolls fully off left
+
+    ticker_bmp = displayio.Bitmap(total_w, DISP_H, 10)
+    ticker_bmp.fill(0)
+
+    px = DISP_W  # start drawing after initial padding
+    for sym, price, pct_str, up in parts:
+        color = 7 if up else 4
+        px = _render_text_to_bmp(ticker_bmp, sym + " ", px, y_center, 5, f, total_w, DISP_H)
+        px = _render_text_to_bmp(ticker_bmp, price + " ", px, y_center, color, f, total_w, DISP_H)
+        if up:
+            _draw_arrow_up(ticker_bmp, px, y_center, color, total_w, DISP_H)
+        else:
+            _draw_arrow_down(ticker_bmp, px, y_center, color, total_w, DISP_H)
+        px += arrow_w
+        px = _render_text_to_bmp(ticker_bmp, pct_str, px, y_center, color, f, total_w, DISP_H)
+        px += gap
+
+    ticker_w = total_w
+
+    ticker_tg = displayio.TileGrid(ticker_bmp, pixel_shader=palette)
+    ticker_tg.x = 0
+    root = displayio.Group()
+    root.append(ticker_tg)
+    display.root_group = root
+    gc.collect()
 
 # Web interface
 @ampule.route("/", method="GET")
@@ -199,9 +196,11 @@ def get_quotes(request):
 def stock_post(request):
     global cfg
     print("POST:", request.params)
+    rebuild = False
     if "symbols" in request.params:
         cfg["symbols"] = request.params["symbols"].upper()
         fetch_quotes()
+        rebuild = True
     if "speed" in request.params:
         try: cfg["speed"] = int(request.params["speed"])
         except: pass
@@ -212,6 +211,9 @@ def stock_post(request):
         global current_font
         cfg["font"] = request.params["font"]
         current_font = _font_map.get(cfg["font"], font_small)
+        rebuild = True
+    if rebuild:
+        build_ticker_bitmap()
     if "save" in request.params:
         try:
             with open("stocksettings.txt", "w") as f:
@@ -221,16 +223,18 @@ def stock_post(request):
 
 # Main loop
 fetch_quotes()
-scroll = 0
+build_ticker_bitmap()
 last_fetch = time.monotonic()
-total_w = DISP_W
 speed_map = {1: 0.06, 2: 0.03, 3: 0.015}
 
 while load_settings.app_running:
-    total_w = draw_ticker(scroll)
-    scroll += 1
-    if scroll > total_w + DISP_W:
-        scroll = 0
+    if ticker_tg and ticker_w > 0:
+        ticker_tg.x -= 1
+        if ticker_tg.x < -ticker_w + DISP_W:
+            ticker_tg.x = 0
+        display.refresh()
+    else:
+        pprint("no data", 0)
 
     spd = speed_map.get(cfg.get("speed", 2), 0.03)
     time.sleep(spd)
@@ -243,5 +247,6 @@ while load_settings.app_running:
     # Periodic refresh
     if time.monotonic() - last_fetch > cfg.get("interval", 60):
         fetch_quotes()
+        build_ticker_bitmap()
         last_fetch = time.monotonic()
         gc.collect()
