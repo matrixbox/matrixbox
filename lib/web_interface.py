@@ -218,7 +218,12 @@ def _repo_api_base():
     parts = url.replace("https://", "").split("/")
     return parts[1], parts[2]
 
-def get_updates():
+_cached_apps = None
+
+def get_updates(force=False):
+    global _cached_apps
+    if _cached_apps is not None and not force:
+        return _cached_apps
     print(settings)
     try:
         owner, repo = _repo_api_base()
@@ -247,9 +252,10 @@ def get_updates():
         apps["/"] = system_files
         # Keep only dirs with __init__.py, "lib", or root "/"
         apps = {k: v for k, v in apps.items() if k in ("/", "lib") or "__init__.py" in v}
+        _cached_apps = apps
     except Exception as e:
         print("get_updates error:", e)
-        apps = {}
+        apps = _cached_apps if _cached_apps else {}
     return apps
     
 def list_available_apps(apps):
