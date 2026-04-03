@@ -20,6 +20,13 @@ def _get_installed_apps():
             apps.append(app)
     return apps
 
+def _app_ver(path):
+    try:
+        for f in os.listdir(path):
+            if f[0] == "v" and f[1:2].isdigit(): return f[1:]
+    except: pass
+    return ""
+
 def _dir_size(path):
     total = 0
     try:
@@ -252,6 +259,15 @@ def get_updates(force=False):
         apps["/"] = system_files
         # Keep only dirs with __init__.py, "lib", or root "/"
         apps = {k: v for k, v in apps.items() if k in ("/", "lib") or "__init__.py" in v}
+        # Extract remote versions from version files
+        _remote_vers = {}
+        for k, files in apps.items():
+            for f in files:
+                fn = f.split("/")[-1]
+                if fn[0:1] == "v" and fn[1:2].isdigit():
+                    _remote_vers[k] = fn[1:]
+                    break
+        load_settings.remote_versions = _remote_vers
         _cached_apps = apps
     except Exception as e:
         print("get_updates error:", e)
@@ -269,17 +285,28 @@ def list_available_apps(apps):
         setTimeout(() => { window.location.href = "/download"; }, 10);
     });}</script></div>"""
 
+    remote_vers = getattr(load_settings, 'remote_versions', {})
     for dir in apps:
         if dir == "/" or dir == "lib": continue
+        r_ver = remote_vers.get(dir, "")
         if dir in os.listdir() and "__init__.py" in os.listdir(dir):
             sz = _fmt_size(_dir_size(dir))
-            applist += f'<div class="download-item"><div><span class="download-name">&#x2713; {dir}</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">{sz}</div></div>' + """<button class="btn btn-sm btn-danger" onclick="delete"""+dir+"""()">Delete</button>
-<script>function delete"""+dir+"""() {
+            l_ver = _app_ver(dir)
+            ver_info = 'v' + l_ver if l_ver else sz
+            if r_ver and l_ver and r_ver != l_ver:
+                ver_info += ' &#x2192; v' + r_ver
+            applist += f'<div class="download-item"><div><span class="download-name">&#x2713; {dir}</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">{ver_info}</div></div><div style="display:flex;gap:6px">' + """<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="install"""+dir+"""()">&#x21BB; Update</button><button class="btn btn-sm" style="background:#ff4b4b;color:#fff;padding:7px 9px" onclick="if(confirm('Delete """+dir+"""?'))delete"""+dir+"""()">&#x2715;</button>
+<script>function install"""+dir+"""() {
+    fetch("/?install="""+dir+"""", { method: "POST" }).then(() => {
+        setTimeout(() => { window.location.href = "/download"; }, 10);
+    });}
+function delete"""+dir+"""() {
     fetch("/?delete="""+dir+"""", { method: "POST" }).then(() => {
         setTimeout(() => { window.location.href = "/download"; }, 10);
-    });}</script></div>"""
+    });}</script></div></div>"""
         else:
-            applist += f'<div class="download-item"><span class="download-name">{dir}</span>' + """<button class="btn btn-sm btn-success" onclick="install"""+dir+"""()">&#x2B07; Install</button>
+            ver_label = f'{dir} <span style="color:var(--accent2)">v{r_ver}</span>' if r_ver else dir
+            applist += f'<div class="download-item"><span class="download-name">{ver_label}</span>' + """<button class="btn btn-sm btn-success" onclick="install"""+dir+"""()">&#x2B07; Install</button>
 <script>function install"""+dir+"""() {
     fetch("/?install="""+dir+"""", { method: "POST" }).then(() => {
         setTimeout(() => { window.location.href = "/download"; }, 10);
@@ -415,7 +442,9 @@ def select_app():
         if app == "LICENSE": continue
         if not "." in app:
             if not "__init__.py" in os.listdir(app): continue
-            installed_apps += f'<div class="app-item"><span class="app-name">{app}</span>' + """<button class="btn btn-sm" onclick="run"""+app+"""()">&#9654; Run</button>
+            ver = _app_ver(app)
+            ver_html = f'<div style="font-size:.7rem;color:var(--muted);margin-top:2px">v{ver}</div>' if ver else ''
+            installed_apps += f'<div class="app-item"><div><span class="app-name">{app}</span>{ver_html}</div>' + """<button class="btn btn-sm" onclick="run"""+app+"""()">&#9654; Run</button>
 <script>function run"""+app+"""() {
     fetch("/?run="""+app+"""", { method: "GET" }).then(() => {
         setTimeout(() => { window.location.href = "/"; }, 10);

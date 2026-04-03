@@ -84,11 +84,11 @@ def __read_request(client):
 
 def __send_response(client, code, headers, data):
     headers['Access-Control-Allow-Origin'] = '*'
-    headers["Content-Type"] = "text/html"
+    headers["Content-Type"] = "text/html; charset=utf-8"
     headers["Server"] = "Ampule/0.0.1-alpha (CircuitPython)"
     headers["Connection"] = "close"
     if isinstance(data, str):
-        data = data.encode()
+        data = data.encode("utf-8")
     headers["Content-Length"] = len(data)
 
     parts = []
