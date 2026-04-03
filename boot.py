@@ -42,6 +42,9 @@ else:
     pprint("Locked filesystem")
     time.sleep(1)
 
+try: os.remove("code.py")
+except: pass
+
 try: clearscreen(True)
 except Exception as e: pprint(str(e))
 
