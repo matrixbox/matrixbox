@@ -210,6 +210,25 @@ def install_app(app):
     finally:
         microcontroller.cpu.frequency = 180000000
         os.chdir("/")
+        # Update cached version: local now matches remote
+        try:
+            r_vers = getattr(load_settings, 'remote_versions', {})
+            if app == "/":
+                r_ver = r_vers.get("/", "")
+                if r_ver:
+                    # Remove old local version file, keep new one
+                    for f in os.listdir("lib"):
+                        if f[0] == "v" and f[1:2].isdigit() and f[1:] != r_ver:
+                            try: os.remove("lib/" + f)
+                            except: pass
+            else:
+                r_ver = r_vers.get(app, "")
+                if r_ver:
+                    for f in os.listdir(app):
+                        if f[0] == "v" and f[1:2].isdigit() and f[1:] != r_ver:
+                            try: os.remove(app + "/" + f)
+                            except: pass
+        except: pass
         window.fill(0)
         pprint("Done.", 1, _clearscreen=True)
         __main__.show_logo()
@@ -277,15 +296,20 @@ def get_updates(force=False):
 def list_available_apps(apps):
     print("Apps: ", apps)
     load_settings.latest_available_apps = apps
-    applist = """<div class="download-item">
-    <span class="download-name">&#x1F4E6; System</span>
-    <button class="btn btn-sm btn-warning" onclick="installsystem()">&#x21BB; Update</button>
-    <script>function installsystem() {
+    remote_vers = getattr(load_settings, 'remote_versions', {})
+    sys_l = _app_ver("lib")
+    sys_r = remote_vers.get("/", "")
+    sys_ver = 'v' + sys_l if sys_l else 'system'
+    if sys_r and sys_l and sys_r != sys_l:
+        sys_ver += ' &#x2192; v' + sys_r
+        sys_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="installsystem()">&#x21BB; Update</button>'
+    else:
+        sys_btn = '<button class="btn btn-sm btn-warning" onclick="installsystem()">&#x21BB; Update</button>'
+    applist = '<div class="download-item"><div><span class="download-name">&#x1F4E6; System</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">' + sys_ver + '</div></div>' + sys_btn + """\n    <script>function installsystem() {
     fetch("/?install=system", { method: "POST" }).then(() => {
         setTimeout(() => { window.location.href = "/download"; }, 10);
     });}</script></div>"""
 
-    remote_vers = getattr(load_settings, 'remote_versions', {})
     for dir in apps:
         if dir == "/" or dir == "lib": continue
         r_ver = remote_vers.get(dir, "")
@@ -339,7 +363,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .section-title{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:12px}
 .app-item,.download-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)}
 .app-item:last-child,.download-item:last-child{border-bottom:none}
-.app-name,.download-name{font-size:.95rem;font-weight:500;text-transform:capitalize;color:var(--text)}
+.app-name{font-size:.95rem;font-weight:500;text-transform:capitalize;color:var(--text)}
+.download-name{font-size:.95rem;font-weight:500;color:var(--text)}
 label{display:block;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 5px;font-weight:600}
 input[type="text"],select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:.95rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
 input[type="text"]:focus,select:focus{border-color:var(--accent)}
