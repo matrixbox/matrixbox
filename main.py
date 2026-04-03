@@ -7,7 +7,7 @@ settings =  load_settings.settings()
 from load_screen import *
 from check_button import *
 def show_logo():
-    pprint("^MatrixBox(", line=0, color="white", hr="¨")
+    pprint("¨¨MatrixBox(", line=0, color="white", hr="¨")
     #pprint("^Matrix", line=0, color="brightwhite", _clearscreen=False)
 show_logo()
 
