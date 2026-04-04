@@ -229,6 +229,45 @@ def _clear_row_remainder(win, text_px_width, lin, fh, offs):
     line_window = []
     refresh()"""
 
+def scroll_line(new_text, line_num=-1, color="yellow"):
+    _font = font_mini
+    fh = _font["fontheight"]
+    max_lines = int(5 * (display.height // 32))
+    lin = max_lines - 1 if line_num == -1 else line_num
+    y_base = (6 * lin) + 1
+    w = display.width
+    _c = _color_map.get(color, 5)
+    new_lower = new_text.lower()
+    step = max(2, w // 16)
+    cols = []
+    for ch in new_lower:
+        if ch not in _font: ch = "_"
+        g = _font[ch]
+        gw = g[0]
+        for wx in range(gw):
+            inv_w = gw - wx
+            col = []
+            for h in range(fh):
+                col.append(_c if (g[h + 1] >> inv_w) & 1 else 0)
+            cols.append(col)
+    total = w
+    frame = 0
+    while frame < total:
+        s = min(step, total - frame)
+        frame += s
+        for y in range(y_base, y_base + fh):
+            hi = y - y_base
+            for x in range(w - s):
+                window[x, y] = window[x + s, y]
+            for x in range(w - s, w):
+                ci = x - (w - frame)
+                window[x, y] = cols[ci][hi] if 0 <= ci < len(cols) else 0
+        display.refresh()
+    global line_window
+    while len(line_window) <= lin:
+        line_window.append("")
+    line_window[lin] = new_text
+
 def refresh(): display.refresh()
 
 def clearscreen(on_or_off=False, lines=False):
