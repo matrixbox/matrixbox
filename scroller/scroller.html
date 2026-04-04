@@ -38,7 +38,7 @@
 
 <div class="card">
 <div class="section-title">Font Size</div>
-<div class="seg">
+<div class="seg" id="font-size-seg">
 <button id="sz_mini" onclick="pf('mini')">Mini</button>
 <button id="sz_small" onclick="pf('small')">Small</button>
 <button id="sz_large" onclick="pf('large')">Large</button>
@@ -80,9 +80,9 @@ function p(q){fetch("/?"+q,{method:"POST"})}
 function send(){var t=document.getElementById("text").value;if(t)p("text="+encodeURIComponent(t))}
 function pc(c){p("color="+c)}
 function psc(c){p("shadow_color="+c)}
-function pf(s){p("size="+s);document.querySelectorAll(".seg button[id^=sz_]").forEach(function(b){b.classList.toggle("on",b.id==="sz_"+s)})}
+function pf(s){p("size="+s);document.querySelectorAll("#font-size-seg button").forEach(function(b){b.classList.toggle("on",b.id==="sz_"+s)})}
 function pr(v){p("reverse="+v);document.getElementById("dir_rtl").classList.toggle("on",v===1);document.getElementById("dir_ltr").classList.toggle("on",v===0)}
 function pu(){var v=document.getElementById("url").value;if(v)fetch("/",{method:"POST",body:"url="+v})}
-document.getElementById("text").addEventListener("change",function(e){p("text="+encodeURIComponent(e.target.value.replace(/#/g,"%23")))});
+document.getElementById("text").addEventListener("change",function(e){p("text="+encodeURIComponent(e.target.value))});
 document.getElementById("sz_large").classList.add("on");
 </script>

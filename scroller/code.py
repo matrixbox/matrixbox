@@ -166,7 +166,10 @@ def scroller_post(request):
     if "text" in request.params:
         scroller_text = padded(url_decoder(request.params["text"]))
     if "reverse" in request.params:
-        reverse_direction = 1 - reverse_direction
+        try:
+            reverse_direction = int(request.params["reverse"])
+        except:
+            reverse_direction = 1 - reverse_direction
         return (200, {}, "OK")
 
     if "size" in request.params:

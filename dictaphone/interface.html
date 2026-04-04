@@ -39,7 +39,7 @@ function clearAll(){log.innerHTML="";fetch("/clear")}
 
 function sendManual(){var inp=document.getElementById("manual");var t=inp.value.trim();if(t){send(t);addLog(t);inp.value=""}}
 
-document.getElementById("manual").addEventListener("keydown",function(e){if(e.key==="Enter")sendManual()});
+document.getElementById("manual").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();sendManual()}});
 
 function toggleMic(){if(listening){stopMic();return;}
   if(!("webkitSpeechRecognition" in window)&&!("SpeechRecognition" in window)){status.textContent="Speech recognition not supported in this browser.";return;}

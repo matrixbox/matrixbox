@@ -60,7 +60,7 @@
 
 <div class="card">
 <div class="section-title">Scale</div>
-<div class="seg">
+<div class="seg" id="scale-seg">
 <button id="sc_1" onclick="ss(1)">1×</button>
 <button id="sc_2" onclick="ss(2)">2×</button>
 <button id="sc_3" onclick="ss(3)">3×</button>
@@ -80,7 +80,7 @@ upv();clearTimeout(dt);
 dt=setTimeout(function(){p((t==='f'?'f_hex':'b_hex')+'='+h.slice(1))},200);
 }
 function sf(s){p('size='+s);document.querySelectorAll('#font-seg button').forEach(function(b){b.classList.remove('on')});document.getElementById('fb_'+s).classList.add('on')}
-function ss(n){p('scale='+n);document.querySelectorAll('#font-seg ~ .seg button').forEach(function(b){b.classList.remove('on')});document.getElementById('sc_'+n).classList.add('on')}
+function ss(n){p('scale='+n);document.querySelectorAll('#scale-seg button').forEach(function(b){b.classList.remove('on')});document.getElementById('sc_'+n).classList.add('on')}
 function upv(){var v=document.getElementById('pv');v.style.backgroundColor=document.getElementById('bp').value;v.style.color=document.getElementById('fp').value}
 fetch("/settings").then(function(r){return r.json()}).then(function(s){
 document.getElementById("show_day").checked=s.show_day==1;
@@ -92,7 +92,7 @@ if(s.f_hex)document.getElementById("fp").value=s.f_hex;
 if(s.b_hex)document.getElementById("bp").value=s.b_hex;
 if(s.font){var fb=document.getElementById('fb_'+s.font);if(fb){document.querySelectorAll('#font-seg button').forEach(function(b){b.classList.remove('on')});fb.classList.add('on')}}
 var sc=s.scale||1;var sb=document.getElementById('sc_'+sc);
-document.querySelectorAll('#font-seg ~ .seg button').forEach(function(b){b.classList.remove('on')});
+document.querySelectorAll('#scale-seg button').forEach(function(b){b.classList.remove('on')});
 if(sb)sb.classList.add('on');
 upv();
 });

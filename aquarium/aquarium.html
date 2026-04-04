@@ -1,9 +1,9 @@
 <div class="card">
 <div class="section-title">Fish</div>
-<label>Fish Count <span id="fishVal" style="color:var(--accent2);font-size:.8rem;text-transform:none;letter-spacing:0">5</span></label>
+<label>Fish Count</label>
 <div class="range-wrap">
 <input type="range" id="maxFish" min="0" max="10" value="5" oninput="g('fishVal').textContent=this.value" onchange="send('max_fish='+this.value)">
-<span class="range-val" id="fishValR">5</span>
+<span class="range-val" id="fishVal">5</span>
 </div>
 
 <label>Fish Types</label>
@@ -25,10 +25,10 @@
 <div class="card">
 <div class="section-title">Bubbles</div>
 <div class="toggle-item"><span>Enable Bubbles</span><label class="sw"><input type="checkbox" id="bubbles" onchange="send('bubbles='+this.checked)"><span class="sl"></span></label></div>
-<label>Max Bubbles <span id="bubVal" style="color:var(--accent2);font-size:.8rem;text-transform:none;letter-spacing:0">6</span></label>
+<label>Max Bubbles</label>
 <div class="range-wrap">
 <input type="range" id="maxBub" min="0" max="12" value="6" oninput="g('bubVal').textContent=this.value" onchange="send('max_bubbles='+this.value)">
-<span class="range-val" id="bubValR">6</span>
+<span class="range-val" id="bubVal">6</span>
 </div>
 <label style="margin-top:14px">Bubble Rate</label>
 <div class="seg" id="bubRate">
@@ -50,13 +50,11 @@ function g(id){return document.getElementById(id)}
 function send(p){fetch("/?"+p,{method:"POST"}).then(r=>r.json()).catch(()=>{})}
 function setRate(id,v){document.querySelectorAll("#"+id+" button").forEach(function(b){b.classList.toggle("on",parseInt(b.dataset.v)===v)})}
 function updateTypes(){var t=[];document.querySelectorAll("#fishTypes input:checked").forEach(function(c){t.push(c.value)});if(t.length==0)return;send("fish_types="+t.join(","))}
-g("maxFish").oninput=function(){g("fishValR").textContent=this.value};
-g("maxBub").oninput=function(){g("bubValR").textContent=this.value};
 function sv(){var b=g("saveBtn");b.textContent="Saved!";send("save=1");setTimeout(function(){b.innerHTML="&#128190; Save Settings"},1500)}
 function load(){
  fetch("/settings").then(r=>r.json()).then(function(d){
-  g("maxFish").value=d.max_fish||5;g("fishValR").textContent=d.max_fish||5;
-  g("maxBub").value=d.max_bubbles||6;g("bubValR").textContent=d.max_bubbles||6;
+  g("maxFish").value=d.max_fish||5;g("fishVal").textContent=d.max_fish||5;
+  g("maxBub").value=d.max_bubbles||6;g("bubVal").textContent=d.max_bubbles||6;
   g("bubbles").checked=d.bubbles!==false;
   g("caustics").checked=d.caustics!==false;
   var ft=(d.fish_types||"clown,tang,blue,pink").split(",");
