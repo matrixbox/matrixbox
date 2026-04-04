@@ -628,8 +628,7 @@ def _preset(request):
             settings["width"] = w
             settings["height"] = h
             settings["tiles"] = 1
-            try: load_settings.savesettings(settings)
-            except: pass
+            savesettings(settings)
             microcontroller.reset()
     return (200, {}, "")
 
@@ -668,8 +667,7 @@ def _settings(request):
 @ampule.route("/save", method='POST')
 def _save(request):
     global settings
-    try: load_settings.savesettings(settings)
-    except: print("Failed to save!")
+    savesettings(settings)
     return (200, {}, '{"ok":true}')
 
 @ampule.route('/download')
