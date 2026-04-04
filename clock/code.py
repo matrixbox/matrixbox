@@ -5,7 +5,7 @@ import load_screen
 from check_button import check_if_button_pressed
 from load_screen import *
 microcontroller.cpu.frequency = 240000000
-with open("clock.html") as f: html = f.read()
+with open("clock.html") as f: html_body = f.read()
 
 DISP_W = settings["width"]
 DISP_H = settings["height"]
@@ -55,7 +55,7 @@ def exit_webinterface(request):
 
 @ampule.route("/", method="GET")
 def webinterface(request):
-    return (200, {}, html)
+    return (200, {}, header("Clock", app=True) + html_body + footer())
 
 @ampule.route("/settings", method="GET")
 def get_settings(request):

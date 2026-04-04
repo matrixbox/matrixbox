@@ -5,8 +5,7 @@ from check_button import check_if_button_pressed
 from load_screen import *
 microcontroller.cpu.frequency = 180000000
 
-with open("interface.html") as f:
-    html = f.read()
+with open("interface.html") as f: html_body = f.read()
 
 W = display_width()
 H = display_height()
@@ -65,7 +64,7 @@ def add_text(text):
 
 @ampule.route("/", method="GET")
 def dictaphone_interface(request):
-    return (200, {}, html)
+    return (200, {}, header("Dictaphone", app=True) + html_body + footer())
 
 @ampule.route("/exit", method="GET")
 def exit_webinterface(request):

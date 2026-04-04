@@ -25,8 +25,8 @@ except:
 _index = 0
 
 try:
-    with open("gif.html") as f: html = f.read()
-except: html = ""
+    with open("gif.html") as f: html_body = f.read()
+except: html_body = ""
 
 @ampule.route("/exit", method="GET")
 def webinterface(request):
@@ -36,14 +36,7 @@ def webinterface(request):
 
 @ampule.route("/", method="GET")
 def gif_webinterface(request):
-    return (200, {}, """
-<html>
-<a href="/exit">&#x274C;</a><button style='background-color:#73a9ff' onclick="fetch('/?next=true', {method: 'POST'})">&#11179;</button>
-            
-<h1>GIF-webinterface</h1>
-
-</html>
-""" + html)
+    return (200, {}, header("GIF Player", app=True) + html_body + footer())
 
 @ampule.route('/', method="POST")
 def webinterface_post(request):

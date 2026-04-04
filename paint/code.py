@@ -6,7 +6,7 @@ w = display.width
 h = display.height
 
 with open("interface.html") as f:
-    html = f.read().replace("__WIDTH__", str(w)).replace("__HEIGHT__", str(h))
+    html_body = f.read().replace("__WIDTH__", str(w)).replace("__HEIGHT__", str(h))
 
 # Build palette color table for JS: index -> [r, g, b]
 palette_colors = {}
@@ -20,7 +20,7 @@ for i in range(12):
     except:
         pass
 
-html = html.replace("__PALETTE__", json.dumps(palette_colors))
+html_body = html_body.replace("__PALETTE__", json.dumps(palette_colors))
 
 @ampule.route("/exit", method="GET")
 def paint_exit(request):
@@ -30,7 +30,7 @@ def paint_exit(request):
 
 @ampule.route("/", method="GET")
 def paint_home(request):
-    return (200, {}, html)
+    return (200, {}, header("Paint", app=True) + html_body + footer())
 
 @ampule.route("/px", method="POST")
 def paint_pixel(request):

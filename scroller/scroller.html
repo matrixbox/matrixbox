@@ -1,203 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Scroller Control</title>
-
-<style>
-    body {
-        background: #0d0d0d;
-        color: #e6e6e6;
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    h1 {
-        margin-bottom: 10px;
-        font-weight: 300;
-        letter-spacing: 1px;
-    }
-
-    .container {
-        width: 90%;
-        max-width: 500px;
-        background: #1a1a1a;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    }
-
-    label {
-        display: block;
-        margin-top: 15px;
-        margin-bottom: 5px;
-        font-size: 14px;
-        color: #bfbfbf;
-    }
-
-    input[type="text"] {
-        width: 100%;
-        padding: 10px;
-        border-radius: 6px;
-        border: none;
-        background: #333;
-        color: #fff;
-        font-size: 14px;
-        margin-bottom: 10px;
-    }
-
-    button {
-        background: #333;
-        color: #fff;
-        border: none;
-        padding: 10px 14px;
-        margin: 5px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: 0.2s;
-        font-size: 14px;
-    }
-
-    button:hover {
-        background: #555;
-    }
-
-    .color-btn {
-        width: 28px;
-        height: 28px;
-        border-radius: 4px;
-        border: 2px solid #444;
-        padding: 0;
-    }
-
-    .top-right {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: #888;
-        text-decoration: none;
-        font-size: 20px;
-    }
-</style>
-</head>
-
-<body>
-
-<a href="/exit" class="top-right">✖</a>
-
-<h1>Scroller Control</h1>
-
-<div class="container">
-
-    <label>Text</label>
-    <input type="text" id="text">
-
-    <label>Offset (0–32)</label>
-    <input type="text" id="offset">
-
-    <label>Scale (1–2)</label>
-    <input type="text" id="scale">
-
-    <div style="margin-top: 10px;">
-        <button id="mini">Mini</button>
-        <button id="small">Small</button>
-        <button id="large">Large</button>
-    </div>
-
-    <div style="margin-top: 10px;">
-        <button id="white"  class="color-btn" style="background:white;"></button>
-        <button id="blue"   class="color-btn" style="background:blue;"></button>
-        <button id="red"    class="color-btn" style="background:red;"></button>
-        <button id="yellow" class="color-btn" style="background:yellow;"></button>
-        <button id="orange" class="color-btn" style="background:orange;"></button>
-        <button id="green"  class="color-btn" style="background:green;"></button>
-    </div>
-
-
-<br>
-<label style="margin-top: 20px;">Shadow Color</label>
-<div style="margin-top: 10px;">
-    <button id="shadow_black"     class="color-btn" style="background:black;"></button>
-    <button id="shadow_yellow"    class="color-btn" style="background:yellow;"></button>
-    <button id="shadow_brightwhite" class="color-btn" style="background:white;"></button>
-    <button id="shadow_blue"      class="color-btn" style="background:blue;"></button>
-    <button id="shadow_red"       class="color-btn" style="background:red;"></button>
-    <button id="shadow_white"     class="color-btn" style="background:#ddd;"></button>
-    <button id="shadow_light_blue" class="color-btn" style="background:lightblue;"></button>
-    <button id="shadow_green"     class="color-btn" style="background:green;"></button>
-    <button id="shadow_grey"      class="color-btn" style="background:grey;"></button>
-    <button id="shadow_black2"    class="color-btn" style="background:#222;"></button>
-    <button id="shadow_pink"      class="color-btn" style="background:pink;"></button>
-    <button id="shadow_orange"    class="color-btn" style="background:orange;"></button>
+<div class="card">
+<div class="section-title">Text</div>
+<div style="display:flex;gap:8px">
+<input type="text" id="text" placeholder="Enter message…">
+<button class="btn btn-sm" onclick="send()">&#9654; Send</button>
+</div>
 </div>
 
-
-    <label style="margin-top: 20px;">URL</label>
-    <input type="text" id="url">
-
-    <div style="margin-top: 20px;">
-        <button id="reverse">Reverse Direction</button>
-        <button id="scroll">Scroll / Static</button>
-    </div>
-
+<div class="card">
+<div class="section-title">Text Color</div>
+<div class="swatch-row">
+<div class="color-swatch" style="background:#fff" onclick="pc('white')"></div>
+<div class="color-swatch" style="background:#4488ff" onclick="pc('blue')"></div>
+<div class="color-swatch" style="background:#ff4444" onclick="pc('red')"></div>
+<div class="color-swatch" style="background:#ffff44" onclick="pc('yellow')"></div>
+<div class="color-swatch" style="background:#ff8800" onclick="pc('orange')"></div>
+<div class="color-swatch" style="background:#44ff44" onclick="pc('green')"></div>
 </div>
+</div>
+
+<div class="card">
+<div class="section-title">Shadow Color</div>
+<div class="swatch-row">
+<div class="color-swatch" style="background:#000;border-color:rgba(255,255,255,.2)" onclick="psc('black')"></div>
+<div class="color-swatch" style="background:#ffff44" onclick="psc('yellow')"></div>
+<div class="color-swatch" style="background:#fff" onclick="psc('brightwhite')"></div>
+<div class="color-swatch" style="background:#4488ff" onclick="psc('blue')"></div>
+<div class="color-swatch" style="background:#ff4444" onclick="psc('red')"></div>
+<div class="color-swatch" style="background:#ddd" onclick="psc('white')"></div>
+<div class="color-swatch" style="background:#add8e6" onclick="psc('light_blue')"></div>
+<div class="color-swatch" style="background:#44ff44" onclick="psc('green')"></div>
+<div class="color-swatch" style="background:#888" onclick="psc('grey')"></div>
+<div class="color-swatch" style="background:#222" onclick="psc('black2')"></div>
+<div class="color-swatch" style="background:#ffb6c1" onclick="psc('pink')"></div>
+<div class="color-swatch" style="background:#ff8800" onclick="psc('orange')"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">Font Size</div>
+<div class="seg" id="font-size-seg">
+<button id="sz_mini" onclick="pf('mini')">Mini</button>
+<button id="sz_small" onclick="pf('small')">Small</button>
+<button id="sz_large" onclick="pf('large')">Large</button>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">Direction</div>
+<div class="seg">
+<button id="dir_rtl" class="on" onclick="pr(1)">&#8592; Right to Left</button>
+<button id="dir_ltr" onclick="pr(0)">Left to Right &#8594;</button>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">URL Feed</div>
+<div style="display:flex;gap:8px">
+<input type="text" id="url" placeholder="http://…">
+<button class="btn btn-sm" onclick="pu()">Set</button>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">Offset &amp; Scale</div>
+<label>Vertical Offset</label>
+<div class="range-wrap">
+<input type="range" id="offset" min="0" max="32" step="1" value="0" oninput="document.getElementById('v_off').textContent=this.value" onchange="p('offset='+this.value)">
+<span class="range-val" id="v_off">0</span>
+</div>
+<label>Scale</label>
+<div class="range-wrap">
+<input type="range" id="scale" min="1" max="2" step="1" value="1" oninput="document.getElementById('v_sc').textContent=this.value+'×'" onchange="p('scale='+this.value)">
+<span class="range-val" id="v_sc">1×</span>
+</div>
+</div>
+
 <script>
-[
-    "black","yellow","brightwhite","blue","red","white",
-    "light_blue","green","grey","black2","pink","orange"
-].forEach(c =>
-    document.getElementById("shadow_" + c).addEventListener("click", () =>
-        fetch("/?shadow_color=" + c, { method: "POST" })
-    )
-);
+function p(q){fetch("/?"+q,{method:"POST"})}
+function send(){var t=document.getElementById("text").value;if(t)p("text="+encodeURIComponent(t))}
+function pc(c){p("color="+c)}
+function psc(c){p("shadow_color="+c)}
+function pf(s){p("size="+s);document.querySelectorAll("#font-size-seg button").forEach(function(b){b.classList.toggle("on",b.id==="sz_"+s)})}
+function pr(v){p("reverse="+v);document.getElementById("dir_rtl").classList.toggle("on",v===1);document.getElementById("dir_ltr").classList.toggle("on",v===0)}
+function pu(){var v=document.getElementById("url").value;if(v)fetch("/",{method:"POST",body:"url="+v})}
+document.getElementById("text").addEventListener("change",function(e){p("text="+encodeURIComponent(e.target.value))});
+document.getElementById("sz_large").classList.add("on");
 </script>
-
-
-<script>
-function postParam(param, value) {
-    fetch(`/?${param}=${value}`, { method: "POST" });
-}
-
-document.getElementById("text").addEventListener("change", e =>
-    postParam("text", e.target.value.replace(/#/g, "%23"))
-);
-
-document.getElementById("offset").addEventListener("change", e =>
-    postParam("offset", e.target.value)
-);
-
-document.getElementById("scale").addEventListener("change", e =>
-    postParam("scale", e.target.value)
-);
-
-document.getElementById("url").addEventListener("change", e =>
-    fetch("/", { method: "POST", body: `url=${e.target.value}` })
-);
-
-["mini","small","large"].forEach(id =>
-    document.getElementById(id).addEventListener("click", () =>
-        postParam("size", id)
-    )
-);
-
-["white","blue","red","yellow","orange","green"].forEach(id =>
-    document.getElementById(id).addEventListener("click", () =>
-        postParam("color", id)
-    )
-);
-
-document.getElementById("reverse").addEventListener("click", () =>
-    postParam("reverse", "true")
-);
-
-document.getElementById("scroll").addEventListener("click", () =>
-    postParam("scroll", "true")
-);
-</script>
-
-</body>
-</html>

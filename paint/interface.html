@@ -1,34 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Paint</title>
 <style>
-:root{--bg:#0d0d12;--surface:#18181f;--border:rgba(255,255,255,.07);--muted:#888}
-*{box-sizing:border-box;margin:0;padding:0;touch-action:none}
-body{background:var(--bg);color:#e8e8f0;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:8px;gap:8px;min-height:100vh;overflow-x:hidden}
+*{touch-action:none}
+.page{max-width:none!important;padding:4px!important;display:flex;flex-direction:column;align-items:center;gap:8px}
 h2{font-size:.9rem;font-weight:700;letter-spacing:1px}
 .toolbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center}
 .toolbar button{width:36px;height:36px;border:2px solid var(--border);border-radius:8px;background:var(--surface);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.toolbar button.active{border-color:#6c63ff;box-shadow:0 0 6px #6c63ff88}
+.toolbar button.active{border-color:var(--accent);box-shadow:0 0 6px rgba(124,111,255,.5)}
 .palette{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
 .swatch{width:28px;height:28px;border-radius:6px;border:2px solid transparent;cursor:pointer}
-.swatch.active{border-color:#fff;box-shadow:0 0 4px #fff8}
-#canvas{border:1px solid #333;image-rendering:pixelated;cursor:crosshair;max-width:100%}
+.swatch.active{border-color:#fff;box-shadow:0 0 4px rgba(255,255,255,.5)}
+#canvas{border:1px solid var(--border);image-rendering:pixelated;cursor:crosshair;max-width:100%}
 .actions{display:flex;gap:6px}
 .actions button{padding:6px 14px;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;color:#fff}
-.btn-clear{background:#ff4b4b}
-.btn-exit{background:#555}
-.btn-save{background:#6c63ff}
-.btn-load{background:#00bfff}
+.btn-clear{background:#e03c3c}
+.btn-exit{background:var(--surface3)}
+.btn-save{background:var(--accent)}
+.btn-load{background:var(--accent2);color:#000}
 .file-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center}
-.file-bar input{background:#22223a;border:1.5px solid rgba(255,255,255,.07);border-radius:8px;color:#e8e8f0;padding:5px 10px;font-size:.8rem;width:120px}
-.file-bar select{background:#22223a;border:1.5px solid rgba(255,255,255,.07);border-radius:8px;color:#e8e8f0;padding:5px 8px;font-size:.8rem;min-width:100px}
-.btn-del{background:#ff4b4b;font-size:.7rem;padding:4px 8px}
+.file-bar input{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:5px 10px;font-size:.8rem;width:120px}
+.file-bar select{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:5px 8px;font-size:.8rem;min-width:100px}
+.btn-del{background:#e03c3c;font-size:.7rem;padding:4px 8px}
 </style>
-</head>
-<body>
 <h2>Paint</h2>
 
 <div class="toolbar">
@@ -51,7 +42,6 @@ h2{font-size:.9rem;font-weight:700;letter-spacing:1px}
 
 <div class="actions">
 <button class="btn-clear" onclick="clearCanvas()">Clear</button>
-<a href="/exit"><button class="btn-exit">Exit</button></a>
 </div>
 
 <script>
@@ -237,5 +227,3 @@ function deleteProject(){
     fetch("/delete",{method:"POST",body:JSON.stringify({name:name})}).then(()=>refreshFiles());
 }
 </script>
-</body>
-</html>

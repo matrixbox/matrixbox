@@ -5,7 +5,7 @@ from __main__ import *
 exit = False
 start_x = 300
 padding_length = 30
-with open("typewriter.html") as f: html = f.read()
+with open("typewriter.html") as f: html_body = f.read()
 
 @ampule.route("/exit", method="GET")
 def webinterface(request):
@@ -26,7 +26,7 @@ def scroller_webinterface_port(request):
 @ampule.route("/", method="GET")
 def scroller_webinterface(request):
     print(request.params)
-    return (200, {}, html)
+    return (200, {}, header("Typewriter", app=True) + html_body + footer())
 
 
 clearscreen(lines=True)
