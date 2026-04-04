@@ -100,6 +100,7 @@ def initialize_app():
         _wifi_address = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
         pprint(_wifi_address)
         pprint("Select app:")
+        show_first_app()
         return False
 
 def savesettings(settings):
@@ -121,6 +122,11 @@ def installed_apps():
             installed_apps.append(app)
     return installed_apps if len(installed_apps) else ["No apps found"]
 
+def show_first_app():
+    try: load_settings.installed_apps_list[1]
+    except: load_settings.installed_apps_list = installed_apps()
+    pprint(load_settings.installed_apps_list[0], line=-1, color="yellow", clear=True, _refresh=True)
+
 def next_program_in_list(run=False):
     try: load_settings.installed_apps_list[1]
     except: load_settings.installed_apps_list = installed_apps()
@@ -130,7 +136,7 @@ def next_program_in_list(run=False):
     print(load_settings.installed_apps_list)
     load_settings.installed_apps_list.append(load_settings.installed_apps_list[0])
     load_settings.installed_apps_list.pop(0)
-    pprint(load_settings.installed_apps_list[0], line=-1, color="yellow", clear=True, _refresh=True)
+    scroll_line(load_settings.installed_apps_list[0])
 
 def check_for_button_next_program():
     global screensaver
@@ -173,6 +179,7 @@ while 1:
     while wifi.radio.connected or wifi.radio.ap_active:
         settings["wifi_power"] = wifi.radio.tx_power
         pprint("Select app:")
+        show_first_app()
         while wifi.radio.connected:# or wifi.radio.ap_active:
             first_start = False
             if autostart:
