@@ -231,6 +231,10 @@ def install_app(app):
         except: pass
         window.fill(0)
         pprint("Done.", 1, _clearscreen=True)
+        if app == "/":
+            try:
+                with open("reboot_required", "w") as f: f.write("")
+            except OSError: pass
         __main__.show_logo()
         
 
@@ -405,11 +409,16 @@ input[type="color"]::-webkit-color-swatch{border:none;border-radius:5px}
 .back-btn:hover{color:var(--text);border-color:var(--accent)}
 .error-msg{color:#ff7070;font-size:.82rem;margin-top:10px;text-align:center}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes reboot-blink{0%,100%{color:#ff6060;border-color:rgba(255,96,96,.7);background:rgba(255,96,96,.15)}50%{color:var(--muted);border-color:var(--border);background:transparent}}
+.nav-x.reboot-needed{animation:reboot-blink 1s ease-in-out infinite}
 .busy-warn{position:fixed;top:46px;left:0;right:0;background:linear-gradient(90deg,#e8960e,#f8ca55);color:#111;text-align:center;font-weight:700;font-size:.86rem;padding:10px;z-index:200;letter-spacing:.3px}
 """
 
 def navbar():
     ip = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
+    try:
+        with open("reboot_required"): _reboot_cls = " reboot-needed"
+    except OSError: _reboot_cls = ""
     return f"""<nav class="navbar">
 <a class="nav-brand" href="/">MatrixBox</a>
 <a class="nav-link" href="/">Apps</a>
@@ -417,7 +426,7 @@ def navbar():
 <a class="nav-link" href="/settings">Settings</a>
 <div class="nav-spacer"></div>
 <div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
-<button class="nav-x" onclick="if(confirm('Restart?'))fetch('/reset',{{method:'POST'}})" title="Restart">&#x2715;</button>
+<button class="nav-x{_reboot_cls}" onclick="if(confirm('Restart?'))fetch('/reset',{{method:'POST'}})" title="Restart">&#x2715;</button>
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
 
@@ -691,7 +700,10 @@ def showsettings(request):
     return (200, {}, str(settings))
 
 @ampule.route('/reset', method='POST')
-def reset(request): microcontroller.reset()
+def reset(request):
+    try: os.remove("reboot_required")
+    except OSError: pass
+    microcontroller.reset()
 
 
 def url_decoder(url):
