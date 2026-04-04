@@ -302,13 +302,14 @@ def list_available_apps(apps):
     sys_ver = 'v' + sys_l if sys_l else 'system'
     if sys_r and sys_l and sys_r != sys_l:
         sys_ver += ' &#x2192; v' + sys_r
-        sys_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="installsystem()">&#x21BB; Update</button>'
+        sys_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="installsystem(event)">&#x21BB; Update</button>'
     else:
-        sys_btn = '<button class="btn btn-sm btn-warning" onclick="installsystem()">&#x21BB; Update</button>'
-    applist = '<div class="download-item"><div><span class="download-name">&#x1F4E6; System</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">' + sys_ver + '</div></div>' + sys_btn + """\n    <script>function installsystem() {
-    fetch("/?install=system", { method: "POST" }).then(() => {
-        setTimeout(() => { window.location.href = "/download"; }, 10);
-    });}</script></div>"""
+        sys_btn = '<button class="btn btn-sm btn-warning" onclick="installsystem(event)">&#x21BB; Update</button>'
+    applist = '<div class="download-item"><div><span class="download-name">&#x1F4E6; System</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">' + sys_ver + '</div></div>' + sys_btn + """\n    <script>function _busyWait(url,btn){
+    var old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></span>';
+    var w=document.createElement('div');w.className='busy-warn';w.textContent='\u26A0 Writing to disk \u2014 do not turn off!';document.body.appendChild(w);
+    fetch(url,{method:"POST"}).then(()=>{setTimeout(()=>{window.location.href="/download"},10)}).catch(()=>{w.remove();btn.innerHTML=old;btn.disabled=false});}
+    function installsystem(e){_busyWait("/?install=system",e.currentTarget)}</script></div>"""
 
     for dir in apps:
         if dir == "/" or dir == "lib": continue
@@ -319,22 +320,16 @@ def list_available_apps(apps):
             ver_info = 'v' + l_ver if l_ver else sz
             if r_ver and l_ver and r_ver != l_ver:
                 ver_info += ' &#x2192; v' + r_ver
-            applist += f'<div class="download-item"><div><span class="download-name">&#x2713; {dir}</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">{ver_info}</div></div><div style="display:flex;gap:6px">' + """<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="install"""+dir+"""()">&#x21BB; Update</button><button class="btn btn-sm" style="background:#ff4b4b;color:#fff;padding:7px 9px" onclick="if(confirm('Delete """+dir+"""?'))delete"""+dir+"""()">&#x2715;</button>
-<script>function install"""+dir+"""() {
-    fetch("/?install="""+dir+"""", { method: "POST" }).then(() => {
-        setTimeout(() => { window.location.href = "/download"; }, 10);
-    });}
-function delete"""+dir+"""() {
-    fetch("/?delete="""+dir+"""", { method: "POST" }).then(() => {
-        setTimeout(() => { window.location.href = "/download"; }, 10);
-    });}</script></div></div>"""
+                upd_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="install'+dir+'(event)">&#x21BB; Update</button>'
+            else:
+                upd_btn = '<button class="btn btn-sm btn-warning" onclick="install'+dir+'(event)">&#x21BB; Update</button>'
+            applist += f'<div class="download-item"><div><span class="download-name">&#x2713; {dir}</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">{ver_info}</div></div><div style="display:flex;gap:6px">' + upd_btn + """<button class="btn btn-sm" style="background:#ff4b4b;color:#fff;padding:7px 9px" onclick="if(confirm('Delete """+dir+"""?'))del"""+dir+"""(event)">&#x2715;</button>
+<script>function install"""+dir+"""(e){_busyWait("/?install="""+dir+"""",e.currentTarget)}
+function del"""+dir+"""(e){_busyWait("/?delete="""+dir+"""",e.currentTarget)}</script></div></div>"""
         else:
             ver_label = f'{dir} <span style="color:var(--accent2)">v{r_ver}</span>' if r_ver else dir
-            applist += f'<div class="download-item"><span class="download-name">{ver_label}</span>' + """<button class="btn btn-sm btn-success" onclick="install"""+dir+"""()">&#x2B07; Install</button>
-<script>function install"""+dir+"""() {
-    fetch("/?install="""+dir+"""", { method: "POST" }).then(() => {
-        setTimeout(() => { window.location.href = "/download"; }, 10);
-    });}</script></div>"""
+            applist += f'<div class="download-item"><span class="download-name">{ver_label}</span>' + """<button class="btn btn-sm btn-success" onclick="install"""+dir+"""(event)">&#x2B07; Install</button>
+<script>function install"""+dir+"""(e){_busyWait("/?install="""+dir+"""",e.currentTarget)}</script></div>"""
     return applist
 
 
@@ -390,6 +385,8 @@ select option{background:var(--surface2)}
 .back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.85rem;padding:8px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-top:14px;transition:color .2s,border-color .2s}
 .back-btn:hover{color:var(--text);border-color:var(--accent)}
 .error-msg{color:#ff7070;font-size:.82rem;margin-top:10px;text-align:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.busy-warn{position:fixed;top:44px;left:0;right:0;background:#f5a623;color:#111;text-align:center;font-weight:700;font-size:.88rem;padding:10px;z-index:200;letter-spacing:.3px}
 """
 
 def navbar():
