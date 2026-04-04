@@ -15,8 +15,7 @@ try:
 except:
     cfg = {"symbols": "AAPL,MSFT,GOOG,AMZN,TSLA", "speed": 2, "interval": 60}
 
-with open("stocks.html") as f:
-    html = f.read()
+with open("stocks.html") as f: html_body = f.read()
 
 # palette slots: 7=green, 4=red, 5=white/grey, 0=black
 palette[0] = (0, 0, 0)
@@ -177,7 +176,7 @@ def build_ticker_bitmap():
 # Web interface
 @ampule.route("/", method="GET")
 def stock_interface(request):
-    return (200, {}, html)
+    return (200, {}, header("Stocks", app=True) + html_body + footer())
 
 @ampule.route("/exit", method="GET")
 def exit_interface(request):

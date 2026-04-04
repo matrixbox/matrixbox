@@ -5,7 +5,7 @@ import __main__
 #from main import connect_to_network
 #import __main__
 #print(dir(__main__))
-exitbutton = """<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#0d0d12;color:#e8e8f0;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;margin:0}a.xbtn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#ff4b4b,#ff7070);color:#fff;font-weight:700;font-size:1rem;text-decoration:none}.lbl{color:#888;font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px}</style></head><body><p class="lbl">App Running</p><a class="xbtn" href="/exit">&#x2715; Exit App</a>"""
+exitbutton = """<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#08080f;color:#eeeef5;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;margin:0}a.xbtn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;background:linear-gradient(135deg,#e03c3c,#ff6060);color:#fff;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 2px 14px rgba(224,60,60,.35)}.lbl{color:#7070a0;font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px}</style></head><body><p class="lbl">App Running</p><a class="xbtn" href="/exit">&#x2715; Exit App</a>"""
 backbutton = """<a class="back-btn" href="../">&#8592; Back</a>"""
 bootloaderbutton = """<button class="btn btn-danger" onclick="if(confirm('Enter bootloader mode?'))fetch('/bootloader',{method:'POST'})">&#x26A1; Bootloader</button>"""
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
@@ -338,61 +338,80 @@ def latest_wifi_error():
 
 def css():
     return """
-:root{--bg:#0d0d12;--surface:#18181f;--surface2:#22223a;--accent:#6c63ff;--accent2:#00bfff;--text:#e8e8f0;--muted:#888899;--border:rgba(255,255,255,.07);--r:12px;--r-lg:18px}
+:root{--bg:#08080f;--surface:#111118;--surface2:#1c1c2a;--surface3:#26263a;--accent:#7c6fff;--accent2:#00d4ff;--text:#eeeef5;--muted:#7070a0;--border:rgba(120,120,255,.1);--r:10px;--r-lg:16px;--shadow:0 4px 24px rgba(0,0,0,.5)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding-bottom:32px}
-.navbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:0 12px;display:flex;align-items:center;height:44px;gap:6px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.nav-brand{font-weight:800;font-size:.95rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-right:8px;text-decoration:none}
-.nav-link{color:var(--muted);text-decoration:none;font-size:.78rem;padding:6px 10px;border-radius:8px;transition:color .2s,background .2s;font-weight:500}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding-bottom:40px}
+.navbar{position:sticky;top:0;z-index:100;background:rgba(8,8,15,.85);border-bottom:1px solid var(--border);padding:0 14px;display:flex;align-items:center;height:46px;gap:4px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.nav-brand{font-weight:800;font-size:.9rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-right:6px;text-decoration:none;letter-spacing:-.2px}
+.nav-title{font-weight:600;font-size:.9rem;color:var(--text);flex:1;padding-left:4px}
+.nav-link{color:var(--muted);text-decoration:none;font-size:.76rem;padding:5px 9px;border-radius:7px;transition:color .15s,background .15s;font-weight:500}
 .nav-link:hover{color:var(--text);background:var(--surface2)}
 .nav-spacer{flex:1}
-.nav-info{color:var(--muted);font-size:.7rem;letter-spacing:.3px;text-align:right;line-height:1.3}
+.nav-info{color:var(--muted);font-size:.68rem;letter-spacing:.2px;text-align:right;line-height:1.4}
 .nav-info span{display:block}
-.nav-x{color:#ff5555;font-size:1.1rem;font-weight:700;text-decoration:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background .2s;margin-left:6px}
-.nav-x:hover{background:rgba(255,85,85,.15)}
-.page{max-width:480px;margin:0 auto;padding:16px}
-.logo{text-align:center;padding:28px 0 20px}
-.logo h1{font-size:1.9rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
-.logo p{color:var(--muted);font-size:.85rem;margin-top:5px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:12px}
-.section-title{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:12px}
-.app-item,.download-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)}
+.nav-x{color:var(--muted);font-size:1rem;font-weight:700;text-decoration:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);transition:color .15s,border-color .15s,background .15s;margin-left:4px}
+.nav-x:hover{color:#ff6060;border-color:rgba(255,96,96,.4);background:rgba(255,96,96,.08)}
+.page{max-width:480px;margin:0 auto;padding:16px 14px}
+.logo{text-align:center;padding:26px 0 18px}
+.logo h1{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
+.logo p{color:var(--muted);font-size:.82rem;margin-top:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.section-title{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.4px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.app-item,.download-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
 .app-item:last-child,.download-item:last-child{border-bottom:none}
-.app-name{font-size:.95rem;font-weight:500;text-transform:capitalize;color:var(--text)}
-.download-name{font-size:.95rem;font-weight:500;color:var(--text)}
-label{display:block;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 5px;font-weight:600}
-input[type="text"],select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:.95rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
-input[type="text"]:focus,select:focus{border-color:var(--accent)}
+.app-name{font-size:.92rem;font-weight:500;text-transform:capitalize;color:var(--text)}
+.download-name{font-size:.92rem;font-weight:500;color:var(--text)}
+label{display:block;font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.9px;margin:13px 0 5px;font-weight:600}
+input[type="text"],select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 12px;color:var(--text);font-size:.93rem;outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none}
+input[type="text"]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,111,255,.15)}
 select option{background:var(--surface2)}
-.range-wrap{display:flex;align-items:center;gap:10px;margin-top:4px}
-.range-wrap input[type="range"]{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--surface2);outline:none}
-.range-wrap input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;border:2px solid var(--bg)}
-.range-val{min-width:36px;text-align:center;font-size:.88rem;font-weight:700;color:var(--accent2);background:var(--surface2);padding:4px 8px;border-radius:8px}
+.range-wrap{display:flex;align-items:center;gap:10px;margin-top:5px}
+.range-wrap input[type="range"]{flex:1;-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;background:var(--surface3);outline:none}
+.range-wrap input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;border:2px solid var(--bg);box-shadow:0 2px 8px rgba(124,111,255,.4)}
+.range-val{min-width:34px;text-align:center;font-size:.85rem;font-weight:700;color:var(--accent2);background:var(--surface2);padding:3px 7px;border-radius:7px}
 .toggle-row{display:flex;align-items:center;gap:10px;margin:10px 0}
 .toggle-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent)}
 .toggle-row label{margin:0;font-size:.85rem;color:var(--text);text-transform:none;letter-spacing:0;font-weight:500}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:var(--r);font-size:.88rem;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));text-decoration:none}
-.btn:hover{opacity:.85;transform:translateY(-1px)}
-.btn:active{transform:translateY(0);opacity:1}
-.btn-sm{padding:7px 13px;font-size:.82rem}
-.btn-full{width:100%;padding:12px;font-size:.95rem;margin-top:10px}
-.btn-danger{background:linear-gradient(135deg,#ff4b4b,#ff7070)}
-.btn-success{background:linear-gradient(135deg,#00c85d,#00e676);color:#000}
-.btn-warning{background:linear-gradient(135deg,#f5a623,#f8ca55);color:#111}
-.btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
-.btn-ghost:hover{border-color:var(--accent)}
-.action-row{display:flex;gap:10px;flex-wrap:wrap}
-.back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.85rem;padding:8px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-top:14px;transition:color .2s,border-color .2s}
+.sw{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sl{position:absolute;cursor:pointer;inset:0;background:var(--surface3);border-radius:24px;transition:.2s;border:1px solid var(--border)}
+.sl:before{content:"";position:absolute;height:18px;width:18px;left:2px;bottom:2px;background:var(--muted);border-radius:50%;transition:.2s}
+.sw input:checked+.sl{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
+.sw input:checked+.sl:before{transform:translateX(20px);background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.toggle-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.toggle-item:last-child{border-bottom:none}
+.toggle-item span{font-size:.9rem;color:var(--text)}
+.swatch-row{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.color-swatch{width:26px;height:26px;border-radius:7px;border:2px solid var(--border);cursor:pointer;transition:transform .1s,border-color .1s}
+.color-swatch:hover,.color-swatch.active{transform:scale(1.15);border-color:rgba(255,255,255,.6)}
+input[type="color"]{width:36px;height:36px;border:2px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;padding:2px;-webkit-appearance:none}
+input[type="color"]::-webkit-color-swatch-wrapper{padding:0;border-radius:5px}
+input[type="color"]::-webkit-color-swatch{border:none;border-radius:5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:var(--r);font-size:.86rem;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s,box-shadow .15s;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));text-decoration:none;box-shadow:0 2px 12px rgba(124,111,255,.3)}
+.btn:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,111,255,.4)}
+.btn:active{transform:translateY(0);opacity:1;box-shadow:none}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.btn-full{width:100%;padding:12px;font-size:.93rem;margin-top:10px}
+.btn-danger{background:linear-gradient(135deg,#e03c3c,#ff6060);box-shadow:0 2px 12px rgba(224,60,60,.3)}
+.btn-success{background:linear-gradient(135deg,#00b050,#00e676);color:#000;box-shadow:0 2px 12px rgba(0,176,80,.3)}
+.btn-warning{background:linear-gradient(135deg,#e8960e,#f8ca55);color:#111;box-shadow:0 2px 12px rgba(232,150,14,.3)}
+.btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--text);box-shadow:none}
+.btn-ghost:hover{border-color:var(--accent);background:var(--surface3)}
+.seg{display:flex;background:var(--surface2);border-radius:var(--r);padding:3px;gap:2px;border:1px solid var(--border)}
+.seg button{flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;background:none;color:var(--muted);transition:all .15s}
+.seg button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 8px rgba(124,111,255,.3)}
+.action-row{display:flex;gap:8px;flex-wrap:wrap}
+.back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.83rem;padding:8px 13px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-top:14px;transition:color .15s,border-color .15s}
 .back-btn:hover{color:var(--text);border-color:var(--accent)}
 .error-msg{color:#ff7070;font-size:.82rem;margin-top:10px;text-align:center}
 @keyframes spin{to{transform:rotate(360deg)}}
-.busy-warn{position:fixed;top:44px;left:0;right:0;background:#f5a623;color:#111;text-align:center;font-weight:700;font-size:.88rem;padding:10px;z-index:200;letter-spacing:.3px}
+.busy-warn{position:fixed;top:46px;left:0;right:0;background:linear-gradient(90deg,#e8960e,#f8ca55);color:#111;text-align:center;font-weight:700;font-size:.86rem;padding:10px;z-index:200;letter-spacing:.3px}
 """
 
 def navbar():
     ip = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
     return f"""<nav class="navbar">
-<a class="nav-brand" href="http://matrixbox.io">MatrixBox</a>
+<a class="nav-brand" href="/">MatrixBox</a>
 <a class="nav-link" href="/">Apps</a>
 <a class="nav-link" href="/download">Store</a>
 <a class="nav-link" href="/settings">Settings</a>
@@ -402,7 +421,19 @@ def navbar():
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
 
-def header(title="Settings"):
+def app_navbar(title):
+    ip = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
+    return f"""<nav class="navbar">
+<a class="nav-x" href="/exit" title="Exit" style="margin-left:0;margin-right:4px">&#8592;</a>
+<span class="nav-title">{title}</span>
+<div class="nav-spacer"></div>
+<div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
+<a class="nav-x" href="/exit" title="Exit">&#x2715;</a>
+</nav>
+<script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
+
+def header(title="Settings", app=False):
+    nav = app_navbar(title) if app else navbar()
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -411,7 +442,7 @@ def header(title="Settings"):
     <title>{title}</title>
     <style>{css()}</style>
 </head>
-<body>{navbar()}<div class="page">"""
+<body>{nav}<div class="page">"""
 
 def footer(back=False):
     back_html = backbutton if back else ""

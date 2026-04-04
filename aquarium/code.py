@@ -21,13 +21,12 @@ def save_cfg():
     with open("aquasettings.txt", "w") as f:
         f.write(json.dumps(cfg))
 
-with open("aquarium.html") as f:
-    html = f.read()
+with open("aquarium.html") as f: html_body = f.read()
 
 # --- Web routes ---
 @ampule.route("/", method="GET")
 def aqua_interface(request):
-    return (200, {}, html)
+    return (200, {}, header("Aquarium", app=True) + html_body + footer())
 
 @ampule.route("/exit", method="GET")
 def exit_webinterface(request):

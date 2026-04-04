@@ -1,71 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GIF Upload</title>
-    <style>
-        #drop-area {
-            width: 300px;
-            height: 150px;
-            border: 2px dashed #ccc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            margin: 20px auto;
-            font-family: Arial, sans-serif;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
+<style>
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r-lg);padding:32px 16px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.drop-zone.over{border-color:var(--accent);background:rgba(124,111,255,.06)}
+.drop-zone p{color:var(--muted);font-size:.9rem;margin-top:8px}
+.drop-icon{font-size:2.4rem}
+</style>
 
-    <div id="drop-area">Drag & Drop a GIF file here</div>
+<div class="card">
+<div class="section-title">Upload GIF</div>
+<div class="drop-zone" id="drop" onclick="document.getElementById('fi').click()">
+<div class="drop-icon">&#127981;</div>
+<p>Drag &amp; drop a GIF here<br>or tap to browse</p>
+<input type="file" id="fi" accept="image/gif" style="display:none">
+</div>
+<div id="status" style="color:var(--muted);font-size:.82rem;margin-top:10px;text-align:center"></div>
+</div>
+
+<div class="card">
+<div class="section-title">Playback</div>
+<button class="btn btn-full btn-ghost" onclick="fetch('/?next=true',{method:'POST'})">&#9654; Next GIF</button>
+</div>
 
 <script>
-    const dropArea = document.getElementById("drop-area");
+var drop=document.getElementById("drop");
+var status=document.getElementById("status");
 
-    dropArea.addEventListener("dragover", (event) => {
-        event.preventDefault();
-        dropArea.style.borderColor = "#333";
-    });
+drop.addEventListener("dragover",function(e){e.preventDefault();drop.classList.add("over")});
+drop.addEventListener("dragleave",function(){drop.classList.remove("over")});
+drop.addEventListener("drop",function(e){e.preventDefault();drop.classList.remove("over");var f=e.dataTransfer.files[0];if(f)handle(f)});
+document.getElementById("fi").addEventListener("change",function(){if(this.files[0])handle(this.files[0])});
 
-    dropArea.addEventListener("dragleave", () => {
-        dropArea.style.borderColor = "#ccc";
-    });
-
-    dropArea.addEventListener("drop", (event) => {
-        event.preventDefault();
-        dropArea.style.borderColor = "#ccc";
-
-        const file = event.dataTransfer.files[0];
-
-        if (file && file.type === "image/gif") {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-
-            reader.onload = () => {
-                const base64String = reader.result.split(',')[1]; // Extract Base64 content
-                sendFile(base64String);
-            };
-        } else {
-            alert("Please drop a GIF file.");
-        }
-    });
-
-    function sendFile(base64String) {
-        fetch("/?sendbase64=true", {
-            method: "POST",
-            headers: { "Content-Type": "text/plain" },
-            body: base64String
-        })
-        .then(response => response.text())
-        .then(data => console.log("Server response:", data))
-        .catch(error => console.error("Error:", error));
-    }
+function handle(f){
+  if(f.type!=="image/gif"){status.textContent="Please select a GIF file.";status.style.color="#ff6060";return;}
+  status.textContent="Reading file\u2026";status.style.color="var(--muted)";
+  var r=new FileReader();
+  r.onload=function(){
+    var b64=r.result.split(",")[1];
+    status.textContent="Uploading\u2026";
+    fetch("/?sendbase64=true",{method:"POST",headers:{"Content-Type":"text/plain"},body:b64})
+      .then(function(){status.textContent="Uploaded! Displaying now.";status.style.color="var(--accent2)"})
+      .catch(function(){status.textContent="Upload failed.";status.style.color="#ff6060"});
+  };
+  r.readAsDataURL(f);
+}
 </script>
-
-
-</body>
-</html>

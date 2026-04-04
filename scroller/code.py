@@ -35,8 +35,7 @@ shadow_color_map = {
 
 load_screen.currentfont = font_large
 
-with open("scroller.html") as f:
-    html = f.read()
+with open("scroller.html") as f: html_body = f.read()
 
 try:
     with open("scroller.txt") as f:
@@ -206,7 +205,7 @@ def scroller_post(request):
 
 @ampule.route("/", method="GET")
 def scroller_get(request):
-    return (200, {}, html)
+    return (200, {}, header("Scroller", app=True) + html_body + footer())
 
 # ---------------------------------------------------------
 #  BTC TEXT
