@@ -14,8 +14,12 @@ def settings():
                 "repository_file":"repository.txt",
                 "wifi_power":16}
 
-     try:
+     try: #iteration
+            defaults = set(settings)
             with open("settings.txt") as f: settings.update(json.loads(f.read()))
+            for key in list(settings):
+                if key not in defaults:
+                    del settings[key]
             for setting in settings:
                 _type = str
                 try: 
