@@ -338,10 +338,10 @@ def draw_winter(frame_n):
     palette[1]  = (110,  50,   0)  # orange – carrot nose
     palette[5]  = (100, 110, 120)   # cool blue-white snow
 
-    ground_y = SKY_H - max(4, SKY_H // 6)  # snow ground top (proportional)
+    ground_y = SKY_H - 2            # 2-3 rows of snow near bottom
 
-    # Snow-covered ground (fill all the way to bottom of display)
-    for y in range(ground_y, H):
+    # Snow-covered ground (only 2-3 rows, not full bottom)
+    for y in range(ground_y, ground_y + 3):
         for x in range(W):
             _sp(x, y, 5)
     # Slight uneven snow edge
