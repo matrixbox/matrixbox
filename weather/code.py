@@ -340,8 +340,8 @@ def draw_winter(frame_n):
 
     ground_y = SKY_H - max(4, SKY_H // 6)  # snow ground top (proportional)
 
-    # Snow-covered ground
-    for y in range(ground_y, SKY_H):
+    # Snow-covered ground (fill all the way to bottom of display)
+    for y in range(ground_y, H):
         for x in range(W):
             _sp(x, y, 5)
     # Slight uneven snow edge
