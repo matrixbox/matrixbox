@@ -74,7 +74,7 @@ def textbox(settings):
     advanced_order = ["width", "height", "tiles", "repository_url"]
     main_html = ""
     adv_items = {}
-    settings_html = """<form action="/" method="POST">"""
+    settings_html = """<form onsubmit="sav(event)">"""
     for setting in settings:
         print("Setting: ", setting)
         val = settings[setting]
@@ -324,7 +324,7 @@ def list_available_apps(apps):
     applist = '<div class="download-item"><div><span class="download-name">&#x1F4E6; System</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">' + sys_ver + '</div></div>' + sys_btn + """\n    <script>function _busyWait(url,btn){
     var old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></span>';
     var w=document.createElement('div');w.className='busy-warn';w.textContent='\u26A0 Writing to disk \u2014 do not turn off!';document.body.appendChild(w);
-    fetch(url,{method:"POST"}).then(()=>{setTimeout(()=>{window.location.href="/download"},10)}).catch(()=>{w.remove();btn.innerHTML=old;btn.disabled=false});}
+    fetch(url,{method:"POST"}).then(function(){w.remove();nav('/f/download')}).catch(function(){w.remove();btn.innerHTML=old;btn.disabled=false});}
     function installsystem(e){_busyWait("/?install=system",e.currentTarget)}</script></div>"""
 
     for dir in apps:
@@ -435,10 +435,10 @@ def navbar():
         with open("reboot_required"): _reboot_cls = " reboot-needed"
     except OSError: _reboot_cls = ""
     return f"""<nav class="navbar">
-<a class="nav-brand" href="/">MatrixBox</a>
-<a class="nav-link" href="/">Apps</a>
-<a class="nav-link" href="/download">Store</a>
-<a class="nav-link" href="/settings">Settings</a>
+<a class="nav-brand" href="/" onclick="nav('/f/apps');return false">MatrixBox</a>
+<a class="nav-link" href="/" onclick="nav('/f/apps');return false">Apps</a>
+<a class="nav-link" href="/download" onclick="nav('/f/download');return false">Store</a>
+<a class="nav-link" href="/settings" onclick="nav('/f/settings');return false">Settings</a>
 <div class="nav-spacer"></div>
 <div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
 <button class="nav-led{' led-off' if _led_off else ''}" id="ledbtn" onclick="fetch('/led',{{method:'POST'}}).then(function(r){{return r.json()}}).then(function(j){{var b=document.getElementById('ledbtn');if(j.off){{b.classList.add('led-off')}}else{{b.classList.remove('led-off')}}}})" title="Toggle LED">&#x1F4A1;</button>
@@ -473,6 +473,24 @@ def header(title="Settings", app=False):
 def footer(back=False):
     back_html = backbutton if back else ""
     return f"""{back_html}</div></body></html>"""
+
+def _shell(content, title="MatrixBox", frag="/f/apps"):
+    nav = navbar()
+    return f"""<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<style>{css()}</style>
+</head>
+<body>{nav}<div class="page" id="content">{content}</div>
+<script>
+function _run(c){{var sc=c.querySelectorAll('script');for(var i=0;i<sc.length;i++){{var n=document.createElement('script');n.textContent=sc[i].textContent;document.head.appendChild(n)}}}}
+function nav(u){{var c=document.getElementById('content');c.innerHTML='<div style="display:flex;justify-content:center;padding:60px 0"><span style="display:inline-block;width:28px;height:28px;border:3px solid var(--surface3);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite"></span></div>';fetch(u).then(function(r){{return r.text()}}).then(function(h){{c.innerHTML=h;_run(c);var p=u.replace('/f/apps','/').replace('/f/','/');history.pushState({{f:u}},'',p);window.scrollTo(0,0)}})}}
+window.addEventListener('popstate',function(e){{var u=e.state&&e.state.f||'{frag}';fetch(u).then(function(r){{return r.text()}}).then(function(h){{var c=document.getElementById('content');c.innerHTML=h;_run(c)}})}});
+history.replaceState({{f:'{frag}'}},'');
+function sav(e){{e.preventDefault();var b=new URLSearchParams(new FormData(e.target)).toString();fetch('/',{{method:'POST',body:b,headers:{{'Content-Type':'application/x-www-form-urlencoded'}}}}).then(function(){{nav('/f/apps')}})}}
+</script></body></html>"""
 
 def connect_to_wifi():
     def scan():
@@ -512,11 +530,11 @@ def connect_to_wifi():
         fetch("/?password=" + encodeURIComponent(p), {{ method: "POST" }});
     }});
     </script>
-    <button class="btn btn-full" onclick="location.href='/connect'">Connect</button>
+    <button class="btn btn-full" onclick="fetch('/connect').then(function(){{location.reload()}})">Connect</button>
     {error_html}
 </div>"""
 
-def select_app():
+def _apps_content():
     wifi_html = connect_to_wifi() if not wifi.radio.connected else ""
     installed_apps = ""
     for app in os.listdir("/"):
@@ -534,7 +552,7 @@ def select_app():
     });}</script></div>"""
     if not installed_apps:
         installed_apps = '<p style="color:var(--muted);text-align:center;padding:20px 0;font-size:.9rem">No apps installed yet</p>'
-    return header("MatrixBox") + """<div class="logo">
+    return """<div class="logo">
     <h1>MatrixBox</h1>
     <p>Select an app to launch</p>
 </div>
@@ -542,13 +560,16 @@ def select_app():
     <div class="section-title">Installed Apps</div>
     """ + installed_apps + """
 </div>
-<button class="btn btn-full" onclick="window.location.href='/download'">&#x2B07; Download Apps</button>
-<button class="btn btn-full btn-ghost" onclick="window.location.href='/settings'">&#9881; Settings</button>
+<button class="btn btn-full" onclick="nav('/f/download')">&#x2B07; Download Apps</button>
+<button class="btn btn-full btn-ghost" onclick="nav('/f/settings')">&#9881; Settings</button>
 <div class="card" style="margin-top:10px;border:1px dashed var(--muted)">
     <div class="section-title" style="color:var(--muted)">Built-in Tools</div>
     <div class="app-item"><span class="app-name" style="color:var(--muted)">&#x1F4BB; Terminal</span><button class="btn btn-sm" style="background:var(--muted);color:var(--bg)" onclick="window.location.href='/cmd'">Open</button></div>
 </div>
-""" + wifi_html + footer()
+""" + wifi_html
+
+def select_app():
+    return _shell(_apps_content())
 
 @ampule.route('/settingsx')
 def _settings(request):
@@ -677,8 +698,7 @@ def _rotate(request):
         pprint(str(display.width) + "x" + str(display.height))
     return (200, {}, "")
 
-@ampule.route("/settings")
-def _settings(request):
+def _settings_content():
     global settings
     rotate_btn = '<button class="btn btn-sm" onclick="fetch(\'/rotate\',{method:\'POST\'}).then(()=>{{var v=document.getElementById(\'v_rotation\');if(v){{var c=parseInt(v.textContent)||0;c=(c+90)%360;v.textContent=c;var s=document.getElementById(\'rotation\');if(s)s.value=c;}}}});">&#128260; 90&deg;</button>'
     preset_btns = ''.join([
@@ -687,12 +707,15 @@ def _settings(request):
         '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XL (192x32)? Device will reboot.\'))fetch(\'/preset?s=xl\',{method:\'POST\'})" title="XL 192x32"><svg width="36" height="16" viewBox="0 0 36 16"><rect x="2" y="4" width="32" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XL</span></button>',
         '<button class="btn btn-sm" onclick="if(confirm(\'Switch to 2X (128x64)? Device will reboot.\'))fetch(\'/preset?s=2x\',{method:\'POST\'})" title="2X 128x64"><svg width="24" height="18" viewBox="0 0 24 18"><rect x="2" y="1" width="20" height="16" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">2X</span></button>',
     ])
-    settings_html = header("Settings") + """<div class="logo"><h1>Settings</h1><p>Configure your device</p></div>
+    return """<div class="logo"><h1>Settings</h1><p>Configure your device</p></div>
 <div class="card"><div class="section-title">Quick Actions</div><div class="action-row">""" + rotate_btn + preset_btns + """</div></div>
 <div class="card"><div class="section-title">Device Settings</div>""" + f"""{textbox(settings)}</div>
 
-<div class="card action-row">""" + bootloaderbutton + " " + unlock + """</div>""" + footer(True)
-    return (200, {}, settings_html)
+<div class="card action-row">""" + bootloaderbutton + " " + unlock + """</div>"""
+
+@ampule.route("/settings")
+def _settings_route(request):
+    return (200, {}, _shell(_settings_content(), "Settings", "/f/settings"))
 
 @ampule.route("/save", method='POST')
 def _save(request):
@@ -700,13 +723,27 @@ def _save(request):
     savesettings(settings)
     return (200, {}, '{"ok":true}')
 
-@ampule.route('/download')
-def download(request):
+def _download_content():
     free = _fmt_size(_free_space())
-    content = """<div class="logo"><h1>App Store</h1><p>Install or update apps</p></div>
+    return """<div class="logo"><h1>App Store</h1><p>Install or update apps</p></div>
 <div class="card" style="text-align:center;padding:12px"><span style="font-size:.8rem;color:var(--muted)">Available space: </span><span style="font-size:.9rem;font-weight:700;color:var(--accent2)">""" + free + """</span></div>
 <div class="card"><div class="section-title">Available</div>""" + str(list_available_apps(get_updates())) + """</div>"""
-    return (200, {}, header("Download apps") + content + footer(True))
+
+@ampule.route('/download')
+def download(request):
+    return (200, {}, _shell(_download_content(), "App Store", "/f/download"))
+
+@ampule.route("/f/apps")
+def _f_apps(request):
+    return (200, {}, _apps_content())
+
+@ampule.route("/f/settings")
+def _f_settings(request):
+    return (200, {}, _settings_content())
+
+@ampule.route("/f/download")
+def _f_download(request):
+    return (200, {}, _download_content())
 
 
 ####################################################
