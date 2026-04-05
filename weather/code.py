@@ -18,22 +18,18 @@ palette[0]  = (0,   0,   0)      # black / off
 palette[1]  = (120, 100,  0)     # yellow  – sun core
 palette[2]  = (90,  92, 100)     # lt-grey – light cloud
 palette[3]  = (10,  35,  80)     # blue    – deeper sky
-palette[4]  = (80,  10,  10)     # red     – unused
+palette[4]  = (80,  10,  10)     # red     – (dynamic: beach/winter/lightning)
 palette[5]  = (120, 120, 120)    # white   – temp/text
 palette[6]  = (20,  50,  80)     # lt-blue – clear sky bg
-palette[7]  = (0,   60,  10)     # green   – unused
+palette[7]  = (0,   60,  10)     # green   – (dynamic: beach/winter)
 palette[8]  = (40,  42,  48)     # grey    – dark cloud
-palette[9]  = (0,    0,   0)     # black2  – off
-palette[10] = (80,  25,  35)     # pink    – unused
+palette[9]  = (0,    0,   0)     # black2  – (dynamic: beach/winter)
+palette[10] = (80,  25,  35)     # pink    – (dynamic: beach/winter/fog)
 palette[11] = (120,  55,   0)    # orange  – sun glow/rays
 palette[12] = (15,  40,  75)     # deeper sky (partly cloudy bg / snow bg)
 palette[13] = (6,    8,  14)     # very dark storm sky
 palette[14] = (55,  58,  65)     # medium grey cloud
-palette[15] = (40,  60, 100)     # rain drop (blue-white)
-palette[16] = (90,  95, 110)     # snowflake (pale blue-white)
-palette[17] = (130, 130,  60)    # lightning yellow
-palette[18] = (60,  62,  68)     # fog grey / light cloud fill
-palette[23] = (30,  31,  34)     # solid fog sky
+palette[15] = (40,  60, 100)     # rain drop – (dynamic: snow→snowflake)
 
 # ── Config ────────────────────────────────────────────────────────────────────
 try:
@@ -42,7 +38,7 @@ try:
 except Exception:
     cfg = {}
 
-for k, v in [("city", ""), ("lat", 0.0), ("lon", 0.0), ("unit", "C"), ("interval", 300), ("clock", 0), ("clockmode", "24"), ("skyfill", "checker")]:
+for k, v in [("city", ""), ("lat", 0.0), ("lon", 0.0), ("unit", "C"), ("interval", 300), ("clock", 0), ("clockmode", "24")]:
     if k not in cfg:
         cfg[k] = v
 
@@ -88,13 +84,6 @@ _CONTENT = """
 </div>
 </div>
 <div class="card">
-<div class="section-title">Sky Rendering</div>
-<div class="action-row" style="margin-top:8px">
-<button class="btn btn-ghost" id="sfck" onclick="ssf('checker')">Checker</button>
-<button class="btn btn-ghost" id="sfso" onclick="ssf('solid')">Solid</button>
-</div>
-</div>
-<div class="card">
 <div class="section-title">Auto-refresh Interval</div>
 <div class="action-row" style="margin-top:8px">
 <button class="btn btn-ghost" onclick="si(60)">1 min</button>
@@ -112,13 +101,11 @@ function stk(v){p("clock="+v);ckh(v)}
 function ckh(v){document.getElementById("ckon").style.opacity=v?"1":"0.4";document.getElementById("ckoff").style.opacity=v?"0.4":"1";}
 function scm(m){p("clockmode="+m);cmh(m)}
 function cmh(m){document.getElementById("cm24").style.opacity=m==="24"?"1":"0.4";document.getElementById("cm12").style.opacity=m==="12"?"1":"0.4";}
-function ssf(v){p("skyfill="+v);sfh(v)}
-function sfh(v){document.getElementById("sfck").style.opacity=v==="checker"?"1":"0.4";document.getElementById("sfso").style.opacity=v==="solid"?"1":"0.4";}
 function si(n){p("interval="+n)}
 function sv(){p("save=1")}
 function rf(){p("refresh=1",function(){lw()})}
 function lw(){fetch("/weather").then(function(r){return r.json()}).then(function(d){var t=document.getElementById("wt");if(d.temp!==null&&d.temp!==undefined){var u=d.unit==="F"?"&#176;F":"&#176;C";t.textContent=d.temp.toFixed(1)+u;}else{t.textContent="--";}document.getElementById("wc").textContent=d.desc||"--";document.getElementById("wl").textContent=d.city||"";}).catch(function(){})}
-function ls(){fetch("/settings").then(function(r){return r.json()}).then(function(d){if(d.city)document.getElementById("city").value=d.city;uh(d.unit||"C");ckh(d.clock||0);cmh(d.clockmode||"24");sfh(d.skyfill||"checker");}).catch(function(){})}
+function ls(){fetch("/settings").then(function(r){return r.json()}).then(function(d){if(d.city)document.getElementById("city").value=d.city;uh(d.unit||"C");ckh(d.clock||0);cmh(d.clockmode||"24");}).catch(function(){})}
 ls();lw();setInterval(lw,20000);
 </script>
 """
@@ -128,6 +115,34 @@ try:
 except Exception as _e:
     print("HTML build error:", _e)
     html = "<html><body><h2>Weather</h2><a href='/exit'>Exit</a></body></html>"
+
+_DEBUG_CONTENT = """
+<div class="card">
+<div class="section-title">Scene Debug</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+<button class="btn btn-ghost" onclick="dm('beach')">Beach</button>
+<button class="btn btn-ghost" onclick="dm('winter')">Winter</button>
+<button class="btn btn-ghost" onclick="dm('clear_day')">Clear Day</button>
+<button class="btn btn-ghost" onclick="dm('clear_night')">Clear Night</button>
+<button class="btn btn-ghost" onclick="dm('partly_cloudy')">Partly Cloudy</button>
+<button class="btn btn-ghost" onclick="dm('cloudy')">Cloudy</button>
+<button class="btn btn-ghost" onclick="dm('rain')">Rain</button>
+<button class="btn btn-ghost" onclick="dm('drizzle')">Drizzle</button>
+<button class="btn btn-ghost" onclick="dm('storm')">Storm</button>
+<button class="btn btn-ghost" onclick="dm('fog')">Fog</button>
+<button class="btn btn-ghost" onclick="dm('snow')">Snow</button>
+</div>
+<div id="ds" style="font-size:.85rem;color:var(--muted);margin-top:10px;text-align:center"></div>
+</div>
+<div style="text-align:center;margin-top:8px"><a href="/" style="color:var(--accent)">Back to settings</a></div>
+<script>
+function dm(m){fetch("/debug?mode="+m,{method:"POST"}).then(function(r){return r.json()}).then(function(j){document.getElementById("ds").textContent="Active: "+j.mode}).catch(function(){})}
+</script>
+"""
+try:
+    _DEBUG_HTML = header("Debug", app=True) + _DEBUG_CONTENT + footer()
+except Exception:
+    _DEBUG_HTML = "<html><body><h2>Debug</h2></body></html>"
 
 # ── Weather state ─────────────────────────────────────────────────────────────
 weather_code = -1
@@ -177,11 +192,11 @@ next_lightning = 120   # frame number for next strike (updated by init_scene)
 SKY_H = TEMP_Y  # animation area stops above temperature text
 
 # Checker palette colors and their dimmed solid-fill equivalents
-_CHECKER_COLORS = {6: (20, 50, 80), 12: (15, 40, 75), 3: (10, 35, 80), 13: (6, 8, 14), 18: (60, 62, 68)}
-_SOLID_COLORS  = {6: (10, 25, 40), 12: (8, 20, 38), 3: (5, 18, 40), 13: (3, 4, 7), 18: (30, 31, 34)}
+_CHECKER_COLORS = {6: (20, 50, 80), 12: (15, 40, 75), 3: (10, 35, 80), 13: (6, 8, 14), 10: (60, 62, 68)}
+_SOLID_COLORS  = {6: (10, 25, 40), 12: (8, 20, 38), 3: (5, 18, 40), 13: (3, 4, 7), 10: (30, 31, 34)}
 # Night variants (very dark / near-black)
-_NIGHT_CHECKER = {6: (3, 5, 18), 12: (2, 4, 15), 3: (2, 4, 15), 13: (3, 3, 8), 18: (15, 15, 20)}
-_NIGHT_SOLID   = {6: (1, 2, 8),  12: (1, 2, 7),  3: (1, 2, 7),  13: (1, 1, 4), 18: (8, 8, 10)}
+_NIGHT_CHECKER = {6: (3, 5, 18), 12: (2, 4, 15), 3: (2, 4, 15), 13: (3, 3, 8), 10: (15, 15, 20)}
+_NIGHT_SOLID   = {6: (0, 0, 0), 12: (0, 0, 0), 3: (0, 0, 0), 13: (0, 0, 0), 10: (0, 0, 0)}
 
 def _is_night():
     """Return True if current time is before sunrise or after sunset."""
@@ -189,6 +204,16 @@ def _is_night():
         return False
     now = server_epoch + int(time.monotonic() - server_mono)
     return now < sunrise_epoch or now >= sunset_epoch
+
+def _is_beach():
+    """Return True for beach scene: clear sky, daytime, temp > 23°C."""
+    return (condition == "clear" and temperature is not None
+            and temperature > 23 and not _is_night())
+
+def _is_winter():
+    """Return True for winter scene: snow + below freezing."""
+    return (condition == "snow" and temperature is not None
+            and temperature < 0)
 
 def _sky_checker(c):
     """Checkerboard fill of the sky area only — half the lit pixels."""
@@ -232,13 +257,14 @@ def draw_cloud(x, y, w, c):
     _fill(x + w - hw - 1,    y + 1, hw,      2, c)  # right bump
 
 def draw_moon(frame_n):
-    """Crescent moon."""
+    """Crescent moon in warm yellow."""
+    palette[1] = (120, 110, 30)   # warm yellow moon
     r  = min(5, H // 7)
     cx = W - r - 4
     cy = r + 2
     # Draw crescent: full disc minus offset shadow disc
-    sr = r - 1
-    sx = cx - r // 2 - 1
+    sr = r
+    sx = cx - r // 3
     sy = cy - 1
     for dy in range(-r, r + 1):
         for dx in range(-r, r + 1):
@@ -248,10 +274,180 @@ def draw_moon(frame_n):
                 ddy = (cy + dy) - sy
                 if ddx * ddx + ddy * ddy <= sr * sr:
                     continue
-                _sp(cx + dx, cy + dy, 5)
+                _sp(cx + dx, cy + dy, 1)
+
+def draw_beach(frame_n):
+    """Beach scene: sand, sea with gentle waves, parasol."""
+    # Set beach palette colors dynamically
+    palette[4]  = (100, 15, 15)   # parasol red
+    palette[7]  = (110, 90, 30)   # sand
+    palette[9]  = (15,  50, 90)   # sea water
+    palette[10] = (60,  30, 10)   # parasol pole (brown)
+
+    sea_y  = SKY_H * 2 // 3       # where sea meets sand
+    sand_y = SKY_H - 3             # sand starts here (few rows)
+
+    # Sea (below sky, above sand)
+    for y in range(sea_y, sand_y):
+        for x in range(W):
+            _sp(x, y, 9)
+
+    # Gentle wave line at top of sea
+    for x in range(W):
+        wv = int(math.sin(frame_n * 0.06 + x * 0.25) * 1.2)
+        _sp(x, sea_y + wv, 5)      # white foam
+        if wv < 0:
+            _sp(x, sea_y + wv + 1, 9)
+
+    # Sand
+    for y in range(sand_y, SKY_H):
+        for x in range(W):
+            _sp(x, y, 7)
+
+    # ── Parasol ───────────────────────────────────────────────────────────
+    px = W // 4                    # parasol center x
+    pole_top = sand_y - 7          # top of pole
+    pole_bot = sand_y              # bottom of pole (on sand)
+    pr = max(4, W // 10)           # parasol canopy radius
+
+    # Pole
+    for y in range(pole_top, pole_bot + 1):
+        _sp(px, y, 10)
+
+    # Canopy: half-circle with red/white stripes
+    for dy in range(0, pr + 1):        # only top half (dy <= 0 from center)
+        for dx in range(-pr, pr + 1):
+            if dx * dx + dy * dy <= pr * pr:
+                # Stripe: divide by angle-ish columns
+                stripe = ((dx + pr) * 4) // (2 * pr + 1)
+                c = 4 if stripe % 2 == 0 else 5   # red / white
+                _sp(px + dx, pole_top - dy, c)
+    # Canopy bottom edge
+    for dx in range(-pr, pr + 1):
+        if dx * dx <= pr * pr:
+            _sp(px + dx, pole_top, 4)
+
+def draw_winter(frame_n):
+    """Winter scene: snow ground, red house, two pines, snowman."""
+    # Set winter palette colors dynamically
+    palette[4]  = (90,  12,  12)   # red – house walls
+    palette[7]  = (8,   45,  12)   # dark green – tree
+    palette[9]  = (20,  55,  20)   # lighter green – small tree
+    palette[10] = (50,  28,   8)   # brown – trunk / details
+    palette[11] = (120, 100,  20)  # warm yellow – window glow
+    palette[1]  = (110,  50,   0)  # orange – carrot nose
+
+    ground_y = SKY_H - 4           # snow ground top
+
+    # Snow-covered ground
+    for y in range(ground_y, SKY_H):
+        for x in range(W):
+            _sp(x, y, 5)
+    # Slight uneven snow edge
+    for x in range(0, W, 3):
+        _sp(x, ground_y - 1, 5)
+
+    # ── Red house (background, right side) ─────────────────────────
+    hx = W * 3 // 5                # house left x
+    hw = max(10, W // 5)           # house width
+    hh = max(7, SKY_H // 4)        # house wall height
+    hy = ground_y - hh             # house top-of-wall y
+    roof_h = max(3, hh // 3)       # roof triangle height
+
+    # Walls
+    for y in range(hy, ground_y):
+        for x in range(hx, hx + hw):
+            _sp(x, y, 4)
+
+    # Roof (triangle)
+    cx_h = hx + hw // 2
+    for row in range(roof_h):
+        span = (roof_h - row) * hw // (2 * roof_h)
+        ry = hy - roof_h + row
+        for x in range(cx_h - span, cx_h + span + 1):
+            _sp(x, ry, 10)
+    # Snow on roof
+    for row in range(min(2, roof_h)):
+        span = (roof_h - row) * hw // (2 * roof_h)
+        ry = hy - roof_h + row
+        for x in range(cx_h - span, cx_h + span + 1):
+            _sp(x, ry, 5)
+
+    # Windows (2 windows with glow)
+    wy = hy + hh // 3
+    ww = max(2, hw // 5)
+    wh = max(2, hh // 4)
+    for wi, wx in enumerate([hx + hw // 5, hx + hw * 3 // 5]):
+        for dy in range(wh):
+            for dx in range(ww):
+                _sp(wx + dx, wy + dy, 11)
+
+    # ── Tall pine tree (left-center) ─────────────────────────────
+    tx1 = W * 2 // 5
+    th1 = max(8, SKY_H // 3)
+    _draw_pine(tx1, ground_y, th1, 7)
+
+    # ── Small pine tree (far left) ──────────────────────────────
+    tx2 = W // 7
+    th2 = max(5, SKY_H // 5)
+    _draw_pine(tx2, ground_y, th2, 9)
+
+    # ── Snowman (foreground, left-center) ───────────────────────
+    sx = W // 4
+    # Body (bottom ball)
+    br = max(3, SKY_H // 10)
+    by = ground_y - br
+    for dy in range(-br, br + 1):
+        for dx in range(-br, br + 1):
+            if dx * dx + dy * dy <= br * br:
+                _sp(sx + dx, by + dy, 5)
+    # Head (top ball)
+    hr = max(2, br * 2 // 3)
+    head_y = by - br - hr
+    for dy in range(-hr, hr + 1):
+        for dx in range(-hr, hr + 1):
+            if dx * dx + dy * dy <= hr * hr:
+                _sp(sx + dx, head_y + dy, 5)
+    # Eyes
+    _sp(sx - 1, head_y - 1, 0)
+    _sp(sx + 1, head_y - 1, 0)
+    # Carrot nose
+    _sp(sx, head_y, 1)
+    _sp(sx + 1, head_y, 1)
+    # Buttons
+    _sp(sx, by - br // 2, 0)
+    _sp(sx, by, 0)
+    _sp(sx, by + br // 2, 0)
+    # Arms (sticks)
+    for i in range(1, br + 1):
+        _sp(sx - br - i, by - br // 2 + i // 2, 10)
+        _sp(sx + br + i, by - br // 2 + i // 2, 10)
+
+def _draw_pine(cx, ground_y, h, color):
+    """Draw a pine tree at cx with given height. Snow on tips."""
+    trunk_h = max(2, h // 4)
+    canopy_h = h - trunk_h
+    tree_top = ground_y - h
+    # Trunk
+    for y in range(ground_y - trunk_h, ground_y):
+        _sp(cx, y, 10)
+    # Canopy: triangle widening downward
+    for row in range(canopy_h):
+        y = tree_top + row
+        half_w = (row * (canopy_h // 3 + 2)) // canopy_h
+        for dx in range(-half_w, half_w + 1):
+            _sp(cx + dx, y, color)
+        # Snow on edges and top
+        if row < 2 or row % 3 == 0:
+            _sp(cx - half_w, y, 5)
+            _sp(cx + half_w, y, 5)
+    # Snow cap on top
+    _sp(cx, tree_top, 5)
+    _sp(cx, tree_top + 1, 5)
 
 def draw_sun(frame_n):
     """Animated sun with core, glow ring, and alternating rays."""
+    palette[1] = (120, 100, 0)    # restore sun-core yellow
     r  = min(5, H // 7)
     cx = W - r - 4
     cy = r + 2
@@ -466,6 +662,86 @@ def wx_exit(request):
 def wx_home(request):
     return (200, {}, html)
 
+@ampule.route("/debug", method="GET")
+def wx_debug(request):
+    return (200, {}, _DEBUG_HTML)
+
+@ampule.route("/debug", method="POST")
+def wx_debug_post(request):
+    global condition, temperature, weather_code, sunrise_epoch, sunset_epoch
+    global server_epoch, server_mono
+    params = request.params
+    mode = params.get("mode", "")
+    if mode == "beach":
+        condition = "clear"
+        temperature = 28.0
+        weather_code = 0
+        # Force daytime
+        server_epoch = time.mktime(time.localtime())
+        server_mono  = time.monotonic()
+        sunrise_epoch = server_epoch - 3600
+        sunset_epoch  = server_epoch + 3600
+        init_scene(condition)
+    elif mode == "winter":
+        condition = "snow"
+        temperature = -5.0
+        weather_code = 73
+        init_scene(condition)
+    elif mode == "clear_day":
+        condition = "clear"
+        temperature = 18.0
+        weather_code = 0
+        server_epoch = time.mktime(time.localtime())
+        server_mono  = time.monotonic()
+        sunrise_epoch = server_epoch - 3600
+        sunset_epoch  = server_epoch + 3600
+        init_scene(condition)
+    elif mode == "clear_night":
+        condition = "clear"
+        temperature = 12.0
+        weather_code = 0
+        server_epoch = time.mktime(time.localtime())
+        server_mono  = time.monotonic()
+        sunrise_epoch = server_epoch + 3600
+        sunset_epoch  = server_epoch - 3600
+        init_scene(condition)
+    elif mode == "partly_cloudy":
+        condition = "partly_cloudy"
+        temperature = 15.0
+        weather_code = 2
+        init_scene(condition)
+    elif mode == "cloudy":
+        condition = "cloudy"
+        temperature = 10.0
+        weather_code = 3
+        init_scene(condition)
+    elif mode == "rain":
+        condition = "rain"
+        temperature = 8.0
+        weather_code = 63
+        init_scene(condition)
+    elif mode == "storm":
+        condition = "storm"
+        temperature = 6.0
+        weather_code = 95
+        init_scene(condition)
+    elif mode == "fog":
+        condition = "fog"
+        temperature = 4.0
+        weather_code = 45
+        init_scene(condition)
+    elif mode == "snow":
+        condition = "snow"
+        temperature = 1.0
+        weather_code = 73
+        init_scene(condition)
+    elif mode == "drizzle":
+        condition = "drizzle"
+        temperature = 9.0
+        weather_code = 53
+        init_scene(condition)
+    return (200, {}, json.dumps({"ok": True, "mode": mode}))
+
 @ampule.route("/weather", method="GET")
 def wx_data(request):
     desc = _WMO_DESC.get(weather_code, "No data") if weather_code >= 0 else "No data"
@@ -514,10 +790,6 @@ def wx_post(request):
         v = params["clockmode"]
         if v in ("12", "24"):
             cfg["clockmode"] = v
-    if "skyfill" in params:
-        v = params["skyfill"]
-        if v in ("checker", "solid"):
-            cfg["skyfill"] = v
     if "refresh" in params:
         fetch_weather()
         last_fetch = time.monotonic()
@@ -555,7 +827,7 @@ while load_settings.app_running:
         last_fetch = time.monotonic()
 
     # ── Sky background ────────────────────────────────────────────────────────
-    _skyfn = _sky_solid if cfg.get("skyfill") == "solid" else _sky_checker
+    _skyfn = _sky_solid
     if condition == "clear":
         _skyfn(6)
     elif condition == "partly_cloudy":
@@ -563,7 +835,7 @@ while load_settings.app_running:
     elif condition == "cloudy":
         _skyfn(12)
     elif condition == "fog":
-        _skyfn(18)
+        _skyfn(10)
     elif condition in ("drizzle", "rain"):
         _skyfn(3)
     elif condition == "snow":
@@ -576,10 +848,11 @@ while load_settings.app_running:
             next_lightning = frame + random.randint(60, 140)
             make_bolt()
         if lightning_age < 3:
+            palette[4] = (130, 130, 60)   # lightning yellow for flash
             # Flash only along the bolt path area, not full screen
             for bx, by in bolt_path:
                 for dx in range(-3, 4):
-                    _sp(bx + dx, by, 17)
+                    _sp(bx + dx, by, 4)
         lightning_age += 1
     else:
         window.fill(0)
@@ -609,8 +882,17 @@ while load_settings.app_running:
                 b[1] = float(random.randint(3, max(4, H // 2 - 8)))
             draw_bird(int(b[0]), int(b[1]), b[2])
 
+    # ── Beach scene (clear + hot + daytime) ──────────────────────────────────
+    if _is_beach():
+        draw_beach(frame)
+
+    # ── Winter scene (snow + freezing) ───────────────────────────────────────
+    if _is_winter():
+        draw_winter(frame)
+
     # ── Rain ──────────────────────────────────────────────────────────────────
     if condition in ("rain", "drizzle", "storm"):
+        palette[15] = (40, 60, 100)   # rain drop blue-white
         new_p = []
         for p in particles:
             p[0] += p[2]
@@ -628,6 +910,7 @@ while load_settings.app_running:
 
     # ── Snow ──────────────────────────────────────────────────────────────────
     elif condition == "snow":
+        palette[15] = (90, 95, 110)   # snowflake pale blue-white
         new_p = []
         for p in particles:
             # gentle side-to-side drift
@@ -636,7 +919,7 @@ while load_settings.app_running:
             xi = int(p[0]) % W
             yi = int(p[1])
             if yi < TEMP_Y:
-                _sp(xi, yi, 16)
+                _sp(xi, yi, 15)
                 new_p.append([float(xi), p[1], p[2], p[3]])
             else:
                 # snowflake reached bottom – respawn at top
@@ -644,10 +927,12 @@ while load_settings.app_running:
         particles = new_p
 
     # ── Lightning bolt (drawn on top of rain, after flash fades) ─────────────
-    if condition == "storm" and 3 <= lightning_age < 12:
-        for bx, by in bolt_path:
-            _sp(bx,     by, 17)
-            _sp(bx + 1, by, 17)
+    if condition == "storm":
+        palette[4] = (130, 130, 60)   # lightning yellow
+        if 3 <= lightning_age < 12:
+            for bx, by in bolt_path:
+                _sp(bx,     by, 4)
+                _sp(bx + 1, by, 4)
 
     # ── Fog shimmer ───────────────────────────────────────────────────────────
     if condition == "fog":
