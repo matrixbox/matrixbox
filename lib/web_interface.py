@@ -13,10 +13,12 @@ unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {met
 
 def _get_installed_apps():
     apps = []
-    for app in os.listdir():
+    for app in os.listdir("/"):
         if app == "LICENSE": continue
         if not "." in app:
-            if not "__init__.py" in os.listdir(app): continue
+            try:
+                if not "__init__.py" in os.listdir("/" + app): continue
+            except: continue
             apps.append(app)
     return apps
 
@@ -468,7 +470,7 @@ def connect_to_wifi():
     networks = scan()
     wifi_error = latest_wifi_error()
     error_html = f'<p class="error-msg">{wifi_error}</p>' if wifi_error else ""
-    return header("Connect to WiFi") + f"""<div class="logo">
+    return f"""<div class="logo">
     <h1>WiFi Setup</h1>
     <p>Connect to a wireless network</p>
 </div>
@@ -485,6 +487,7 @@ def connect_to_wifi():
     }}
     _ssid.addEventListener("change", function() {{ _sendSSID(_ssid); }});
     _ssid.addEventListener("click",  function() {{ _sendSSID(_ssid); }});
+    if (_ssid.options.length) _sendSSID(_ssid);
     </script>
     <label for="password">Password</label>
     <input type="text" id="password" name="password" placeholder="Enter password">
@@ -496,14 +499,17 @@ def connect_to_wifi():
     </script>
     <button class="btn btn-full" onclick="location.href='/connect'">Connect</button>
     {error_html}
-</div>""" + footer()
+</div>"""
 
 def select_app():
+    wifi_html = connect_to_wifi() if not wifi.radio.connected else ""
     installed_apps = ""
-    for app in os.listdir():
+    for app in os.listdir("/"):
         if app == "LICENSE": continue
         if not "." in app:
-            if not "__init__.py" in os.listdir(app): continue
+            try:
+                if not "__init__.py" in os.listdir("/" + app): continue
+            except: continue
             ver = _app_ver(app)
             ver_html = f'<div style="font-size:.7rem;color:var(--muted);margin-top:2px">v{ver}</div>' if ver else ''
             installed_apps += f'<div class="app-item"><div><span class="app-name">{app}</span>{ver_html}</div>' + """<button class="btn btn-sm" onclick="run"""+app+"""()">&#9654; Run</button>
@@ -527,7 +533,7 @@ def select_app():
     <div class="section-title" style="color:var(--muted)">Built-in Tools</div>
     <div class="app-item"><span class="app-name" style="color:var(--muted)">&#x1F4BB; Terminal</span><button class="btn btn-sm" style="background:var(--muted);color:var(--bg)" onclick="window.location.href='/cmd'">Open</button></div>
 </div>
-""" + footer()
+""" + wifi_html + footer()
 
 @ampule.route('/settingsx')
 def _settings(request):

@@ -65,7 +65,7 @@ def webinterface(request):
         return (200, {}, str(exitbutton) + f"""<br> running app {load_settings.app_running}""")
     if request.params:
         if "run" in request.params: load_settings.app_running = request.params["run"]
-    return (200, {}, select_app() + connect_to_wifi() if wifi.radio.connected == False else select_app())
+    return (200, {}, select_app())
 
 def initialize_app():
     global autostart
@@ -115,10 +115,12 @@ def savesettings(settings):
 
 def installed_apps():
     installed_apps = []
-    for app in os.listdir():
+    for app in os.listdir("/"):
         if app == "LICENSE": continue
         if not "." in app:
-            if not "__init__.py" in os.listdir(app): continue
+            try:
+                if not "__init__.py" in os.listdir("/" + app): continue
+            except: continue
             installed_apps.append(app)
     return installed_apps if len(installed_apps) else ["No apps found"]
 
