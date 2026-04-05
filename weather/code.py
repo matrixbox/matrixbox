@@ -336,6 +336,7 @@ def draw_winter(frame_n):
     palette[10] = (50,  28,   8)   # brown – trunk / details
     palette[11] = (120, 100,  20)  # warm yellow – window glow
     palette[1]  = (110,  50,   0)  # orange – carrot nose
+    palette[5]  = (100, 110, 120)   # cool blue-white snow
 
     ground_y = SKY_H - 4           # snow ground top
 
@@ -359,16 +360,16 @@ def draw_winter(frame_n):
         for x in range(hx, hx + hw):
             _sp(x, y, 4)
 
-    # Roof (triangle)
+    # Roof (triangle – narrow at peak, wide at eaves)
     cx_h = hx + hw // 2
     for row in range(roof_h):
-        span = (roof_h - row) * hw // (2 * roof_h)
+        span = (row + 1) * hw // (2 * roof_h)
         ry = hy - roof_h + row
         for x in range(cx_h - span, cx_h + span + 1):
             _sp(x, ry, 10)
-    # Snow on roof
+    # Snow on roof (top rows)
     for row in range(min(2, roof_h)):
-        span = (roof_h - row) * hw // (2 * roof_h)
+        span = (row + 1) * hw // (2 * roof_h)
         ry = hy - roof_h + row
         for x in range(cx_h - span, cx_h + span + 1):
             _sp(x, ry, 5)
@@ -549,7 +550,7 @@ def init_scene(cond):
                 random.randint(16, 24),
                 c_idx,
             ])
-        n_drops = 40 if cond == "storm" else (22 if cond == "rain" else 10)
+        n_drops = 40 if cond == "storm" else (22 if cond == "rain" else (5 if cond == "drizzle" else 10))
         for _ in range(n_drops):
             vy = random.uniform(1.5, 2.8)
             vx = -vy * 0.18
@@ -914,13 +915,13 @@ while load_settings.app_running:
         new_p = []
         for p in particles:
             # gentle side-to-side drift
-            p[0] += p[2] + math.sin(frame * 0.04 + p[0] * 0.15) * 0.08
+            p[0] = (p[0] + p[2] + math.sin(frame * 0.04 + p[0] * 0.15) * 0.08) % W
             p[1] += p[3]
-            xi = int(p[0]) % W
+            xi = int(p[0])
             yi = int(p[1])
             if yi < TEMP_Y:
                 _sp(xi, yi, 15)
-                new_p.append([float(xi), p[1], p[2], p[3]])
+                new_p.append([p[0], p[1], p[2], p[3]])
             else:
                 # snowflake reached bottom – respawn at top
                 new_p.append([float(random.randint(0, W - 1)), -1.0, p[2], p[3]])
@@ -933,13 +934,6 @@ while load_settings.app_running:
             for bx, by in bolt_path:
                 _sp(bx,     by, 4)
                 _sp(bx + 1, by, 4)
-
-    # ── Fog shimmer ───────────────────────────────────────────────────────────
-    if condition == "fog":
-        for px in range(0, W, 3):
-            v = int(math.sin(frame * 0.05 + px * 0.12) * 2)
-            if v > 0:
-                _sp(px, v + 2, 5)
 
     # ── Bottom bar: city (left) · clock (centre) · temp (right) ────────────────
     _city = cfg.get("city", "")
