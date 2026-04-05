@@ -331,7 +331,7 @@ def draw_winter(frame_n):
     """Winter scene: snow ground, red house, two pines, snowman."""
     # Set winter palette colors dynamically
     palette[4]  = (90,  12,  12)   # red – house walls
-    palette[7]  = (8,   45,  12)   # dark green – tree
+    palette[7]  = (100, 110, 120)   # snow-white (override beach sand)
     palette[9]  = (20,  55,  20)   # lighter green – small tree
     palette[10] = (50,  28,   8)   # brown – trunk / details
     palette[11] = (120, 100,  20)  # warm yellow – window glow
@@ -347,6 +347,9 @@ def draw_winter(frame_n):
     # Slight uneven snow edge
     for x in range(0, W, 3):
         _sp(x, ground_y - 1, 5)
+
+    # Restore green for pine trees (after ground is drawn)
+    palette[7]  = (8,   45,  12)   # dark green – tree
 
     # ── Red house (background, right side) ─────────────────────────
     hx = W * 3 // 5                # house left x
