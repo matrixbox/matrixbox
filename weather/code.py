@@ -338,7 +338,7 @@ def draw_winter(frame_n):
     palette[1]  = (110,  50,   0)  # orange – carrot nose
     palette[5]  = (100, 110, 120)   # cool blue-white snow
 
-    ground_y = SKY_H - 4           # snow ground top
+    ground_y = SKY_H - max(4, SKY_H // 6)  # snow ground top (proportional)
 
     # Snow-covered ground
     for y in range(ground_y, SKY_H):
@@ -360,13 +360,13 @@ def draw_winter(frame_n):
         for x in range(hx, hx + hw):
             _sp(x, y, 4)
 
-    # Roof (triangle – narrow at peak, wide at eaves)
+    # Roof (triangle – narrow at peak, wide at eaves) in black
     cx_h = hx + hw // 2
     for row in range(roof_h):
         span = (row + 1) * hw // (2 * roof_h)
         ry = hy - roof_h + row
         for x in range(cx_h - span, cx_h + span + 1):
-            _sp(x, ry, 10)
+            _sp(x, ry, 0)
     # Snow on roof (top rows)
     for row in range(min(2, roof_h)):
         span = (row + 1) * hw // (2 * roof_h)
@@ -374,14 +374,31 @@ def draw_winter(frame_n):
         for x in range(cx_h - span, cx_h + span + 1):
             _sp(x, ry, 5)
 
-    # Windows (2 windows with glow)
+    # Chimney (right side of roof)
+    ch_x = cx_h + hw // 4
+    ch_h = max(2, roof_h // 2 + 1)
+    ch_top = hy - roof_h - ch_h + 1
+    for cy in range(ch_top, hy - roof_h + roof_h // 2 + 1):
+        _sp(ch_x, cy, 0)
+        _sp(ch_x + 1, cy, 0)
+
+    # Window (single, left side) with glow
     wy = hy + hh // 3
     ww = max(2, hw // 5)
     wh = max(2, hh // 4)
-    for wi, wx in enumerate([hx + hw // 5, hx + hw * 3 // 5]):
-        for dy in range(wh):
-            for dx in range(ww):
-                _sp(wx + dx, wy + dy, 11)
+    wx = hx + hw // 5
+    for dy in range(wh):
+        for dx in range(ww):
+            _sp(wx + dx, wy + dy, 11)
+
+    # Door (right of window)
+    dw = max(2, hw // 6)
+    dh = max(3, hh // 2)
+    dx_start = hx + hw * 3 // 5
+    dy_start = ground_y - dh
+    for dy in range(dh):
+        for dx in range(dw):
+            _sp(dx_start + dx, dy_start + dy, 10)
 
     # ── Tall pine tree (left-center) ─────────────────────────────
     tx1 = W * 2 // 5
