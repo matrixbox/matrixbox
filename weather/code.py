@@ -1,5 +1,5 @@
 from __main__ import *
-import sys, time, random, math
+import sys, time, random, math, bitmaptools
 import load_screen
 from check_button import check_if_button_pressed
 
@@ -232,9 +232,7 @@ def _sky_solid(c):
     if c in colors:
         palette[c] = colors[c]
     window.fill(0)
-    for y in range(SKY_H):
-        for x in range(W):
-            window[x, y] = c
+    bitmaptools.fill_region(window, 0, 0, W, SKY_H, c)
 
 def _sp(x, y, c):
     xi, yi = int(x), int(y)
@@ -242,9 +240,10 @@ def _sp(x, y, c):
         window[xi, yi] = c
 
 def _fill(x, y, w, h, c):
-    for px in range(max(0, x), min(W, x + w)):
-        for py in range(max(0, y), min(H, y + h)):
-            window[px, py] = c
+    x1, y1 = max(0, x), max(0, y)
+    x2, y2 = min(W, x + w), min(H, y + h)
+    if x2 > x1 and y2 > y1:
+        bitmaptools.fill_region(window, x1, y1, x2, y2, c)
 
 # ── Drawing helpers ───────────────────────────────────────────────────────────
 def draw_cloud(x, y, w, c):
@@ -288,9 +287,7 @@ def draw_beach(frame_n):
     sand_y = SKY_H - 3             # sand starts here (few rows)
 
     # Sea (below sky, above sand)
-    for y in range(sea_y, sand_y):
-        for x in range(W):
-            _sp(x, y, 9)
+    bitmaptools.fill_region(window, 0, sea_y, W, sand_y, 9)
 
     # Gentle wave line at top of sea
     for x in range(W):
@@ -300,9 +297,7 @@ def draw_beach(frame_n):
             _sp(x, sea_y + wv + 1, 9)
 
     # Sand
-    for y in range(sand_y, SKY_H):
-        for x in range(W):
-            _sp(x, y, 7)
+    bitmaptools.fill_region(window, 0, sand_y, W, SKY_H, 7)
 
     # ── Parasol ───────────────────────────────────────────────────────────
     px = W // 4                    # parasol center x
@@ -328,101 +323,78 @@ def draw_beach(frame_n):
             _sp(px + dx, pole_top, 4)
 
 def draw_winter(frame_n):
-    """Winter scene: snow ground, red house, two pines, snowman."""
-    # Set winter palette colors dynamically
+    """Winter scene: white ground, red house, pine trees, snowman."""
+    # Dynamic palette
     palette[4]  = (90,  12,  12)   # red – house walls
-    palette[7]  = (100, 110, 120)   # snow-white (override beach sand)
+    palette[7]  = (8,   45,  12)   # dark green – tall tree
     palette[9]  = (20,  55,  20)   # lighter green – small tree
-    palette[10] = (50,  28,   8)   # brown – trunk / details
+    palette[10] = (50,  28,   8)   # brown – trunk / door
     palette[11] = (120, 100,  20)  # warm yellow – window glow
     palette[1]  = (110,  50,   0)  # orange – carrot nose
-    palette[5]  = (100, 110, 120)   # cool blue-white snow
 
-    ground_y = SKY_H - 2            # 2-3 rows of snow near bottom
+    ground_y = SKY_H - 2           # ground is 2 px tall
 
-    # Snow-covered ground (only 2-3 rows, not full bottom)
-    for y in range(ground_y, ground_y + 3):
-        for x in range(W):
-            _sp(x, y, 5)
-    # Slight uneven snow edge
-    for x in range(0, W, 3):
-        _sp(x, ground_y - 1, 5)
-
-    # Restore green for pine trees (after ground is drawn)
-    palette[7]  = (8,   45,  12)   # dark green – tree
-
-    # ── Red house (background, right side) ─────────────────────────
-    hx = W * 3 // 5                # house left x
-    hw = max(10, W // 5)           # house width
-    hh = max(7, SKY_H // 4)        # house wall height
-    hy = ground_y - hh             # house top-of-wall y
-    roof_h = max(3, hh // 3)       # roof triangle height
+    # ── Red house (right side) ─────────────────────────────────
+    hx = W * 3 // 5
+    hw = max(10, W // 5)
+    hh = max(7, SKY_H // 4)
+    hy = ground_y - hh
+    roof_h = max(3, hh // 3)
 
     # Walls
-    for y in range(hy, ground_y):
-        for x in range(hx, hx + hw):
-            _sp(x, y, 4)
+    _fill(hx, hy, hw, hh, 4)
 
-    # Roof (triangle – narrow at peak, wide at eaves) in black
+    # Roof (black triangle – narrow at peak, wide at eaves)
     cx_h = hx + hw // 2
     for row in range(roof_h):
         span = (row + 1) * hw // (2 * roof_h)
         ry = hy - roof_h + row
         for x in range(cx_h - span, cx_h + span + 1):
             _sp(x, ry, 0)
-    # Snow on roof (top rows)
+    # Snow on roof peak
     for row in range(min(2, roof_h)):
         span = (row + 1) * hw // (2 * roof_h)
         ry = hy - roof_h + row
         for x in range(cx_h - span, cx_h + span + 1):
             _sp(x, ry, 5)
 
-    # Chimney (right side of roof)
+    # Chimney
     ch_x = cx_h + hw // 4
-    ch_h = max(2, roof_h // 2 + 1)
-    ch_top = hy - roof_h - ch_h + 1
-    for cy in range(ch_top, hy - roof_h + roof_h // 2 + 1):
+    ch_top = hy - roof_h - max(2, roof_h // 2)
+    ch_bot = hy - roof_h + roof_h // 2
+    for cy in range(ch_top, ch_bot + 1):
         _sp(ch_x, cy, 0)
         _sp(ch_x + 1, cy, 0)
 
-    # Window (single, left side) with glow
+    # Window (left side, glowing)
     wy = hy + hh // 3
     ww = max(2, hw // 5)
     wh = max(2, hh // 4)
     wx = hx + hw // 5
-    for dy in range(wh):
-        for dx in range(ww):
-            _sp(wx + dx, wy + dy, 11)
+    _fill(wx, wy, ww, wh, 11)
 
-    # Door (right of window)
+    # Door (right side, brown, sits on ground)
     dw = max(2, hw // 6)
     dh = max(3, hh // 2)
-    dx_start = hx + hw * 3 // 5
-    dy_start = ground_y - dh
-    for dy in range(dh):
-        for dx in range(dw):
-            _sp(dx_start + dx, dy_start + dy, 10)
+    dx0 = hx + hw * 3 // 5
+    _fill(dx0, ground_y - dh, dw, dh, 10)
 
     # ── Tall pine tree (left-center) ─────────────────────────────
-    tx1 = W * 2 // 5
-    th1 = max(8, SKY_H // 3)
-    _draw_pine(tx1, ground_y, th1, 7)
+    _draw_pine(W * 2 // 5, ground_y, max(8, SKY_H // 3), 7)
 
     # ── Small pine tree (far left) ──────────────────────────────
-    tx2 = W // 7
-    th2 = max(5, SKY_H // 5)
-    _draw_pine(tx2, ground_y, th2, 9)
+    _draw_pine(W // 7, ground_y, max(5, SKY_H // 5), 9)
 
-    # ── Snowman (foreground, left-center) ───────────────────────
+    # ── Snowman (left quarter) ──────────────────────────────────
     sx = W // 4
-    # Body (bottom ball)
     br = max(3, SKY_H // 10)
     by = ground_y - br
+    # Body
     for dy in range(-br, br + 1):
         for dx in range(-br, br + 1):
             if dx * dx + dy * dy <= br * br:
                 _sp(sx + dx, by + dy, 5)
-    # Head (top ball)
+    # Head
     hr = max(2, br * 2 // 3)
     head_y = by - br - hr
     for dy in range(-hr, hr + 1):
@@ -443,6 +415,18 @@ def draw_winter(frame_n):
     for i in range(1, br + 1):
         _sp(sx - br - i, by - br // 2 + i // 2, 10)
         _sp(sx + br + i, by - br // 2 + i // 2, 10)
+
+    # ── Ground (drawn LAST so nothing covers it) ──────────────
+    palette[5] = (120, 120, 120)   # white – snow patches
+    palette[14] = (30,  50,  80)   # light blue – ground base
+    bitmaptools.fill_region(window, 0, ground_y, W, ground_y + 2, 14)
+    # Snowy patches – pseudo-random using x hash for stable pattern
+    for x in range(W):
+        h = (x * 137 + 53) % 97
+        if h % 5 < 2:                     # ~40% coverage
+            _sp(x, ground_y, 5)
+        if h % 7 < 1:                     # some on bottom row too
+            _sp(x, ground_y + 1, 5)
 
 def _draw_pine(cx, ground_y, h, color):
     """Draw a pine tree at cx with given height. Snow on tips."""
@@ -956,6 +940,7 @@ while load_settings.app_running:
                 _sp(bx + 1, by, 4)
 
     # ── Bottom bar: city (left) · clock (centre) · temp (right) ────────────────
+
     _city = cfg.get("city", "")
     if _city:
         _maxc = W // 5
