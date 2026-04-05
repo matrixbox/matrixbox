@@ -479,10 +479,9 @@ while load_settings.app_running:
                 _sp(xi,     yi,     15)
                 _sp(xi - 1, yi - 1, 15)   # angled streak
                 new_p.append(p)
-            elif yi >= TEMP_Y:
-                new_p.append([float(random.randint(0, W - 1)), -1.0, p[2], p[3]])
             else:
-                new_p.append(p)
+                # particle reached/passed temp-text row – respawn at top
+                new_p.append([float(random.randint(0, W - 1)), -1.0, p[2], p[3]])
         particles = new_p
 
     # ── Snow ──────────────────────────────────────────────────────────────────
@@ -497,10 +496,9 @@ while load_settings.app_running:
             if yi < TEMP_Y:
                 _sp(xi, yi, 16)
                 new_p.append([float(xi), p[1], p[2], p[3]])
-            elif yi >= TEMP_Y:
-                new_p.append([float(random.randint(0, W - 1)), -1.0, p[2], p[3]])
             else:
-                new_p.append(p)
+                # snowflake reached bottom – respawn at top
+                new_p.append([float(random.randint(0, W - 1)), -1.0, p[2], p[3]])
         particles = new_p
 
     # ── Lightning bolt (drawn on top of rain, after flash fades) ─────────────
