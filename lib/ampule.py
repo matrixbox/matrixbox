@@ -8,6 +8,7 @@ from errno import EAGAIN, ECONNRESET
 BUFFER_SIZE = 1024*4
 _recv_buffer = bytearray(BUFFER_SIZE)
 routes = []
+system_routes = []
 variable_re = re.compile("^<([a-zA-Z]+)>$")
 
 class Request:
@@ -137,7 +138,7 @@ def __on_request(method, rule, request_handler):
     )
 
 def __match_route(path, method):
-    for matcher, route in routes:
+    for matcher, route in system_routes + routes:
         match = matcher.match(path)
         if match and method == route["method"]:
             return (match.groups(), route)

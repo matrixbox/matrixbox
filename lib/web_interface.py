@@ -11,6 +11,16 @@ bootloaderbutton = """<button class="btn btn-danger" onclick="if(confirm('Enter 
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
 unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {method: 'POST'})">&#x1F513; Unlock</button>"""
 
+# ── LED on/off toggle ─────────────────────────────────────────────────────────
+_led_off = False
+
+def _led_toggle():
+    global _led_off
+    _led_off = not _led_off
+    display.root_group.hidden = _led_off
+    refresh()
+    return _led_off
+
 def _get_installed_apps():
     apps = []
     for app in os.listdir("/"):
@@ -357,6 +367,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .nav-info span{display:block}
 .nav-x{color:var(--muted);font-size:1rem;font-weight:700;text-decoration:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);transition:color .15s,border-color .15s,background .15s;margin-left:4px}
 .nav-x:hover{color:#ff6060;border-color:rgba(255,96,96,.4);background:rgba(255,96,96,.08)}
+.nav-led{color:var(--muted);font-size:.85rem;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);transition:color .15s,border-color .15s,background .15s;margin-left:4px;cursor:pointer;background:none}
+.nav-led:hover{color:#ffd060;border-color:rgba(255,208,96,.4);background:rgba(255,208,96,.08)}
+.nav-led.led-off{color:#ff4040;border-color:rgba(255,64,64,.35);background:rgba(255,64,64,.06)}
 .page{max-width:480px;margin:0 auto;padding:16px 14px}
 .logo{text-align:center;padding:26px 0 18px}
 .logo h1{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
@@ -428,6 +441,7 @@ def navbar():
 <a class="nav-link" href="/settings">Settings</a>
 <div class="nav-spacer"></div>
 <div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
+<button class="nav-led{' led-off' if _led_off else ''}" id="ledbtn" onclick="fetch('/led',{{method:'POST'}}).then(function(r){{return r.json()}}).then(function(j){{var b=document.getElementById('ledbtn');if(j.off){{b.classList.add('led-off')}}else{{b.classList.remove('led-off')}}}})" title="Toggle LED">&#x1F4A1;</button>
 <button class="nav-x{_reboot_cls}" onclick="if(confirm('Restart?'))fetch('/reset',{{method:'POST'}})" title="Restart">&#x2715;</button>
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
@@ -439,6 +453,7 @@ def app_navbar(title):
 <span class="nav-title">{title}</span>
 <div class="nav-spacer"></div>
 <div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
+<button class="nav-led{' led-off' if _led_off else ''}" id="ledbtn" onclick="fetch('/led',{{method:'POST'}}).then(function(r){{return r.json()}}).then(function(j){{var b=document.getElementById('ledbtn');if(j.off){{b.classList.add('led-off')}}else{{b.classList.remove('led-off')}}}})" title="Toggle LED">&#x1F4A1;</button>
 <a class="nav-x" href="/exit" title="Exit">&#x2715;</a>
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
@@ -710,6 +725,18 @@ def reset(request):
     try: os.remove("reboot_required")
     except OSError: pass
     microcontroller.reset()
+
+@ampule.route('/led', method='POST')
+def led_toggle(request):
+    off = _led_toggle()
+    return (200, {}, json.dumps({"off": off}))
+
+# Move /led to system_routes so it survives app route clearing
+for _r in ampule.routes:
+    if _r[0].match("/led"):
+        ampule.system_routes.append(_r)
+        ampule.routes.remove(_r)
+        break
 
 
 def url_decoder(url):

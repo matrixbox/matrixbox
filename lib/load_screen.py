@@ -51,7 +51,7 @@ display.root_group.hidden = True
 rows = int((settings["height"]*1/32))
 print(rows)
 _max_dim = max(settings["width"], settings["height"] * rows)
-window = displayio.Bitmap(_max_dim, _max_dim, 10) # viewport large enough for any rotation
+window = displayio.Bitmap(_max_dim, _max_dim, 16) # viewport large enough for any rotation
 line_window = [] # en lista för multi-line printout till skärmen
 palette = displayio.Palette(20, dither=False)
 
