@@ -33,6 +33,7 @@ palette[15] = (40,  60, 100)     # rain drop (blue-white)
 palette[16] = (90,  95, 110)     # snowflake (pale blue-white)
 palette[17] = (130, 130,  60)    # lightning yellow
 palette[18] = (60,  62,  68)     # fog grey / light cloud fill
+palette[23] = (30,  31,  34)     # solid fog sky
 
 # ── Config ────────────────────────────────────────────────────────────────────
 try:
@@ -41,7 +42,7 @@ try:
 except Exception:
     cfg = {}
 
-for k, v in [("city", ""), ("lat", 0.0), ("lon", 0.0), ("unit", "C"), ("interval", 300), ("clock", 0)]:
+for k, v in [("city", ""), ("lat", 0.0), ("lon", 0.0), ("unit", "C"), ("interval", 300), ("clock", 0), ("clockmode", "24"), ("skyfill", "checker")]:
     if k not in cfg:
         cfg[k] = v
 
@@ -80,6 +81,20 @@ _CONTENT = """
 </div>
 </div>
 <div class="card">
+<div class="section-title">Clock Format</div>
+<div class="action-row" style="margin-top:8px">
+<button class="btn btn-ghost" id="cm24" onclick="scm('24')">24h</button>
+<button class="btn btn-ghost" id="cm12" onclick="scm('12')">12h AM/PM</button>
+</div>
+</div>
+<div class="card">
+<div class="section-title">Sky Rendering</div>
+<div class="action-row" style="margin-top:8px">
+<button class="btn btn-ghost" id="sfck" onclick="ssf('checker')">Checker</button>
+<button class="btn btn-ghost" id="sfso" onclick="ssf('solid')">Solid</button>
+</div>
+</div>
+<div class="card">
 <div class="section-title">Auto-refresh Interval</div>
 <div class="action-row" style="margin-top:8px">
 <button class="btn btn-ghost" onclick="si(60)">1 min</button>
@@ -95,11 +110,15 @@ function su(u){p("unit="+u);uh(u)}
 function uh(u){document.getElementById("uc").style.opacity=u==="C"?"1":"0.4";document.getElementById("uf").style.opacity=u==="F"?"1":"0.4";}
 function stk(v){p("clock="+v);ckh(v)}
 function ckh(v){document.getElementById("ckon").style.opacity=v?"1":"0.4";document.getElementById("ckoff").style.opacity=v?"0.4":"1";}
+function scm(m){p("clockmode="+m);cmh(m)}
+function cmh(m){document.getElementById("cm24").style.opacity=m==="24"?"1":"0.4";document.getElementById("cm12").style.opacity=m==="12"?"1":"0.4";}
+function ssf(v){p("skyfill="+v);sfh(v)}
+function sfh(v){document.getElementById("sfck").style.opacity=v==="checker"?"1":"0.4";document.getElementById("sfso").style.opacity=v==="solid"?"1":"0.4";}
 function si(n){p("interval="+n)}
 function sv(){p("save=1")}
 function rf(){p("refresh=1",function(){lw()})}
 function lw(){fetch("/weather").then(function(r){return r.json()}).then(function(d){var t=document.getElementById("wt");if(d.temp!==null&&d.temp!==undefined){var u=d.unit==="F"?"&#176;F":"&#176;C";t.textContent=d.temp.toFixed(1)+u;}else{t.textContent="--";}document.getElementById("wc").textContent=d.desc||"--";document.getElementById("wl").textContent=d.city||"";}).catch(function(){})}
-function ls(){fetch("/settings").then(function(r){return r.json()}).then(function(d){if(d.city)document.getElementById("city").value=d.city;uh(d.unit||"C");ckh(d.clock||0);}).catch(function(){})}
+function ls(){fetch("/settings").then(function(r){return r.json()}).then(function(d){if(d.city)document.getElementById("city").value=d.city;uh(d.unit||"C");ckh(d.clock||0);cmh(d.clockmode||"24");sfh(d.skyfill||"checker");}).catch(function(){})}
 ls();lw();setInterval(lw,20000);
 </script>
 """
@@ -117,6 +136,10 @@ condition    = "clear"
 status_msg   = ""
 last_fetch   = -9999.0
 utc_offset   = 0
+server_epoch = 0       # epoch seconds parsed from API current.time
+server_mono  = 0.0     # monotonic timestamp when server_epoch was captured
+sunrise_epoch = 0      # today's sunrise as epoch (local)
+sunset_epoch  = 0      # today's sunset  as epoch (local)
 
 _WMO_DESC = {
     0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
@@ -153,12 +176,39 @@ next_lightning = 120   # frame number for next strike (updated by init_scene)
 # ── Pixel helpers ─────────────────────────────────────────────────────────────
 SKY_H = TEMP_Y  # animation area stops above temperature text
 
+# Checker palette colors and their dimmed solid-fill equivalents
+_CHECKER_COLORS = {6: (20, 50, 80), 12: (15, 40, 75), 3: (10, 35, 80), 13: (6, 8, 14), 18: (60, 62, 68)}
+_SOLID_COLORS  = {6: (10, 25, 40), 12: (8, 20, 38), 3: (5, 18, 40), 13: (3, 4, 7), 18: (30, 31, 34)}
+# Night variants (very dark / near-black)
+_NIGHT_CHECKER = {6: (3, 5, 18), 12: (2, 4, 15), 3: (2, 4, 15), 13: (3, 3, 8), 18: (15, 15, 20)}
+_NIGHT_SOLID   = {6: (1, 2, 8),  12: (1, 2, 7),  3: (1, 2, 7),  13: (1, 1, 4), 18: (8, 8, 10)}
+
+def _is_night():
+    """Return True if current time is before sunrise or after sunset."""
+    if not server_epoch or not sunrise_epoch or not sunset_epoch:
+        return False
+    now = server_epoch + int(time.monotonic() - server_mono)
+    return now < sunrise_epoch or now >= sunset_epoch
+
 def _sky_checker(c):
     """Checkerboard fill of the sky area only — half the lit pixels."""
+    colors = _NIGHT_CHECKER if _is_night() else _CHECKER_COLORS
+    if c in colors:
+        palette[c] = colors[c]
     window.fill(0)
     for y in range(SKY_H):
         start = y % 2
         for x in range(start, W, 2):
+            window[x, y] = c
+
+def _sky_solid(c):
+    """Solid fill of the sky area with dimmed palette color."""
+    colors = _NIGHT_SOLID if _is_night() else _SOLID_COLORS
+    if c in colors:
+        palette[c] = colors[c]
+    window.fill(0)
+    for y in range(SKY_H):
+        for x in range(W):
             window[x, y] = c
 
 def _sp(x, y, c):
@@ -180,6 +230,25 @@ def draw_cloud(x, y, w, c):
     _fill(x + 1,              y + 1, hw,      2, c)  # left bump
     _fill(x + w // 2 - 1,    y,     hw + 1,  2, c)  # centre bump (tallest)
     _fill(x + w - hw - 1,    y + 1, hw,      2, c)  # right bump
+
+def draw_moon(frame_n):
+    """Crescent moon."""
+    r  = min(5, H // 7)
+    cx = W - r - 4
+    cy = r + 2
+    # Draw crescent: full disc minus offset shadow disc
+    sr = r - 1
+    sx = cx - r // 2 - 1
+    sy = cy - 1
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            if dx * dx + dy * dy <= r * r:
+                # Skip pixels inside the shadow disc
+                ddx = (cx + dx) - sx
+                ddy = (cy + dy) - sy
+                if ddx * ddx + ddy * ddy <= sr * sr:
+                    continue
+                _sp(cx + dx, cy + dy, 5)
 
 def draw_sun(frame_n):
     """Animated sun with core, glow ring, and alternating rays."""
@@ -208,11 +277,11 @@ def draw_bird(bx, by, phase):
     """5-pixel V-shaped bird silhouette with flapping wings."""
     # wings-up when int(phase*2)%4 < 2, wings-level otherwise
     wy = -1 if int(phase * 2) % 4 < 2 else 0
-    _sp(bx - 2, by + wy, 0)  # left tip
-    _sp(bx - 1, by,      0)  # left inner
-    _sp(bx,     by + 1,  0)  # body
-    _sp(bx + 1, by,      0)  # right inner
-    _sp(bx + 2, by + wy, 0)  # right tip
+    _sp(bx - 2, by + wy, 8)  # left tip
+    _sp(bx - 1, by,      8)  # left inner
+    _sp(bx,     by + 1,  8)  # body
+    _sp(bx + 1, by,      8)  # right inner
+    _sp(bx + 2, by + wy, 8)  # right tip
 
 def draw_text(text, x, y, c):
     """Render text with font_mini directly to window at pixel position (x, y)."""
@@ -252,7 +321,8 @@ def init_scene(cond):
     next_lightning = frame + random.randint(60, 120)
 
     if cond in ("clear", "partly_cloudy"):
-        for _ in range(3):
+        n_birds = 1 if _is_night() else 3
+        for _ in range(n_birds):
             birds.append([
                 float(random.randint(-W, W)),
                 float(random.randint(3, max(4, H // 2 - 8))),
@@ -329,6 +399,7 @@ def geocode(city):
 
 def fetch_weather():
     global weather_code, temperature, condition, status_msg, utc_offset
+    global server_epoch, server_mono
     lat = cfg.get("lat", 0.0)
     lon = cfg.get("lon", 0.0)
     if not lat and not lon:
@@ -339,6 +410,7 @@ def fetch_weather():
                "?latitude=" + str(lat) +
                "&longitude=" + str(lon) +
                "&current=temperature_2m,weather_code"
+               "&daily=sunrise,sunset"
                "&temperature_unit=celsius"
                "&timezone=auto")
         resp = requests.get(url)
@@ -349,6 +421,31 @@ def fetch_weather():
         new_code     = cur["weather_code"]
         weather_code = new_code
         utc_offset   = data.get("utc_offset_seconds", 0)
+        # Parse server local time from API (e.g. "2026-04-05T15:42")
+        try:
+            t_str = cur["time"]  # "YYYY-MM-DDTHH:MM"
+            parts = t_str.split("T")
+            ymd = parts[0].split("-")
+            hm = parts[1].split(":")
+            st = time.struct_time((int(ymd[0]), int(ymd[1]), int(ymd[2]),
+                                   int(hm[0]), int(hm[1]), 0, -1, -1, -1))
+            server_epoch = time.mktime(st)
+            server_mono  = time.monotonic()
+        except Exception:
+            pass
+        # Parse sunrise/sunset
+        try:
+            daily = data["daily"]
+            for key, target in (("sunrise", "sunrise_epoch"), ("sunset", "sunset_epoch")):
+                ts = daily[key][0]  # e.g. "2026-04-05T06:23"
+                p2 = ts.split("T")
+                ymd2 = p2[0].split("-")
+                hm2 = p2[1].split(":")
+                st2 = time.struct_time((int(ymd2[0]), int(ymd2[1]), int(ymd2[2]),
+                                        int(hm2[0]), int(hm2[1]), 0, -1, -1, -1))
+                globals()[target] = time.mktime(st2)
+        except Exception:
+            pass
         new_cond     = wmo_to_cond(new_code)
         if new_cond != condition:
             condition = new_cond
@@ -413,6 +510,14 @@ def wx_post(request):
             cfg["clock"] = int(params["clock"])
         except Exception:
             pass
+    if "clockmode" in params:
+        v = params["clockmode"]
+        if v in ("12", "24"):
+            cfg["clockmode"] = v
+    if "skyfill" in params:
+        v = params["skyfill"]
+        if v in ("checker", "solid"):
+            cfg["skyfill"] = v
     if "refresh" in params:
         fetch_weather()
         last_fetch = time.monotonic()
@@ -450,20 +555,21 @@ while load_settings.app_running:
         last_fetch = time.monotonic()
 
     # ── Sky background ────────────────────────────────────────────────────────
+    _skyfn = _sky_solid if cfg.get("skyfill") == "solid" else _sky_checker
     if condition == "clear":
-        _sky_checker(6)
+        _skyfn(6)
     elif condition == "partly_cloudy":
-        _sky_checker(12)
+        _skyfn(12)
     elif condition == "cloudy":
-        _sky_checker(12)
+        _skyfn(12)
     elif condition == "fog":
-        _sky_checker(18)
+        _skyfn(18)
     elif condition in ("drizzle", "rain"):
-        _sky_checker(3)
+        _skyfn(3)
     elif condition == "snow":
-        _sky_checker(12)
+        _skyfn(12)
     elif condition == "storm":
-        _sky_checker(13)
+        _skyfn(13)
         # Lightning: trigger and flash
         if frame >= next_lightning:
             lightning_age  = 0
@@ -478,9 +584,12 @@ while load_settings.app_running:
     else:
         window.fill(0)
 
-    # ── Sun (drawn before clouds so clouds can pass in front) ─────────────────
+    # ── Sun / Moon (drawn before clouds so clouds can pass in front) ─────────
     if condition in ("clear", "partly_cloudy"):
-        draw_sun(frame)
+        if _is_night():
+            draw_moon(frame)
+        else:
+            draw_sun(frame)
 
     # ── Clouds ────────────────────────────────────────────────────────────────
     if condition != "clear":
@@ -558,17 +667,28 @@ while load_settings.app_running:
         if cfg.get("unit") == "F":
             t = t * 9.0 / 5.0 + 32.0
         sign = "-" if t < 0 else ""
-        ts = sign + str(abs(int(t))) + ("f" if cfg.get("unit") == "F" else "c")
+        ts = sign + str(abs(int(t))) + ("f" if cfg.get("unit") == "F" else "c") + "°"
         tw = text_width(ts)
         draw_text(ts, W - tw - 1, TEMP_Y, 5)
     elif status_msg:
         draw_text(status_msg[: W // 4], 2, TEMP_Y, 5)
 
-    if cfg.get("clock"):
-        lt = time.localtime(time.time() + utc_offset)
-        hh = str(lt.tm_hour)
-        mm = "%02d" % lt.tm_min
-        cts = hh + ":" + mm
+    if cfg.get("clock") and server_epoch:
+        now_epoch = server_epoch + int(time.monotonic() - server_mono)
+        lt = time.localtime(now_epoch)
+        hr = lt.tm_hour
+        if cfg.get("clockmode") == "12":
+            suffix = "a" if hr < 12 else "p"
+            hr = hr % 12
+            if hr == 0:
+                hr = 12
+            hh = str(hr)
+            mm = "%02d" % lt.tm_min
+            cts = hh + ":" + mm + suffix
+        else:
+            hh = str(hr)
+            mm = "%02d" % lt.tm_min
+            cts = hh + ":" + mm
         cw = text_width(cts)
         draw_text(cts, (W - cw) // 2, TEMP_Y, 5)
 
