@@ -78,7 +78,8 @@ def initialize_app():
         time.sleep(0.5)
         import __init__
     except Exception as e: 
-        pprint(f"{load_settings.app_running} crashed.")
+        #pprint(f"{load_settings.app_running} crashed.")
+        pprint(f"{e}")
         print(f"{e}")
         settings["autostart"] = 0
     finally: 
@@ -95,7 +96,7 @@ def initialize_app():
         except: pass
         display.root_group = rf_group
         os.chdir("/")
-        #clearscreen()
+        clearscreen()
         show_logo()
         _wifi_address = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
         pprint(_wifi_address)
