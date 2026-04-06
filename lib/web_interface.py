@@ -565,6 +565,7 @@ def _apps_content():
 <div class="card" style="margin-top:10px;border:1px dashed var(--muted)">
     <div class="section-title" style="color:var(--muted)">Built-in Tools</div>
     <div class="app-item"><span class="app-name" style="color:var(--muted)">&#x1F4BB; Terminal</span><button class="btn btn-sm" style="background:var(--muted);color:var(--bg)" onclick="window.location.href='/cmd'">Open</button></div>
+    <div class="app-item"><span class="app-name" style="color:var(--muted)">&#x1F4C1; File Manager</span><button class="btn btn-sm" style="background:var(--muted);color:var(--bg)" onclick="window.location.href='/fm'">Open</button></div>
 </div>
 """ + wifi_html
 
@@ -753,6 +754,7 @@ def _f_download(request):
 ####################################################
 
 import cmd
+import filemanager
 
 
 @ampule.route("/settingsx")
