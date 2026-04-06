@@ -14,9 +14,12 @@ def boot_splash():
 
 def check_if_button_pressed_on_boot():
     try:
-        if check_if_button_pressed():
-            return 1
-        else: return 0
+        deadline = time.monotonic() + 0.5
+        while time.monotonic() < deadline:
+            result = check_if_button_pressed()
+            if result:
+                return result
+        return 0
     except Exception as e: 
         print(e)
         return 1
