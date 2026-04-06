@@ -194,7 +194,8 @@ def install_app(app):
                     except: pass
             print("File: ", file)
             file_url = settings["repository_url"]
-            if app != "/": file_url += app + "/"
+            if app != "/":
+                file_url += "apps/" + app + "/"
             _draw_progress(x, no_of_files, file)
             resp = requests.get(file_url + file)
             print(resp.status_code)
@@ -282,8 +283,14 @@ def get_updates(force=False):
             if len(parts) == 1:
                 root_files.append(parts[0])
                 continue
-            dirname = parts[0]
-            filename = "/".join(parts[1:])
+            if parts[0] == "apps" and len(parts) > 2:
+                dirname = parts[1]
+                filename = "/".join(parts[2:])
+            elif parts[0] == "lib":
+                dirname = parts[0]
+                filename = "/".join(parts[1:])
+            else:
+                continue
             if dirname not in apps: apps[dirname] = []
             apps[dirname].append(filename)
         # System = root files + lib folder
