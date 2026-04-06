@@ -701,11 +701,13 @@ def _rotate(request):
 def _settings_content():
     global settings
     rotate_btn = '<button class="btn btn-sm" onclick="fetch(\'/rotate\',{method:\'POST\'}).then(()=>{{var v=document.getElementById(\'v_rotation\');if(v){{var c=parseInt(v.textContent)||0;c=(c+90)%360;v.textContent=c;var s=document.getElementById(\'rotation\');if(s)s.value=c;}}}});">&#128260; 90&deg;</button>'
+    def _pbtn(label, s, w, h, svg):
+        return f'<button class="btn btn-sm" onclick="if(confirm(\'Switch to {label} ({w}x{h})? Device will reboot.\')){{var ws=document.getElementById(\'width\');var hs=document.getElementById(\'height\');if(ws){{ws.value={w};document.getElementById(\'v_width\').textContent={w};}}if(hs){{hs.value={h};document.getElementById(\'v_height\').textContent={h};}}fetch(\'/preset?s={s}\',{{method:\'POST\'}})}}" title="{label} {w}x{h}">{svg}<br><span style="font-size:.6rem">{label}</span></button>'
     preset_btns = ''.join([
-        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XS (64x32)? Device will reboot.\'))fetch(\'/preset?s=xs\',{method:\'POST\'})" title="XS 64x32"><svg width="20" height="16" viewBox="0 0 20 16"><rect x="4" y="4" width="12" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XS</span></button>',
-        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to X (128x32)? Device will reboot.\'))fetch(\'/preset?s=x\',{method:\'POST\'})" title="X 128x32"><svg width="28" height="16" viewBox="0 0 28 16"><rect x="2" y="4" width="24" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">X</span></button>',
-        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to XL (192x32)? Device will reboot.\'))fetch(\'/preset?s=xl\',{method:\'POST\'})" title="XL 192x32"><svg width="36" height="16" viewBox="0 0 36 16"><rect x="2" y="4" width="32" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">XL</span></button>',
-        '<button class="btn btn-sm" onclick="if(confirm(\'Switch to 2X (128x64)? Device will reboot.\'))fetch(\'/preset?s=2x\',{method:\'POST\'})" title="2X 128x64"><svg width="24" height="18" viewBox="0 0 24 18"><rect x="2" y="1" width="20" height="16" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg><br><span style="font-size:.6rem">2X</span></button>',
+        _pbtn('XS','xs',64,32,'<svg width="20" height="16" viewBox="0 0 20 16"><rect x="4" y="4" width="12" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg>'),
+        _pbtn('X','x',128,32,'<svg width="28" height="16" viewBox="0 0 28 16"><rect x="2" y="4" width="24" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg>'),
+        _pbtn('XL','xl',192,32,'<svg width="36" height="16" viewBox="0 0 36 16"><rect x="2" y="4" width="32" height="8" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg>'),
+        _pbtn('2X','2x',128,64,'<svg width="24" height="18" viewBox="0 0 24 18"><rect x="2" y="1" width="20" height="16" rx="1" fill="black" stroke="currentColor" stroke-width="1.5"/></svg>'),
     ])
     return """<div class="logo"><h1>Settings</h1><p>Configure your device</p></div>
 <div class="card"><div class="section-title">Quick Actions</div><div class="action-row">""" + rotate_btn + preset_btns + """</div></div>
