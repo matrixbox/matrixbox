@@ -1,6 +1,22 @@
 import os
 import json
 import ampule
+import displayio
+
+def _hide_display():
+    try: displayio.release_displays()
+    except: pass
+    try:
+        import __main__
+        __main__.display.root_group.hidden = True
+    except: pass
+
+def _show_display():
+    try:
+        import __main__
+        __main__.display.root_group.hidden = False
+        __main__.refresh()
+    except: pass
 
 def _ls(path):
     items = []
@@ -44,20 +60,26 @@ def _fm_read(request):
 def _fm_write(request):
     path = _norm(request.headers.get("x-path", ""))
     try:
+        _hide_display()
         with open(path, "w") as f:
             f.write(request.body)
         return (200, {}, json.dumps({"ok": True}))
     except Exception as e:
         return (200, {}, json.dumps({"error": str(e)}))
+    finally:
+        _show_display()
 
 @ampule.route("/fm/mkdir", method="POST")
 def _fm_mkdir(request):
     path = _norm(request.headers.get("x-path", ""))
     try:
+        _hide_display()
         os.mkdir(path)
         return (200, {}, json.dumps({"ok": True}))
     except Exception as e:
         return (200, {}, json.dumps({"error": str(e)}))
+    finally:
+        _show_display()
 
 @ampule.route("/fm/del", method="POST")
 def _fm_del(request):
@@ -66,6 +88,7 @@ def _fm_del(request):
         return (200, {}, json.dumps({"error": "Cannot delete root"}))
     try:
         s = os.stat(path)
+        _hide_display()
         if s[0] & 0x4000:
             _rmdir(path)
         else:
@@ -73,6 +96,8 @@ def _fm_del(request):
         return (200, {}, json.dumps({"ok": True}))
     except Exception as e:
         return (200, {}, json.dumps({"error": str(e)}))
+    finally:
+        _show_display()
 
 def _rmdir(path):
     for name in os.listdir(path):
@@ -191,7 +216,7 @@ function go(path){
    if(it.d){
     html+='<div class="row" ondblclick="go(\\''+fp+'\\')" onclick="go(\\''+fp+'\\')"><span class="icon">&#x1F4C1;</span><span class="name" style="color:#7c7cff">'+it.n+'</span><span class="size"></span><span class="acts"><button class="abtn del" onclick="event.stopPropagation();del(\\''+fp+'\\')">&#x1F5D1;</button></span></div>';
    }else{
-    html+='<div class="row" ondblclick="edit(\\''+fp+'\\')" onclick="sel(this)"><span class="icon">&#x1F4C4;</span><span class="name">'+it.n+'</span><span class="size">'+fmtSize(it.s)+'</span><span class="acts"><button class="abtn" onclick="event.stopPropagation();edit(\\''+fp+'\\')">&#x270F;</button> <button class="abtn del" onclick="event.stopPropagation();del(\\''+fp+'\\')">&#x1F5D1;</button></span></div>';
+    html+='<div class="row" ondblclick="edit(\\''+fp+'\\')" onclick="sel(this)"><span class="icon">&#x1F4C4;</span><span class="name">'+it.n+'</span><span class="size">'+fmtSize(it.s)+'</span><span class="acts"><button class="abtn" onclick="event.stopPropagation();edit(\\''+fp+'\\')">&#x270D;</button> <button class="abtn del" onclick="event.stopPropagation();del(\\''+fp+'\\')">&#x1F5D1;</button></span></div>';
    }
   }
   el.innerHTML=html;
