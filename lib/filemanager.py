@@ -1,21 +1,20 @@
 import os
 import json
 import ampule
-import displayio
 
 def _hide_display():
-    try: displayio.release_displays()
-    except: pass
     try:
-        import __main__
-        __main__.display.root_group.hidden = True
+        from __main__ import display
+        display.root_group.hidden = True
     except: pass
 
-def _show_display():
+def _show_display(msg=None, color="green"):
     try:
-        import __main__
-        __main__.display.root_group.hidden = False
-        __main__.refresh()
+        from __main__ import display, pprint, refresh
+        display.root_group.hidden = False
+        if msg:
+            pprint(msg, line=0, color=color)
+        refresh()
     except: pass
 
 def _ls(path):
@@ -63,11 +62,11 @@ def _fm_write(request):
         _hide_display()
         with open(path, "w") as f:
             f.write(request.body)
+        _show_display("Saved: " + path.split("/")[-1])
         return (200, {}, json.dumps({"ok": True}))
     except Exception as e:
+        _show_display(str(e), "red")
         return (200, {}, json.dumps({"error": str(e)}))
-    finally:
-        _show_display()
 
 @ampule.route("/fm/mkdir", method="POST")
 def _fm_mkdir(request):
@@ -75,11 +74,11 @@ def _fm_mkdir(request):
     try:
         _hide_display()
         os.mkdir(path)
+        _show_display("Created: " + path.split("/")[-1])
         return (200, {}, json.dumps({"ok": True}))
     except Exception as e:
+        _show_display(str(e), "red")
         return (200, {}, json.dumps({"error": str(e)}))
-    finally:
-        _show_display()
 
 @ampule.route("/fm/del", method="POST")
 def _fm_del(request):
@@ -93,11 +92,11 @@ def _fm_del(request):
             _rmdir(path)
         else:
             os.remove(path)
+        _show_display("Deleted: " + path.split("/")[-1])
         return (200, {}, json.dumps({"ok": True}))
     except Exception as e:
+        _show_display(str(e), "red")
         return (200, {}, json.dumps({"error": str(e)}))
-    finally:
-        _show_display()
 
 def _rmdir(path):
     for name in os.listdir(path):
