@@ -6,7 +6,7 @@
 3. When online, the device is assigned a new IP by your router
 
 ## OFFLINE SETUP:
-1. To unlock the file system, hold down the button while connecting the device to a computer.
+1. To unlock the file system, repeatedly press the button while connecting the device to a computer.
 2. You can now manually edit "settings.txt", adding your wifi credentials.
 3. The file system will lock upon reboot.
 
