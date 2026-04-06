@@ -1,0 +1,30 @@
+<style>
+.terminal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;font-family:'Courier New',monospace;font-size:.9rem;color:var(--accent2);min-height:36px;display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.terminal-prompt{color:var(--muted);font-size:.8rem;white-space:nowrap}
+.terminal-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Courier New',monospace;font-size:.9rem}
+</style>
+
+<div class="card">
+<div class="section-title">Typewriter</div>
+<p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Type a message and press Enter to display it on the matrix.</p>
+<div class="terminal">
+<span class="terminal-prompt">MATRIXBOX\&gt;</span>
+<input class="terminal-input" type="text" id="text" placeholder="type here and press Enter&hellip;" autocomplete="off" autocorrect="off">
+</div>
+<button class="btn btn-full" onclick="send()">&#9654; Send</button>
+</div>
+
+<script>
+function send(){
+  var inp=document.getElementById("text");
+  var t=inp.value.trim();
+  if(!t)return;
+  fetch("/?text="+encodeURIComponent(t),{method:"POST"});
+  inp.value="";
+  inp.focus();
+}
+document.getElementById("text").addEventListener("keydown",function(e){
+  if(e.key==="Enter"){send();}
+});
+document.getElementById("text").focus();
+</script>

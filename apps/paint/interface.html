@@ -1,0 +1,229 @@
+<style>
+*{touch-action:none}
+.page{max-width:none!important;padding:4px!important;display:flex;flex-direction:column;align-items:center;gap:8px}
+h2{font-size:.9rem;font-weight:700;letter-spacing:1px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center}
+.toolbar button{width:36px;height:36px;border:2px solid var(--border);border-radius:8px;background:var(--surface);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.toolbar button.active{border-color:var(--accent);box-shadow:0 0 6px rgba(124,111,255,.5)}
+.palette{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.swatch{width:28px;height:28px;border-radius:6px;border:2px solid transparent;cursor:pointer}
+.swatch.active{border-color:#fff;box-shadow:0 0 4px rgba(255,255,255,.5)}
+#canvas{border:1px solid var(--border);image-rendering:pixelated;cursor:crosshair;max-width:100%}
+.actions{display:flex;gap:6px}
+.actions button{padding:6px 14px;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;color:#fff}
+.btn-clear{background:#e03c3c}
+.btn-exit{background:var(--surface3)}
+.btn-save{background:var(--accent)}
+.btn-load{background:var(--accent2);color:#000}
+.file-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center}
+.file-bar input{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:5px 10px;font-size:.8rem;width:120px}
+.file-bar select{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:5px 8px;font-size:.8rem;min-width:100px}
+.btn-del{background:#e03c3c;font-size:.7rem;padding:4px 8px}
+</style>
+<h2>Paint</h2>
+
+<div class="toolbar">
+<button id="t_brush" class="active" title="Brush">&#9998;</button>
+<button id="t_eraser" title="Eraser">&#9003;</button>
+<button id="t_fill" title="Fill">&#9681;</button>
+</div>
+
+<div class="palette" id="palette"></div>
+
+<canvas id="canvas"></canvas>
+
+<div class="file-bar">
+<input type="text" id="saveName" placeholder="name" maxlength="20">
+<button class="actions btn-save" onclick="saveProject()">&#128190; Save</button>
+<select id="fileList"><option value="">-- load --</option></select>
+<button class="actions btn-load" onclick="loadProject()">&#128194; Load</button>
+<button class="actions btn-del" onclick="deleteProject()">&#128465;</button>
+</div>
+
+<div class="actions">
+<button class="btn-clear" onclick="clearCanvas()">Clear</button>
+</div>
+
+<script>
+const W=__WIDTH__,H=__HEIGHT__;
+const PAL=__PALETTE__;
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+// Scale canvas so each pixel is large enough to tap
+const SCALE=Math.min(Math.floor((window.innerWidth-16)/W),Math.floor((window.innerHeight-200)/H),16);
+canvas.width=W*SCALE;
+canvas.height=H*SCALE;
+ctx.imageSmoothingEnabled=false;
+
+// Grid state
+const grid=[];
+for(let y=0;y<H;y++){grid[y]=[];for(let x=0;x<W;x++)grid[y][x]=0;}
+
+let tool="brush"; // brush|eraser|fill
+let colorIdx=5; // default white (palette index 5)
+
+// Build palette swatches
+const palDiv=document.getElementById("palette");
+for(const idx in PAL){
+    const i=parseInt(idx);
+    const [r,g,b]=PAL[i];
+    const sw=document.createElement("div");
+    sw.className="swatch"+(i===colorIdx?" active":"");
+    sw.style.background="rgb("+r+","+g+","+b+")";
+    if(r===0&&g===0&&b===0) sw.style.border="2px solid #333";
+    sw.dataset.idx=i;
+    sw.onclick=function(){
+        document.querySelectorAll(".swatch").forEach(s=>s.classList.remove("active"));
+        sw.classList.add("active");
+        colorIdx=i;
+        if(tool==="eraser"){tool="brush";updateToolUI();}
+    };
+    palDiv.appendChild(sw);
+}
+
+// Tool buttons
+const tBrush=document.getElementById("t_brush");
+const tEraser=document.getElementById("t_eraser");
+const tFill=document.getElementById("t_fill");
+
+function updateToolUI(){
+    [tBrush,tEraser,tFill].forEach(b=>b.classList.remove("active"));
+    if(tool==="brush")tBrush.classList.add("active");
+    else if(tool==="eraser")tEraser.classList.add("active");
+    else if(tool==="fill")tFill.classList.add("active");
+}
+tBrush.onclick=function(){tool="brush";updateToolUI();};
+tEraser.onclick=function(){tool="eraser";updateToolUI();};
+tFill.onclick=function(){tool="fill";updateToolUI();};
+
+function drawPixel(x,y,ci){
+    grid[y][x]=ci;
+    const [r,g,b]=PAL[ci]||[0,0,0];
+    ctx.fillStyle="rgb("+r+","+g+","+b+")";
+    ctx.fillRect(x*SCALE,y*SCALE,SCALE,SCALE);
+}
+
+function redraw(){
+    ctx.fillStyle="#000";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+        if(grid[y][x]){
+            const [r,g,b]=PAL[grid[y][x]]||[0,0,0];
+            ctx.fillStyle="rgb("+r+","+g+","+b+")";
+            ctx.fillRect(x*SCALE,y*SCALE,SCALE,SCALE);
+        }
+    }
+    // Grid lines
+    if(SCALE>=4){
+        ctx.strokeStyle="rgba(255,255,255,0.06)";
+        ctx.lineWidth=0.5;
+        for(let x=0;x<=W;x++){ctx.beginPath();ctx.moveTo(x*SCALE,0);ctx.lineTo(x*SCALE,H*SCALE);ctx.stroke();}
+        for(let y=0;y<=H;y++){ctx.beginPath();ctx.moveTo(0,y*SCALE);ctx.lineTo(W*SCALE,y*SCALE);ctx.stroke();}
+    }
+}
+redraw();
+
+// --- Drawing interaction ---
+let painting=false;
+let lastSent=0;
+let pending=[];
+
+function getXY(e){
+    const rect=canvas.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX;
+    const cy=e.touches?e.touches[0].clientY:e.clientY;
+    return[Math.floor((cx-rect.left)/SCALE),Math.floor((cy-rect.top)/SCALE)];
+}
+
+function sendPending(){
+    if(!pending.length)return;
+    const pts=pending.slice();
+    pending=[];
+    const ci=tool==="eraser"?0:colorIdx;
+    fetch("/px",{method:"POST",body:JSON.stringify({c:ci,pts:pts})});
+}
+
+function paint(e){
+    const[x,y]=getXY(e);
+    if(x<0||x>=W||y<0||y>=H)return;
+
+    if(tool==="fill"){
+        const ci=colorIdx;
+        // Local flood fill for instant feedback
+        const target=grid[y][x];
+        if(target===ci)return;
+        const stack=[[x,y]];
+        const seen=new Set();
+        while(stack.length){
+            const[fx,fy]=stack.pop();
+            const k=fy*W+fx;
+            if(seen.has(k))continue;
+            if(fx<0||fx>=W||fy<0||fy>=H)continue;
+            if(grid[fy][fx]!==target)continue;
+            seen.add(k);
+            grid[fy][fx]=ci;
+            stack.push([fx+1,fy],[fx-1,fy],[fx,fy+1],[fx,fy-1]);
+        }
+        redraw();
+        fetch("/fill",{method:"POST",body:JSON.stringify({x:x,y:y,c:ci})});
+        return;
+    }
+
+    const ci=tool==="eraser"?0:colorIdx;
+    drawPixel(x,y,ci);
+    pending.push([x,y]);
+    const now=Date.now();
+    if(now-lastSent>80){lastSent=now;sendPending();}
+}
+
+canvas.addEventListener("pointerdown",function(e){
+    if(tool==="fill"){paint(e);return;}
+    painting=true;paint(e);
+});
+canvas.addEventListener("pointermove",function(e){if(painting)paint(e);});
+canvas.addEventListener("pointerup",function(){painting=false;sendPending();});
+canvas.addEventListener("pointerleave",function(){painting=false;sendPending();});
+
+function clearCanvas(){
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++)grid[y][x]=0;
+    redraw();
+    fetch("/clear",{method:"POST"});
+}
+
+// --- Save / Load / Delete ---
+const fileList=document.getElementById("fileList");
+function refreshFiles(){
+    fetch("/saves").then(r=>r.json()).then(files=>{
+        fileList.innerHTML='<option value="">-- load --</option>';
+        files.forEach(f=>{
+            const o=document.createElement("option");
+            o.value=f;o.textContent=f;
+            fileList.appendChild(o);
+        });
+    });
+}
+refreshFiles();
+
+function saveProject(){
+    const name=document.getElementById("saveName").value.trim();
+    if(!name){alert("Enter a name");return;}
+    fetch("/save",{method:"POST",body:JSON.stringify({name:name})}).then(()=>refreshFiles());
+}
+function loadProject(){
+    const name=fileList.value;
+    if(!name)return;
+    fetch("/load",{method:"POST",body:JSON.stringify({name:name})}).then(r=>r.json()).then(data=>{
+        const rows=data.d;
+        for(let y=0;y<H;y++)for(let x=0;x<W;x++)grid[y][x]=(rows[y]&&rows[y][x])||0;
+        redraw();
+        document.getElementById("saveName").value=name;
+    });
+}
+function deleteProject(){
+    const name=fileList.value;
+    if(!name)return;
+    if(!confirm("Delete \""+name+"\"?"))return;
+    fetch("/delete",{method:"POST",body:JSON.stringify({name:name})}).then(()=>refreshFiles());
+}
+</script>

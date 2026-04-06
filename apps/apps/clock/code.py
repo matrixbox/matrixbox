@@ -4,8 +4,8 @@ import displayio, bitmaptools
 import load_screen
 from check_button import check_if_button_pressed
 from load_screen import *
-microcontroller.cpu.frequency = 240000000
-with open("clock.html") as f: html_body = f.read()
+microcontroller.cpu.frequency = 180000000
+with open("clock.html") as f: html = f.read()
 
 DISP_W = settings["width"]
 DISP_H = settings["height"]
@@ -37,6 +37,7 @@ def apply_colors():
     palette[14] = bg
 
 def selectfont(selectedfont):
+    
     global clocksettings
     if selectedfont == "mini": load_screen.currentfont = font_mini
     if selectedfont == "small": load_screen.currentfont = font_small
@@ -55,7 +56,7 @@ def exit_webinterface(request):
 
 @ampule.route("/", method="GET")
 def webinterface(request):
-    return (200, {}, header("Clock", app=True) + html_body + footer())
+    return (200, {}, html)
 
 @ampule.route("/settings", method="GET")
 def get_settings(request):
@@ -120,20 +121,7 @@ def update_datetime():
         s.sendall(b"GET / HTTP/1.0\r\nHost: data.t-skylt.se\r\n\r\n")
         buf = bytearray(512)
         n = s.recv_into(buf)
-        raw = buf[:n].decode("utf-8")
-    # Extract full Date header: "Date: Sat, 22 Mar 2026 15:30:45 GMT"
-    datestr = raw.split("Date:", 1)[1].split("\r\n")[0].strip()
-    # datestr: "Sat, 22 Mar 2026 15:30:45 GMT"
-    day_name = datestr[0:3]
-    day_num = datestr[5:7]
-    month = datestr[8:11]
-    time_str = datestr[17:25]
-    hour = str(int(time_str[0:2]))
-    minute = str(int(time_str[3:5]))
-    second = str(int(time_str[6:8]))
-    if len(hour) == 1: hour = "0" + hour
-    if len(minute) == 1: minute = "0" + minute
-    if len(second) == 1: second = "0" + second
+        raw = buf[:n].dÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿen(second) == 1: second = "0" + second
     return (hour, minute, second, day_name, day_num + " " + month)
 
 def fetch_temperature():
@@ -275,6 +263,6 @@ while load_settings.app_running:
 
     if timestring != _last_tstr:
         draw_time(timestring)
-    refresh()
+        refresh()
     time.sleep(delay)
     if not delay: delay = 1

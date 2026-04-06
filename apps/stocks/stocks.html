@@ -1,0 +1,78 @@
+<div class="card">
+<div class="section-title">Live Quotes</div>
+<div id="ql"><p style="color:var(--muted);font-size:.88rem;padding:8px 0">Loading&hellip;</p></div>
+</div>
+
+<div class="card">
+<div class="section-title">Symbols</div>
+<label>Comma-separated tickers</label>
+<div style="display:flex;gap:8px">
+<input type="text" id="sym" placeholder="AAPL,MSFT,GOOG">
+<button class="btn btn-sm" onclick="ss()">Update</button>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">Font Size</div>
+<div class="seg">
+<button id="f_small" onclick="sf('small')">Small</button>
+<button id="f_large" onclick="sf('large')">Large</button>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">Scroll Speed</div>
+<div class="seg">
+<button id="s1" onclick="sp(1)">Slow</button>
+<button id="s2" onclick="sp(2)">Medium</button>
+<button id="s3" onclick="sp(3)">Fast</button>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">Refresh Interval</div>
+<div class="seg">
+<button onclick="si(30)">30 s</button>
+<button onclick="si(60)">1 min</button>
+<button onclick="si(300)">5 min</button>
+</div>
+</div>
+
+<button class="btn btn-full" onclick="sv()">&#128190; Save Settings</button>
+
+<style>
+.q{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.q:last-child{border-bottom:none}
+.qs{font-weight:700;font-size:.92rem}
+.qp{font-size:.9rem;font-weight:600}
+.qc{font-size:.75rem;padding:2px 7px;border-radius:5px;font-weight:700}
+.up{color:#00e676;background:rgba(0,230,118,.12)}
+.dn{color:#ff5252;background:rgba(255,82,82,.12)}
+</style>
+
+<script>
+function p(d){fetch("/?"+d,{method:"POST"})}
+function ss(){var v=document.getElementById("sym").value;if(v)p("symbols="+encodeURIComponent(v));setTimeout(lq,3000)}
+function sp(n){p("speed="+n);document.querySelectorAll(".seg button[id^=s]").forEach(function(b){b.classList.toggle("on",b.id==="s"+n)})}
+function si(n){p("interval="+n)}
+function sf(f){p("font="+f);document.querySelectorAll("[id^=f_]").forEach(function(b){b.classList.toggle("on",b.id==="f_"+f)})}
+function sv(){p("save=1")}
+function lq(){
+fetch("/quotes").then(function(r){return r.json()}).then(function(d){
+var h="";
+if(!d.length){h='<p style="color:var(--muted);font-size:.88rem">No data yet</p>';}
+for(var i=0;i<d.length;i++){
+var q=d[i],sym=q[0],price=q[1],pct=q[2],up=pct>=0;
+var ps=String(price);if(ps.indexOf(".")>-1)ps=ps.split(".")[0]+"."+ps.split(".")[1].substring(0,2);
+var sign=up?"+":"";
+h+='<div class="q"><span class="qs">'+sym+'</span><span class="qp">'+(up?"&#9650;":"&#9660;")+" $"+ps+'</span><span class="qc '+(up?"up":"dn")+'">'+sign+pct.toFixed(2)+"%</span></div>";}
+document.getElementById("ql").innerHTML=h;
+}).catch(function(){});}
+function ls(){
+fetch("/settings").then(function(r){return r.json()}).then(function(d){
+document.getElementById("sym").value=d.symbols||"";
+var f=d.font||"small";document.querySelectorAll("[id^=f_]").forEach(function(b){b.classList.toggle("on",b.id==="f_"+f)});
+var s=d.speed||2;document.querySelectorAll(".seg button[id^=s]").forEach(function(b){b.classList.toggle("on",b.id==="s"+s)});
+}).catch(function(){});}
+ls();lq();setInterval(lq,15000);
+</script>
