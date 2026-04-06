@@ -568,7 +568,8 @@ def _apps_content():
     });}</script></div>"""
     if not installed_apps:
         installed_apps = '<p style="color:var(--muted);text-align:center;padding:20px 0;font-size:.9rem">No apps installed yet</p>'
-    return """<div class="logo">
+    preset_html = '<div class="card" style="margin-top:10px"><div class="section-title">Screen Size</div><div class="action-row">' + _preset_buttons() + '</div></div>' if _showed_wifi else ''
+    return wifi_html + preset_html + """<div class="logo">
     <h1>MatrixBox</h1>
     <p>Select an app to launch</p>
 </div>
@@ -583,7 +584,7 @@ def _apps_content():
     <div class="app-item"><span class="app-name" style="color:var(--muted)">&#x1F4BB; Terminal</span><button class="btn btn-sm" style="background:var(--muted);color:var(--bg)" onclick="window.location.href='/cmd'">Open</button></div>
     <div class="app-item"><span class="app-name" style="color:var(--muted)">&#x1F4C1; File Manager</span><button class="btn btn-sm" style="background:var(--muted);color:var(--bg)" onclick="window.location.href='/fm'">Open</button></div>
 </div>
-""" + wifi_html + ('<div class="card" style="margin-top:10px"><div class="section-title">Screen Size</div><div class="action-row">' + _preset_buttons() + '</div></div>' if _showed_wifi else '')
+"""
 
 def select_app():
     return _shell(_apps_content())
