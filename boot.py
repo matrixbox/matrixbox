@@ -47,6 +47,9 @@ else:
 
 try: os.remove("code.py")
 except: pass
+try: os.remove("reboot_required")
+except: pass
+
 
 try: clearscreen(True)
 except Exception as e: pprint(str(e))
