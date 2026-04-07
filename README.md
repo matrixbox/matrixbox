@@ -11,14 +11,15 @@
 3. The file system will lock upon reboot.
 
 ## MAKING CUSTOM APPS:
-1. To get an idea of how the device recognizes an app, you can look at the provided examples apps like CLOCK or SCROLLER.
-2. A new app is recognized as a directory in the root folder (e.g. '/appname') with a file "&#x5F;&#x5F;init&#x5F;&#x5F;.py" inside.
+1. The device runs CircuitPython, a fork of Python for microcontrollers.
+2. To get an idea of how to program an app you can study the provided examples apps like CLOCK or SCROLLER.
+3. A new app is recognized as a directory in the root folder (e.g. '/appname') with a file "&#x5F;&#x5F;init&#x5F;&#x5F;.py" inside.
 
 
 
 # The official repository
 If you wish to contribute to the official repository (the system, apps, UI) drop us a message through one of our channels.
 
-Instagram: @matrixbox  
-web: matrixbox.io  
-e-mail: info@matrixbox.io  
+Instagram: @matrixbox.app
+web: matrixbox.app
+e-mail: info@matrixbox.app
