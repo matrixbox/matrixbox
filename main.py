@@ -103,7 +103,8 @@ def initialize_app():
         import __init__
     except Exception as e: 
         #pprint(f"{load_settings.app_running} crashed.")
-        pprint(f"{e}")
+        try: pprint(f"{e}")
+        except: pass
         print(f"{e}")
         settings["autostart"] = 0
     finally: 
