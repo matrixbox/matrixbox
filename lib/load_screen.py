@@ -85,7 +85,7 @@ def display_height():
 
 def strlen(_string, font_size=font_mini): 
     if font_size==font_mini: _string = _string.lower()
-    return sum((font_size[ascletters][0]) for ascletters in _string) # mäter längden på hel string
+    return sum(font_size[c][0] for c in _string if c in font_size) # mäter längden på hel string
 
 def _current_window():
     return window
