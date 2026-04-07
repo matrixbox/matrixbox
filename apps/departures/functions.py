@@ -870,8 +870,7 @@ def list_mode(mini=False, half=False):
                     offs = varinit.if_long - strlen(all[3])
                 elif varinit.display.width <= 64:
                     offs = varinit.display.width - strlen(all[3])
-                elif varinit.settings["long"] == 1: offs = 128+64 - strlen(all[3])
-                elif varinit.settings["long"] == 0: offs = 127 - strlen(all[3])
+                else: offs = varinit.if_long - strlen(all[3])
                 if half: 
                     all[3] = all[3].replace(" " + if_not_clocktime,"")
                     offs = 64 - strlen(all[3])
