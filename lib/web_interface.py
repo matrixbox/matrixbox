@@ -629,7 +629,7 @@ def webinterface_post(request):
             if parsed_data[setting] or setting in ("autostart", "screensaver"):
                 try:
                     val = parsed_data[setting]
-                    if setting in settings and isinstance(settings[setting], int):
+                    if setting not in ("autostart", "screensaver") and setting in settings and type(settings[setting]) is int:
                         val = int(val)
                     settings[setting] = val
                 except: pass
