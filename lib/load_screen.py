@@ -37,7 +37,8 @@ elif "N8R8" in os.uname().machine:
                     clock_pin=board.GPIO12, latch_pin=board.GPIO13, output_enable_pin=board.GPIO14, tile=settings["tiles"],
                     serpentine=False, doublebuffer=True)
 
-microcontroller.cpu.frequency = 180000000
+try: microcontroller.cpu.frequency = 180000000
+except: pass
 print("--------------------------------------------------------- ")
 print(" CHIP:           ", os.uname().machine)
 print(" FREQUENCY:      ", microcontroller.cpu.frequency)
