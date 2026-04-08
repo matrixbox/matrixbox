@@ -109,7 +109,8 @@ def initialize_app():
         settings["autostart"] = 0
     finally: 
         palette[0] = (0)
-        microcontroller.cpu.frequency = 160000000
+        try: microcontroller.cpu.frequency = 160000000
+        except: pass
         autostart = False
         ampule.routes = ampule_routes_backup.copy()
         try: 
