@@ -71,9 +71,10 @@ palette[4] = (100,0,0)     # rod
 palette[5] = (20,20,20)    # grey
 palette[6] = (20,20,40)    #  ?
 palette[7] = (0, 100, 10)      # green
-palette[8] = (230, 28, 71)    # pink
+palette[8] = (0, 0, 100)    # pink
 palette[9] = (0, 30, 3)    # dark green
 palette[11] = (50,30,0)    # orange
+palette[12] = (0,0,100)    # orange
 
 currentfont = font_mini 
 currentcolor = "white"
