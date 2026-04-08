@@ -97,7 +97,6 @@ def load_img(file=False):
         odg.bitmap,
         pixel_shader=displayio.ColorConverter(
             input_colorspace=displayio.Colorspace.RGB565_SWAPPED,
-            dither=True
         ),
     )
     splash.append(face)

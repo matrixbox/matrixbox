@@ -112,7 +112,7 @@ except: pass
 top = displayio.Bitmap(280, 16, 10)
 bottom = displayio.Bitmap(1280, 16, 10)
 topbottom = displayio.Bitmap(max(200, if_long, if_tall), max(if_long, if_tall), 10)
-palette = displayio.Palette(10, dither=False)
+palette = displayio.Palette(10)
 
 
 shared = {"loop_counter":-5,          
