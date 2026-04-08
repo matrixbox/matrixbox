@@ -180,7 +180,8 @@ def install_app(app):
     error_color = "green"
     from load_screen import window
     try:
-        microcontroller.cpu.frequency = 240000000
+        try: microcontroller.cpu.frequency = 240000000
+        except: pass
         clearscreen(False)
         # Pass 1: download all files, verify each returns 200
         downloads = []
@@ -221,7 +222,8 @@ def install_app(app):
         downloads = None
         #gc.collect()
     finally:
-        microcontroller.cpu.frequency = 180000000
+        try: microcontroller.cpu.frequency = 180000000
+        except: pass
         os.chdir("/")
         # Update cached version: local now matches remote
         try:
