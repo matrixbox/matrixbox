@@ -15,6 +15,9 @@ try:
 except:
     cfg = {"symbols": "AAPL,MSFT,GOOG,AMZN,TSLA", "speed": 2, "interval": 60}
 
+if "mode" not in cfg:
+    cfg["mode"] = "scroll"
+
 with open("stocks.html") as f: html_body = f.read()
 
 # palette slots: 7=green, 4=red, 5=white/grey, 0=black
@@ -173,6 +176,79 @@ def build_ticker_bitmap():
     display.root_group = root
     gc.collect()
 
+# ── LIST MODE ─────────────────────────────────────────────────────────────────
+list_bmp = None
+list_tg = None
+list_h = 0
+list_scroll_y = 0
+ROW_PAD = 1  # 1px gap between rows
+
+def _render_list_rows(bmp, parts, y_offset, f, bmp_w, bmp_h):
+    """Render a set of quote rows starting at y_offset."""
+    fh = f["fontheight"]
+    row_h = fh + ROW_PAD
+    for i, (sym, price, pct_str, up) in enumerate(parts):
+        y = y_offset + i * row_h
+        if y >= bmp_h:
+            break
+        color = 7 if up else 4
+        px = _render_text_to_bmp(bmp, sym, 1, y, 5, f, bmp_w, bmp_h)
+        px = _render_text_to_bmp(bmp, " " + price, px, y, color, f, bmp_w, bmp_h)
+        arrow_w = 6
+        pct_w = strlen(pct_str, f)
+        right_x = bmp_w - pct_w - arrow_w - 1
+        if up:
+            _draw_arrow_up(bmp, right_x, y, color, bmp_w, bmp_h)
+        else:
+            _draw_arrow_down(bmp, right_x, y, color, bmp_w, bmp_h)
+        _render_text_to_bmp(bmp, pct_str, right_x + arrow_w, y, color, f, bmp_w, bmp_h)
+
+def build_list_bitmap():
+    """Render quotes as rows into a tall bitmap for list display.
+    If the list is taller than the screen, duplicate the rows plus a
+    screen-height gap so vertical scrolling wraps seamlessly."""
+    global list_bmp, list_tg, list_h, list_scroll_y
+    parts = build_ticker_string()
+    if not parts:
+        list_h = 0
+        return
+
+    f = current_font
+    fh = f["fontheight"]
+    row_h = fh + ROW_PAD
+    one_set_h = len(parts) * row_h
+
+    if one_set_h <= DISP_H:
+        # Everything fits — no scrolling needed
+        total_h = DISP_H
+        list_bmp = displayio.Bitmap(DISP_W, total_h, 10)
+        list_bmp.fill(0)
+        _render_list_rows(list_bmp, parts, 0, f, DISP_W, total_h)
+        list_h = 0  # signal: no scrolling
+    else:
+        # Duplicate rows with a DISP_H gap for seamless wrap
+        total_h = one_set_h + DISP_H + one_set_h
+        list_bmp = displayio.Bitmap(DISP_W, total_h, 10)
+        list_bmp.fill(0)
+        _render_list_rows(list_bmp, parts, 0, f, DISP_W, total_h)
+        _render_list_rows(list_bmp, parts, one_set_h + DISP_H, f, DISP_W, total_h)
+        list_h = one_set_h + DISP_H  # wrap point
+
+    list_scroll_y = 0
+    list_tg = displayio.TileGrid(list_bmp, pixel_shader=palette)
+    list_tg.x = 0
+    list_tg.y = 0
+    root = displayio.Group()
+    root.append(list_tg)
+    display.root_group = root
+    gc.collect()
+
+def _rebuild_current_mode():
+    if cfg["mode"] == "list":
+        build_list_bitmap()
+    else:
+        build_ticker_bitmap()
+
 # Web interface
 @ampule.route("/", method="GET")
 def stock_interface(request):
@@ -197,7 +273,7 @@ def stock_post(request):
     print("POST:", request.params)
     rebuild = False
     if "symbols" in request.params:
-        cfg["symbols"] = request.params["symbols"].upper()
+        cfg["symbols"] = url_decoder(request.params["symbols"]).upper()
         fetch_quotes()
         rebuild = True
     if "speed" in request.params:
@@ -211,8 +287,11 @@ def stock_post(request):
         cfg["font"] = request.params["font"]
         current_font = _font_map.get(cfg["font"], font_small)
         rebuild = True
+    if "mode" in request.params:
+        cfg["mode"] = request.params["mode"]
+        rebuild = True
     if rebuild:
-        build_ticker_bitmap()
+        _rebuild_current_mode()
     if "save" in request.params:
         try:
             with open("stocksettings.txt", "w") as f:
@@ -222,30 +301,48 @@ def stock_post(request):
 
 # Main loop
 fetch_quotes()
-build_ticker_bitmap()
+_rebuild_current_mode()
 last_fetch = time.monotonic()
 speed_map = {1: 0.06, 2: 0.03, 3: 0.015}
 
 while load_settings.app_running:
-    if ticker_tg and ticker_w > 0:
-        ticker_tg.x -= 1
-        if ticker_tg.x < -ticker_w + DISP_W:
-            ticker_tg.x = 0
-        display.refresh()
-    else:
-        pprint("no data", 0)
-
     spd = speed_map.get(cfg.get("speed", 2), 0.03)
+
+    if cfg["mode"] == "list":
+        if list_tg and list_h > 0:
+            # Seamless continuous scroll
+            list_scroll_y += 1
+            if list_scroll_y >= list_h:
+                list_scroll_y = 0
+            list_tg.y = -list_scroll_y
+            display.refresh()
+        elif list_tg:
+            display.refresh()
+        else:
+            pprint("no data", 0)
+    else:
+        if ticker_tg and ticker_w > 0:
+            ticker_tg.x -= 1
+            if ticker_tg.x < -ticker_w + DISP_W:
+                ticker_tg.x = 0
+            display.refresh()
+        else:
+            pprint("no data", 0)
+
     time.sleep(spd)
     ampule.listen(socket)
 
     b = check_if_button_pressed()
-    if b:
+    if b == 1:
+        # Toggle mode
+        cfg["mode"] = "list" if cfg["mode"] == "scroll" else "scroll"
+        _rebuild_current_mode()
+    elif b == 2:
         load_settings.app_running = False
 
     # Periodic refresh
     if time.monotonic() - last_fetch > cfg.get("interval", 60):
         fetch_quotes()
-        build_ticker_bitmap()
+        _rebuild_current_mode()
         last_fetch = time.monotonic()
         gc.collect()
