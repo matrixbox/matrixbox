@@ -13,6 +13,14 @@
 </div>
 
 <div class="card">
+<div class="section-title">Display Mode</div>
+<div class="seg">
+<button id="m_scroll" onclick="sm('scroll')">Scroll</button>
+<button id="m_list" onclick="sm('list')">List</button>
+</div>
+</div>
+
+<div class="card">
 <div class="section-title">Font Size</div>
 <div class="seg">
 <button id="f_small" onclick="sf('small')">Small</button>
@@ -52,10 +60,11 @@
 
 <script>
 function p(d){fetch("/?"+d,{method:"POST"})}
-function ss(){var v=document.getElementById("sym").value;if(v)p("symbols="+encodeURIComponent(v));setTimeout(lq,3000)}
+function ss(){var v=document.getElementById("sym").value.replace(/\s/g,"");if(v)p("symbols="+v);setTimeout(lq,3000)}
 function sp(n){p("speed="+n);document.querySelectorAll(".seg button[id^=s]").forEach(function(b){b.classList.toggle("on",b.id==="s"+n)})}
 function si(n){p("interval="+n)}
 function sf(f){p("font="+f);document.querySelectorAll("[id^=f_]").forEach(function(b){b.classList.toggle("on",b.id==="f_"+f)})}
+function sm(m){p("mode="+m);document.querySelectorAll("[id^=m_]").forEach(function(b){b.classList.toggle("on",b.id==="m_"+m)})}
 function sv(){p("save=1")}
 function lq(){
 fetch("/quotes").then(function(r){return r.json()}).then(function(d){
@@ -73,6 +82,7 @@ fetch("/settings").then(function(r){return r.json()}).then(function(d){
 document.getElementById("sym").value=d.symbols||"";
 var f=d.font||"small";document.querySelectorAll("[id^=f_]").forEach(function(b){b.classList.toggle("on",b.id==="f_"+f)});
 var s=d.speed||2;document.querySelectorAll(".seg button[id^=s]").forEach(function(b){b.classList.toggle("on",b.id==="s"+s)});
+var m=d.mode||"scroll";document.querySelectorAll("[id^=m_]").forEach(function(b){b.classList.toggle("on",b.id==="m_"+m)});
 }).catch(function(){});}
 ls();lq();setInterval(lq,15000);
 </script>
