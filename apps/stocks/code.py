@@ -4,7 +4,7 @@ import load_screen
 from check_button import check_if_button_pressed
 from load_screen import *
 
-microcontroller.cpu.frequency = 240000000
+microcontroller.cpu.frequency = 160000000
 
 DISP_W = settings["width"]
 DISP_H = settings["height"]
