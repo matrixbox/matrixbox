@@ -3,9 +3,6 @@ import time, json, os, gc, load_settings
 from load_screen import *
 from check_button import check_if_button_pressed
 
-API_URL = "https://api.anthropic.com/v1/messages"
-DEFAULT_MODEL = "claude-sonnet-4-20250514"
-
 SYSTEM_PROMPT = """You generate CircuitPython apps for MatrixBox, an ESP32-S3 with an RGB LED matrix display.
 Output ONLY the Python code for code.py. No markdown fences, no explanations before or after.
 
@@ -62,31 +59,57 @@ Rules:
 
 INIT_CODE = "from __main__ import *\nampule.routes.clear()\n\nimport code\n"
 
-_api_key = settings.get("claude_key", "")
 
-
-def _generate(app_name, prompt, key, model=DEFAULT_MODEL):
+def _generate(app_name, prompt, key, provider="anthropic", model="claude-sonnet-4-20250514"):
     clearscreen(lines=True)
     pprint("Generating...")
     pprint(app_name)
 
     gc.collect()
 
-    headers = {
-        "x-api-key": key,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-    }
-
-    body = {
-        "model": model,
-        "max_tokens": 4096,
-        "system": SYSTEM_PROMPT,
-        "messages": [{"role": "user", "content": prompt}],
-    }
+    if provider == "anthropic":
+        url = "https://api.anthropic.com/v1/messages"
+        headers = {
+            "x-api-key": key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        }
+        body = {
+            "model": model,
+            "max_tokens": 4096,
+            "system": SYSTEM_PROMPT,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+    elif provider == "gemini":
+        url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key
+        headers = {"content-type": "application/json"}
+        body = {
+            "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"maxOutputTokens": 4096},
+        }
+    else:  # openai, openrouter, github
+        if provider == "openrouter":
+            url = "https://openrouter.ai/api/v1/chat/completions"
+        elif provider == "github":
+            url = "https://models.github.ai/inference/chat/completions"
+        else:
+            url = "https://api.openai.com/v1/chat/completions"
+        headers = {
+            "Authorization": "Bearer " + key,
+            "content-type": "application/json",
+        }
+        body = {
+            "model": model,
+            "max_tokens": 4096,
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+        }
 
     try:
-        resp = requests.post(API_URL, json=body, headers=headers)
+        resp = requests.post(url, json=body, headers=headers)
         status = resp.status_code
         data = resp.json()
         resp.close()
@@ -96,13 +119,24 @@ def _generate(app_name, prompt, key, model=DEFAULT_MODEL):
         print("API call error:", e)
         return {"error": str(e)}
 
-    if status != 200 or "content" not in data:
-        err = data.get("error", {}).get("message", "HTTP " + str(status))
+    if status != 200:
+        err = data.get("error", {})
+        if isinstance(err, dict):
+            err = err.get("message", "HTTP " + str(status))
         pprint("Error!", color="red")
         print("API error:", err)
         return {"error": str(err)}
 
-    code_text = data["content"][0]["text"]
+    try:
+        if provider == "anthropic":
+            code_text = data["content"][0]["text"]
+        elif provider == "gemini":
+            code_text = data["candidates"][0]["content"]["parts"][0]["text"]
+        else:
+            code_text = data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError):
+        return {"error": "Unexpected API response format"}
+
     del data
     gc.collect()
 
@@ -134,7 +168,8 @@ def _generate(app_name, prompt, key, model=DEFAULT_MODEL):
         return {"error": "Save failed: " + str(e)}
 
     # Persist API key for reuse
-    settings["claude_key"] = key
+    key_name = "claude_key" if provider == "anthropic" else provider + "_key"
+    settings[key_name] = key
     try:
         from __main__ import savesettings
         savesettings(settings)
@@ -148,8 +183,15 @@ def _generate(app_name, prompt, key, model=DEFAULT_MODEL):
 
 
 def _build_page():
-    key_val = settings.get("claude_key", "")
     ip = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
+
+    keys_js = json.dumps({
+        "anthropic": settings.get("claude_key", ""),
+        "openai": settings.get("openai_key", ""),
+        "gemini": settings.get("gemini_key", ""),
+        "openrouter": settings.get("openrouter_key", ""),
+        "github": settings.get("github_key", ""),
+    })
 
     apps = []
     for d in os.listdir("/"):
@@ -176,6 +218,7 @@ def _build_page():
         "border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:.95rem;"
         "font-family:inherit;outline:none;resize:vertical}"
         "textarea:focus{border-color:var(--accent)}"
+        ".provider-tag{font-size:.7rem;color:var(--muted);margin-left:6px}"
         "</style></head><body>"
         '<nav class="navbar">'
         '<a class="nav-brand">MatrixBox</a>'
@@ -186,19 +229,22 @@ def _build_page():
         "</nav>"
         '<div class="page">'
         '<div class="logo"><h1>&#x2728; AppMaker</h1>'
-        "<p>Generate new apps with Claude AI</p></div>"
+        "<p>Generate apps with AI</p></div>"
         # ── API settings card ──
         '<div class="card">'
         '<div class="section-title">API Settings</div>'
-        '<label for="api_key">Anthropic API Key</label>'
-        '<input type="password" id="api_key" placeholder="sk-ant-..." value="'
-        + key_val
-        + '">'
+        "<label>Provider</label>"
+        '<select id="provider" onchange="sp()">'
+        '<option value="anthropic">Anthropic (Claude)</option>'
+        '<option value="openai">OpenAI (ChatGPT)</option>'
+        '<option value="gemini">Google Gemini</option>'
+        '<option value="openrouter">OpenRouter</option>'
+        '<option value="github">GitHub Copilot</option>'
+        "</select>"
+        '<label id="key_label">API Key</label>'
+        '<input type="password" id="api_key" placeholder="sk-ant-...">'
         "<label>Model</label>"
-        '<select id="model">'
-        '<option value="claude-sonnet-4-20250514">Sonnet 4</option>'
-        '<option value="claude-haiku-4-20250414">Haiku</option>'
-        "</select></div>"
+        '<select id="model"></select></div>'
         # ── New app card ──
         '<div class="card">'
         '<div class="section-title">New App</div>'
@@ -219,9 +265,29 @@ def _build_page():
         "</div>"  # close .page
         "<script>"
         "var existingApps=" + apps_js + ";"
+        "var savedKeys=" + keys_js + ";"
+        "var providers={"
+        "anthropic:{ph:'sk-ant-...',models:[['claude-sonnet-4-20250514','Claude Sonnet 4'],['claude-haiku-4-20250414','Claude Haiku 4']]},"
+        "openai:{ph:'sk-...',models:[['gpt-4o-mini','GPT-4o Mini'],['gpt-4o','GPT-4o']]},"
+        "gemini:{ph:'AIza...',models:[['gemini-2.0-flash','Gemini 2.0 Flash'],['gemini-2.5-flash','Gemini 2.5 Flash']]},"
+        "openrouter:{ph:'sk-or-...',models:[['google/gemini-2.0-flash-exp:free','Gemini Flash (Free)'],['meta-llama/llama-4-scout-17b-16e-instruct:free','Llama 4 Scout (Free)'],['anthropic/claude-sonnet-4','Claude Sonnet 4']]},"
+        "github:{ph:'github_pat_...',models:[['openai/gpt-4o-mini','GPT-4o Mini'],['openai/gpt-4o','GPT-4o'],['meta/llama-4-scout-17b-16e-instruct','Llama 4 Scout']]}"
+        "};"
+        "function sp(){"
+        "var pv=document.getElementById('provider').value;"
+        "var info=providers[pv];"
+        "var ki=document.getElementById('api_key');"
+        "ki.placeholder=info.ph;"
+        "ki.value=savedKeys[pv]||'';"
+        "var sel=document.getElementById('model');"
+        "sel.innerHTML='';"
+        "info.models.forEach(function(m){var o=document.createElement('option');o.value=m[0];o.textContent=m[1];sel.appendChild(o)});"
+        "}"
+        "sp();"
         "async function generate(){"
         "var btn=document.getElementById('gen_btn');"
         "var st=document.getElementById('status');"
+        "var provider=document.getElementById('provider').value;"
         "var key=document.getElementById('api_key').value.trim();"
         "var raw=document.getElementById('app_name').value.trim().toLowerCase();"
         "var name=raw.replace(/[^a-z0-9_]/g,'_').replace(/^_+|_+$/g,'');"
@@ -232,13 +298,14 @@ def _build_page():
         "if(!prompt){st.innerHTML='<span style=\"color:#ff7070\">Describe what the app should do</span>';return;}"
         "if(existingApps.indexOf(name)!==-1&&!confirm('App \"'+name+'\" exists. Overwrite?'))return;"
         "btn.disabled=true;btn.innerHTML='&#x23F3; Generating...';"
-        "st.innerHTML='Sending to Claude&hellip; this may take 30+ seconds';"
+        "st.innerHTML='Generating&hellip; this may take 30+ seconds';"
         "try{"
         "var r=await fetch('/generate',{method:'POST',"
-        "headers:{'X-Api-Key':key,'X-App-Name':name,'X-Model':model},"
+        "headers:{'X-Api-Key':key,'X-App-Name':name,'X-Model':model,'X-Provider':provider},"
         "body:prompt});"
         "var d=await r.json();"
         "if(d.success){"
+        "savedKeys[provider]=key;"
         "st.innerHTML='<span style=\"color:#00e676\">&#x2714; App \"'+d.app_name+'\" created!</span>"
         "<br><a href=\"/exit\" class=\"btn btn-sm\" style=\"margin-top:8px\">&#x2190; Back to menu</a>';"
         "}else{"
@@ -261,9 +328,10 @@ def app_creator_home(request):
 @ampule.route("/generate", method="POST")
 def handle_generate(request):
     try:
-        key = request.headers.get("x-api-key", _api_key)
+        key = request.headers.get("x-api-key", "")
         name = request.headers.get("x-app-name", "")
-        model = request.headers.get("x-model", DEFAULT_MODEL)
+        model = request.headers.get("x-model", "claude-sonnet-4-20250514")
+        provider = request.headers.get("x-provider", "anthropic")
         prompt = request.body.strip() if request.body else ""
 
         # Sanitize app name
@@ -276,7 +344,7 @@ def handle_generate(request):
         if not key or not name or not prompt:
             return (200, {}, json.dumps({"error": "Missing required fields"}))
 
-        result = _generate(name, prompt, key, model)
+        result = _generate(name, prompt, key, provider, model)
         return (200, {}, json.dumps(result))
     except Exception as e:
         print("Generate error:", e)
