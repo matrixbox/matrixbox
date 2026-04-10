@@ -281,7 +281,14 @@ def draw_analog(h, m, s):
     screen[cx, cy] = 5
     # on short displays, draw info text to the right of the clock face
     if DISP_H <= 32 and DISP_W > DISP_H:
-        text_x = cx + R + 4
+        # vertical accent separator
+        if clocksettings["accent"]:
+            sep_x = cx + R + 3
+            if 0 <= sep_x < DISP_W:
+                bitmaptools.draw_line(screen, sep_x, 1, sep_x, DISP_H - 2, 19)
+            text_x = sep_x + 3
+        else:
+            text_x = cx + R + 4
         info_parts = []
         if clocksettings["show_day"]:
             info_parts.append(day_name)

@@ -98,12 +98,8 @@
 </div>
 </div>
 
-<div id="digital-opts">
 <div class="card">
-<div class="section-title">Display (Digital)</div>
-<div class="toggle-item"><span>12-Hour Format</span><label class="sw"><input type="checkbox" id="h12" onchange="p('h12='+(this.checked?1:0))"><span class="sl"></span></label></div>
-<div class="toggle-item"><span>Blink Colon</span><label class="sw"><input type="checkbox" id="blink_colon" onchange="p('blink_colon='+(this.checked?1:0))"><span class="sl"></span></label></div>
-<div class="toggle-item"><span>Rainbow Mode</span><label class="sw"><input type="checkbox" id="rainbow" onchange="p('rainbow='+(this.checked?1:0))"><span class="sl"></span></label></div>
+<div class="section-title">Info</div>
 <div class="toggle-item"><span>Show Day</span><label class="sw"><input type="checkbox" id="show_day" onchange="p('show_day='+(this.checked?1:0))"><span class="sl"></span></label></div>
 <div class="toggle-item"><span>Show Date</span><label class="sw"><input type="checkbox" id="show_date" onchange="p('show_date='+(this.checked?1:0))"><span class="sl"></span></label></div>
 <div class="toggle-item"><span>Show Temperature</span><label class="sw"><input type="checkbox" id="show_temp" onchange="p('show_temp='+(this.checked?1:0))"><span class="sl"></span></label></div>
@@ -129,6 +125,14 @@
 <input type="text" id="city" placeholder="e.g. Stockholm">
 <button class="btn btn-sm" onclick="p('city='+encodeURIComponent(document.getElementById('city').value))">Set</button>
 </div>
+</div>
+
+<div id="digital-opts">
+<div class="card">
+<div class="section-title">Display (Digital)</div>
+<div class="toggle-item"><span>12-Hour Format</span><label class="sw"><input type="checkbox" id="h12" onchange="p('h12='+(this.checked?1:0))"><span class="sl"></span></label></div>
+<div class="toggle-item"><span>Blink Colon</span><label class="sw"><input type="checkbox" id="blink_colon" onchange="p('blink_colon='+(this.checked?1:0))"><span class="sl"></span></label></div>
+<div class="toggle-item"><span>Rainbow Mode</span><label class="sw"><input type="checkbox" id="rainbow" onchange="p('rainbow='+(this.checked?1:0))"><span class="sl"></span></label></div>
 </div>
 
 <div class="card">
