@@ -418,16 +418,22 @@ day_name, date_str = dt[3], dt[4]
 temp_string = ""
 weather_counter = 0
 
+# anchor NTP time to monotonic clock for accurate seconds
+_sync_epoch = int(hour) * 3600 + int(minute) * 60 + int(second)
+_sync_mono = time.monotonic()
+_sync_day = day_name
+_sync_date = date_str
+_last_resync = _sync_mono
+
 if clocksettings["show_temp"] and clocksettings.get("city", ""):
     try: temp_string = fetch_temperature()
     except: pass
 
 rebuild_display()
 
-delay = 1
-tick = 0
 _colon_on = True
 _rainbow_hue = 0
+_prev_second = -1
 
 while load_settings.app_running:
     ampule.listen(socket)
@@ -435,40 +441,46 @@ while load_settings.app_running:
     b = check_if_button_pressed()
     if b == 2: sys.exit()
 
+    # derive current time from monotonic offset
+    now_mono = time.monotonic()
+    elapsed = now_mono - _sync_mono
+    epoch = _sync_epoch + int(elapsed)
+    # handle day rollover
+    if epoch >= 86400:
+        epoch = epoch % 86400
+    h = epoch // 3600
+    m = (epoch % 3600) // 60
+    s = epoch % 60
+
+    hour = ("0" + str(h)) if h < 10 else str(h)
+    minute = ("0" + str(m)) if m < 10 else str(m)
+    second = ("0" + str(s)) if s < 10 else str(s)
+
+    # re-sync with NTP every 5 minutes to prevent drift
+    if now_mono - _last_resync > 300:
+        try:
+            dt = update_datetime()
+            hour, minute, second = dt[0], dt[1], dt[2]
+            day_name, date_str = dt[3], dt[4]
+            _sync_epoch = int(hour) * 3600 + int(minute) * 60 + int(second)
+            _sync_mono = now_mono
+            _last_resync = now_mono
+        except:
+            _last_resync = now_mono
+
+    # weather refresh every 10 minutes
+    if clocksettings["show_temp"] and int(elapsed) % 600 < 2 and s < 2:
+        if weather_counter == 0:
+            weather_counter = 1
+            try: temp_string = fetch_temperature()
+            except: pass
+    elif s >= 2:
+        weather_counter = 0
+
     if clocksettings["show_seconds"]:
         timestring = hour + ":" + minute + ":" + second
     else:
         timestring = hour + ":" + minute
-    
-    _s = int(second)
-    _s += 1
-    if len(str(_s)) == 1: second = "0" + str(_s)
-    else: second = str(_s)
-    if second == "60": 
-        delay = 0
-        second = "00"
-        try: 
-            dt = update_datetime()
-            hour, minute, second = dt[0], dt[1], dt[2]
-            day_name, date_str = dt[3], dt[4]
-        except: 
-            _m  = int(minute)
-            _m += 1
-            if len(str(_m)) == 1: minute = "0" + str(_m)
-            else: minute = str(_m)
-            if minute == "60": 
-                minute = "00"
-                _h  = int(hour)
-                _h += 1
-                if len(str(_h)) == 1: hour = "0" + str(_h)
-                else: hour = str(_h)
-                if hour == "24": 
-                    hour = "00"
-        weather_counter += 1
-        if clocksettings["show_temp"] and weather_counter >= 10:
-            weather_counter = 0
-            try: temp_string = fetch_temperature()
-            except: pass
 
     # rainbow color cycling
     if clocksettings["rainbow"] and clocksettings["mode"] == "digital":
@@ -479,19 +491,20 @@ while load_settings.app_running:
         palette[18] = (rgb[0] // 3, rgb[1] // 3, rgb[2] // 3)
         _last_tstr = ""  # force redraw
 
-    # colon blink toggle
-    _colon_on = not _colon_on
+    # colon blink — toggle every half second
+    new_colon = int(now_mono * 2) % 2 == 0
+    colon_changed = new_colon != _colon_on
+    _colon_on = new_colon
+
+    # only redraw when something changed
+    second_changed = s != _prev_second
+    _prev_second = s
 
     if clocksettings["mode"] == "analog":
-        if timestring != _last_tstr or clocksettings["show_seconds"]:
+        if second_changed:
             draw_analog(int(hour), int(minute), int(second))
     else:
-        need_redraw = timestring != _last_tstr or clocksettings["blink_colon"]
-        if need_redraw:
+        if second_changed or (clocksettings["blink_colon"] and colon_changed):
             draw_time(timestring, _colon_on)
     refresh()
-    time.sleep(delay)
-    if not delay: delay = 1
-    refresh()
-    time.sleep(delay)
-    if not delay: delay = 1
+    time.sleep(0.1)
