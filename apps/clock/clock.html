@@ -83,6 +83,19 @@
 <div class="section-title">Display</div>
 <div class="toggle-item"><span>Show Seconds</span><label class="sw"><input type="checkbox" id="show_seconds" onchange="p('show_seconds='+(this.checked?1:0))"><span class="sl"></span></label></div>
 <div class="toggle-item" id="border-opt" style="display:none"><span>Show Circle</span><label class="sw"><input type="checkbox" id="show_border" onchange="p('show_border='+(this.checked?1:0))"><span class="sl"></span></label></div>
+<div class="toggle-item" id="dots-opt" style="display:none"><span>Show Hour Dots</span><label class="sw"><input type="checkbox" id="show_dots" onchange="p('show_dots='+(this.checked?1:0))"><span class="sl"></span></label></div>
+<div id="dots-color" style="display:none;margin-top:6px">
+<label>Dot Color</label>
+<div class="swatch-row">
+<input type="color" id="dcp" value="#ffffff" oninput="sdc(this.value)">
+<div class="color-swatch" style="background:#fff" onclick="sdc('#ffffff')"></div>
+<div class="color-swatch" style="background:#ff4444" onclick="sdc('#ff4444')"></div>
+<div class="color-swatch" style="background:#4488ff" onclick="sdc('#4488ff')"></div>
+<div class="color-swatch" style="background:#44ff44" onclick="sdc('#44ff44')"></div>
+<div class="color-swatch" style="background:#ffff44" onclick="sdc('#ffff44')"></div>
+<div class="color-swatch" style="background:#ff8800" onclick="sdc('#ff8800')"></div>
+</div>
+</div>
 </div>
 
 <div id="digital-opts">
@@ -155,6 +168,7 @@ if(el)el.value=h;
 clearTimeout(dt);dt=setTimeout(function(){p(k+'='+h.slice(1))},200);
 }
 function sac(h){document.getElementById('acp').value=h;p('accent_hex='+h.slice(1))}
+function sdc(h){document.getElementById('dcp').value=h;p('dots_hex='+h.slice(1))}
 function sf(s){p('size='+s);document.querySelectorAll('#font-seg button').forEach(function(b){b.classList.remove('on')});document.getElementById('fb_'+s).classList.add('on')}
 function ss(n){p('scale='+n);document.querySelectorAll('#scale-seg button').forEach(function(b){b.classList.remove('on')});document.getElementById('sc_'+n).classList.add('on')}
 function sm(m,send){
@@ -165,6 +179,8 @@ document.getElementById('digital-colors').style.display=m==='digital'?'':'none';
 document.getElementById('analog-colors').style.display=m==='analog'?'':'none';
 document.getElementById('digital-opts').style.display=m==='digital'?'':'none';
 document.getElementById('border-opt').style.display=m==='analog'?'':'none';
+document.getElementById('dots-opt').style.display=m==='analog'?'':'none';
+document.getElementById('dots-color').style.display=(m==='analog'&&document.getElementById('show_dots').checked)?'':'none';
 }
 function upv(){var v=document.getElementById('pv');v.style.backgroundColor=document.getElementById('bp').value;v.style.color=document.getElementById('fp').value}
 document.getElementById('accent').addEventListener('change',function(){document.getElementById('accent-color').style.display=this.checked?'':'none'});
@@ -173,6 +189,9 @@ document.getElementById("show_day").checked=s.show_day==1;
 document.getElementById("show_date").checked=s.show_date==1;
 document.getElementById("show_seconds").checked=s.show_seconds==1;
 document.getElementById("show_border").checked=s.show_border==1;
+document.getElementById("show_dots").checked=s.show_dots==1;
+if(s.dots_hex)document.getElementById("dcp").value=s.dots_hex;
+document.getElementById('show_dots').addEventListener('change',function(){document.getElementById('dots-color').style.display=(this.checked&&_mode==='analog')?'':'none'});
 document.getElementById("show_temp").checked=s.show_temp==1;
 document.getElementById("h12").checked=s.h12==1;
 document.getElementById("blink_colon").checked=s.blink_colon==1;

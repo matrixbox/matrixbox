@@ -4,7 +4,7 @@ import displayio, bitmaptools
 import load_screen
 from check_button import check_if_button_pressed
 from load_screen import *
-microcontroller.cpu.frequency = 240000000
+#microcontroller.cpu.frequency = 240000000
 with open("clock.html") as f: html_body = f.read()
 
 DISP_W = settings["width"]
@@ -20,7 +20,7 @@ except:
     "font":"large"
     }
 
-for _k, _v in [("show_date", 1), ("show_day", 1), ("show_seconds", 0), ("show_temp", 0), ("city", ""), ("f_hex", "#ffffff"), ("b_hex", "#000000"), ("scale", 1), ("mode", "digital"), ("hour_hex", "#ffffff"), ("min_hex", "#4488ff"), ("sec_hex", "#ff4444"), ("show_border", 1), ("h12", 0), ("blink_colon", 1), ("rainbow", 0), ("accent", 0), ("accent_hex", "#4488ff")]:
+for _k, _v in [("show_date", 1), ("show_day", 1), ("show_seconds", 0), ("show_temp", 0), ("city", ""), ("f_hex", "#ffffff"), ("b_hex", "#000000"), ("scale", 1), ("mode", "digital"), ("hour_hex", "#ffffff"), ("min_hex", "#4488ff"), ("sec_hex", "#ff4444"), ("show_border", 1), ("h12", 0), ("blink_colon", 1), ("rainbow", 0), ("accent", 0), ("accent_hex", "#4488ff"), ("show_dots", 1), ("dots_hex", "#ffffff")]:
     if _k not in clocksettings: clocksettings[_k] = _v
 
 def hex_to_rgb(h):
@@ -42,7 +42,8 @@ def apply_colors():
     palette[15] = hr_c
     palette[16] = mn_c
     palette[17] = sc_c
-    palette[18] = (fg[0] // 3, fg[1] // 3, fg[2] // 3)  # dim tick marks
+    dt_c = hex_to_rgb(clocksettings["dots_hex"])
+    palette[18] = dt_c
     ac = hex_to_rgb(clocksettings["accent_hex"])
     palette[19] = ac
 
@@ -154,6 +155,15 @@ def clock_webinterface_post(request):
         delay = 0
     if "show_border" in request.params:
         clocksettings["show_border"] = int(request.params["show_border"])
+        _last_analog = ""
+        delay = 0
+    if "show_dots" in request.params:
+        clocksettings["show_dots"] = int(request.params["show_dots"])
+        _last_analog = ""
+        delay = 0
+    if "dots_hex" in request.params:
+        clocksettings["dots_hex"] = "#" + request.params["dots_hex"]
+        apply_colors()
         _last_analog = ""
         delay = 0
     if "h12" in request.params:
@@ -283,17 +293,14 @@ def draw_analog(h, m, s):
     bitmaptools.fill_region(screen, 0, 0, DISP_W, DISP_H, 14)
     if clocksettings["show_border"]:
         _draw_circle_outline(screen, cx, cy, R, 13)
-    # 5-minute tick marks (12 dots, 2x2, on the circle edge)
-    for i in range(12):
-        a = _angle(i, 12)
-        tx = int(cx + math.cos(a) * R + 0.5)
-        ty = int(cy + math.sin(a) * R + 0.5)
-        for dx in (-1, 0):
-            for dy in (-1, 0):
-                px = tx + dx
-                py = ty + dy
-                if 0 <= px < DISP_W and 0 <= py < DISP_H:
-                    screen[px, py] = 5
+    # 5-minute tick marks (12 dots, 1px, on the circle edge)
+    if clocksettings["show_dots"]:
+        for i in range(12):
+            a = _angle(i, 12)
+            tx = int(cx + math.cos(a) * R + 0.5)
+            ty = int(cy + math.sin(a) * R + 0.5)
+            if 0 <= tx < DISP_W and 0 <= ty < DISP_H:
+                screen[tx, ty] = 18
     # hands
     h12 = (h % 12) + m / 60.0
     ha = _angle(h12, 12)
@@ -341,15 +348,20 @@ def draw_time(timestring, colon_vis=True):
             dstr = hstr + " " + parts[1] if len(parts) == 2 else hstr + " " + parts[1] + " " + parts[2]
         else:
             dstr = hstr + ":" + parts[1] if len(parts) == 2 else hstr + ":" + parts[1] + ":" + parts[2]
+        # reference string for stable box: widest 12h is "12:88" or "12:88:88"
+        ref = "12:" + parts[1] if len(parts) == 2 else "12:" + parts[1] + ":" + parts[2]
     else:
         ampm = ""
+        # reference string: always use colons for stable width
+        ref = timestring
 
     tw = strlen(dstr, f)
+    ref_w = strlen(ref, f)
     tmp = displayio.Bitmap(tw + 2, fh + 2, 20)
     pprint(dstr, 0, font=f, clear=False, color="white",
            top_offset=-1, _refresh=False, window=tmp, _clearscreen=False,
            block=True, shadow_color=12)
-    sw = (tw + 2) * scale
+    sw = (ref_w + 2) * scale
     sh = (fh + 2) * scale
 
     # calculate info bar content
@@ -362,7 +374,7 @@ def draw_time(timestring, colon_vis=True):
         info_parts.append(ampm)
     if clocksettings["show_temp"] and temp_string:
         info_parts.append(temp_string)
-    info_str = " ".join(info_parts)
+    info_str = " . ".join(info_parts) if info_parts else ""
     info_h = 7 if info_str else 0  # mini font height + 1px gap
 
     # accent line
