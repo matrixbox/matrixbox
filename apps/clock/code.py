@@ -4,7 +4,7 @@ import displayio, bitmaptools
 import load_screen
 from check_button import check_if_button_pressed
 from load_screen import *
-#microcontroller.cpu.frequency = 240000000
+
 with open("clock.html") as f: html_body = f.read()
 
 DISP_W = settings["width"]
@@ -14,13 +14,14 @@ try:
     with open("clocksettings.txt") as f:
         clocksettings = json.loads(f.read())
 except:
-    clocksettings = {"f_color":"white",
-    "b_color":"black",
-    "inverted":0,
-    "font":"large"
-    }
+    clocksettings = {}
 
-for _k, _v in [("show_date", 1), ("show_day", 1), ("show_seconds", 0), ("show_temp", 0), ("city", ""), ("f_hex", "#ffffff"), ("b_hex", "#000000"), ("scale", 1), ("mode", "digital"), ("hour_hex", "#ffffff"), ("min_hex", "#4488ff"), ("sec_hex", "#ff4444"), ("show_border", 1), ("h12", 0), ("blink_colon", 1), ("rainbow", 0), ("accent", 0), ("accent_hex", "#4488ff"), ("show_dots", 1), ("dots_hex", "#ffffff")]:
+_DEFAULTS = {"show_date": 1, "show_day": 1, "show_seconds": 0, "show_temp": 0, "city": "",
+    "f_hex": "#ffffff", "b_hex": "#000000", "scale": 1, "mode": "digital", "font": "large",
+    "hour_hex": "#ffffff", "min_hex": "#4488ff", "sec_hex": "#ff4444",
+    "show_border": 1, "h12": 0, "blink_colon": 1, "rainbow": 0,
+    "accent": 0, "accent_hex": "#4488ff", "show_dots": 1, "dots_hex": "#ffffff"}
+for _k, _v in _DEFAULTS.items():
     if _k not in clocksettings: clocksettings[_k] = _v
 
 def hex_to_rgb(h):
@@ -35,20 +36,13 @@ def apply_colors():
     palette[12] = (fg[0] // 4, fg[1] // 4, fg[2] // 4)
     palette[13] = (fg[0] // 6, fg[1] // 6, fg[2] // 6)
     palette[14] = bg
-    # analog hand colors
-    hr_c = hex_to_rgb(clocksettings["hour_hex"])
-    mn_c = hex_to_rgb(clocksettings["min_hex"])
-    sc_c = hex_to_rgb(clocksettings["sec_hex"])
-    palette[15] = hr_c
-    palette[16] = mn_c
-    palette[17] = sc_c
-    dt_c = hex_to_rgb(clocksettings["dots_hex"])
-    palette[18] = dt_c
-    ac = hex_to_rgb(clocksettings["accent_hex"])
-    palette[19] = ac
+    palette[15] = hex_to_rgb(clocksettings["hour_hex"])
+    palette[16] = hex_to_rgb(clocksettings["min_hex"])
+    palette[17] = hex_to_rgb(clocksettings["sec_hex"])
+    palette[18] = hex_to_rgb(clocksettings["dots_hex"])
+    palette[19] = hex_to_rgb(clocksettings["accent_hex"])
 
 def _hsv_to_rgb(h):
-    """h in 0..360, full saturation/value, returns (r,g,b) 0-255"""
     h = h % 360
     s = 6
     i = h // 60
@@ -63,15 +57,27 @@ def _hsv_to_rgb(h):
     return (255 // s, 0, q // s)
 
 def selectfont(selectedfont):
-    global clocksettings
     if selectedfont == "mini": load_screen.currentfont = font_mini
-    if selectedfont == "small": load_screen.currentfont = font_small
-    if selectedfont == "large": load_screen.currentfont = font_large
+    elif selectedfont == "small": load_screen.currentfont = font_small
+    else: load_screen.currentfont = font_large
     clocksettings["font"] = selectedfont
     return load_screen.currentfont
 
-load_screen.currentfont = selectfont(clocksettings["font"])
+def _render_dim_text(text, x, y):
+    """Render text in font_mini at palette 12 (dim) onto screen."""
+    tw = strlen(text, font_mini)
+    tmp = displayio.Bitmap(tw + 1, 6, 20)
+    pprint(text, 0, font=font_mini, clear=False, color="white",
+           top_offset=-1, _refresh=False, window=tmp, _clearscreen=False)
+    for py in range(tmp.height):
+        for px in range(tmp.width):
+            if tmp[px, py] == 5:
+                tmp[px, py] = 12
+    bitmaptools.blit(screen, tmp, x, y,
+                     x1=0, y1=0, x2=tmp.width, y2=tmp.height,
+                     skip_source_index=0)
 
+load_screen.currentfont = selectfont(clocksettings["font"])
 
 
 @ampule.route("/exit", method="GET")
@@ -87,102 +93,65 @@ def webinterface(request):
 def get_settings(request):
     return (200, {}, json.dumps(clocksettings))
 
+# POST param handlers: (param_name, action)
+#   "int"  -> store as int
+#   "hex"  -> store as "#" + value
+#   "str"  -> store as string
+#   "rebuild" -> store + rebuild_display
+_INT_PARAMS = ["show_date", "show_day", "show_seconds", "h12", "blink_colon", "accent"]
+_HEX_PARAMS = ["f_hex", "b_hex", "hour_hex", "min_hex", "sec_hex", "accent_hex", "dots_hex"]
+_ANALOG_RESET = ["show_border", "show_dots"]
+
 @ampule.route("/", method="POST")
 def clock_webinterface_post(request):
-    #global f_color, b_color, inverted
-    global clocksettings, delay, temp_string
-    print("POSTED")
-    print(request.params)
-    print(request.body)
-    if "save" in request.params:
-        #clearscreen(True)
+    global clocksettings, delay, temp_string, _last_analog
+    p = request.params
+    if "save" in p:
         with open("clocksettings.txt", "w") as f:
             f.write(json.dumps(clocksettings))
-        #clearscreen(False)
         delay = 0
-    if "size" in request.params: 
-        selectfont(request.params["size"])
+    if "size" in p:
+        selectfont(p["size"])
         rebuild_display()
         delay = 0
-    if "f_hex" in request.params:
-        clocksettings["f_hex"] = "#" + request.params["f_hex"]
-        apply_colors()
-        delay = 0
-    if "b_hex" in request.params:
-        clocksettings["b_hex"] = "#" + request.params["b_hex"]
-        apply_colors()
-        delay = 0
-    if "show_date" in request.params:
-        clocksettings["show_date"] = int(request.params["show_date"])
-        delay = 0
-    if "show_day" in request.params:
-        clocksettings["show_day"] = int(request.params["show_day"])
-        delay = 0
-    if "show_seconds" in request.params:
-        clocksettings["show_seconds"] = int(request.params["show_seconds"])
-        delay = 0
-    if "scale" in request.params:
-        clocksettings["scale"] = int(request.params["scale"])
+    if "scale" in p:
+        clocksettings["scale"] = int(p["scale"])
         rebuild_display()
         delay = 0
-    if "show_temp" in request.params:
-        clocksettings["show_temp"] = int(request.params["show_temp"])
+    if "mode" in p:
+        clocksettings["mode"] = p["mode"]
+        rebuild_display()
+        delay = 0
+    for k in _INT_PARAMS:
+        if k in p:
+            clocksettings[k] = int(p[k])
+            delay = 0
+    for k in _HEX_PARAMS:
+        if k in p:
+            clocksettings[k] = "#" + p[k]
+            apply_colors()
+            delay = 0
+    for k in _ANALOG_RESET:
+        if k in p:
+            clocksettings[k] = int(p[k])
+            _last_analog = ""
+            delay = 0
+    if "rainbow" in p:
+        clocksettings["rainbow"] = int(p["rainbow"])
+        if not clocksettings["rainbow"]:
+            apply_colors()
+        delay = 0
+    if "show_temp" in p:
+        clocksettings["show_temp"] = int(p["show_temp"])
         if clocksettings["show_temp"] and clocksettings.get("city", ""):
             try: temp_string = fetch_temperature()
             except: pass
         delay = 0
-    if "city" in request.params:
-        clocksettings["city"] = request.params["city"]
+    if "city" in p:
+        clocksettings["city"] = p["city"]
         if clocksettings["show_temp"] and clocksettings["city"]:
             try: temp_string = fetch_temperature()
             except: pass
-        delay = 0
-    if "mode" in request.params:
-        clocksettings["mode"] = request.params["mode"]
-        rebuild_display()
-        delay = 0
-    if "hour_hex" in request.params:
-        clocksettings["hour_hex"] = "#" + request.params["hour_hex"]
-        apply_colors()
-        delay = 0
-    if "min_hex" in request.params:
-        clocksettings["min_hex"] = "#" + request.params["min_hex"]
-        apply_colors()
-        delay = 0
-    if "sec_hex" in request.params:
-        clocksettings["sec_hex"] = "#" + request.params["sec_hex"]
-        apply_colors()
-        delay = 0
-    if "show_border" in request.params:
-        clocksettings["show_border"] = int(request.params["show_border"])
-        _last_analog = ""
-        delay = 0
-    if "show_dots" in request.params:
-        clocksettings["show_dots"] = int(request.params["show_dots"])
-        _last_analog = ""
-        delay = 0
-    if "dots_hex" in request.params:
-        clocksettings["dots_hex"] = "#" + request.params["dots_hex"]
-        apply_colors()
-        _last_analog = ""
-        delay = 0
-    if "h12" in request.params:
-        clocksettings["h12"] = int(request.params["h12"])
-        delay = 0
-    if "blink_colon" in request.params:
-        clocksettings["blink_colon"] = int(request.params["blink_colon"])
-        delay = 0
-    if "rainbow" in request.params:
-        clocksettings["rainbow"] = int(request.params["rainbow"])
-        if not clocksettings["rainbow"]:
-            apply_colors()
-        delay = 0
-    if "accent" in request.params:
-        clocksettings["accent"] = int(request.params["accent"])
-        delay = 0
-    if "accent_hex" in request.params:
-        clocksettings["accent_hex"] = "#" + request.params["accent_hex"]
-        apply_colors()
         delay = 0
     return (200, {}, "ok")
 
@@ -226,12 +195,6 @@ def fetch_temperature():
     except:
         pass
     return ""
-
-def _time_font_height():
-    f = clocksettings["font"]
-    if f == "large": return font_large["fontheight"]
-    if f == "small": return font_small["fontheight"]
-    return font_mini["fontheight"]
 
 screen = None
 BOX_PAD = 2
@@ -288,7 +251,11 @@ def draw_analog(h, m, s):
         return
     _last_analog = tag
     R = min(DISP_W, DISP_H) // 2 - 2
-    cx = DISP_W // 2
+    # on short displays (32px), left-align the clock face; otherwise center
+    if DISP_H <= 32 and DISP_W > DISP_H:
+        cx = R + 2
+    else:
+        cx = DISP_W // 2
     cy = DISP_H // 2
     bitmaptools.fill_region(screen, 0, 0, DISP_W, DISP_H, 14)
     if clocksettings["show_border"]:
@@ -312,6 +279,21 @@ def draw_analog(h, m, s):
         _draw_hand(screen, cx, cy, sa, int(R * 0.85), 17, thick=False)
     # center dot
     screen[cx, cy] = 5
+    # on short displays, draw info text to the right of the clock face
+    if DISP_H <= 32 and DISP_W > DISP_H:
+        text_x = cx + R + 4
+        info_parts = []
+        if clocksettings["show_day"]:
+            info_parts.append(day_name)
+        if clocksettings["show_date"]:
+            info_parts.append(date_str)
+        if clocksettings["show_temp"] and temp_string:
+            info_parts.append(temp_string)
+        ty = 2
+        for part in info_parts:
+            if text_x < DISP_W and ty + 5 <= DISP_H:
+                _render_dim_text(part, text_x, ty)
+                ty += 8
 
 def rebuild_display():
     global screen, _last_tstr, _last_analog
@@ -328,7 +310,7 @@ def rebuild_display():
 def draw_time(timestring, colon_vis=True):
     global _last_tstr
     f = load_screen.currentfont
-    fh = _time_font_height()
+    fh = f["fontheight"]
     scale = clocksettings.get("scale", 1)
 
     # build display string with optional colon blink
