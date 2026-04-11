@@ -5,7 +5,7 @@ import time
 #from __main__ import buffer_size
 from errno import EAGAIN, ECONNRESET
 
-BUFFER_SIZE = 1024*4
+BUFFER_SIZE = 1024*8
 _recv_buffer = bytearray(BUFFER_SIZE)
 routes = []
 system_routes = []
@@ -39,36 +39,47 @@ def __parse_headers(reader):
         headers[title.strip().lower()] = content.strip()
     return headers
 
-def __parse_body(reader):
-    data = bytearray()
-    for line in reader:
-        if line == b'\r\n': break
-        data.extend(line)
-    return str(data, "utf-8")
+def __parse_body(reader, headers):
+    cl = int(headers.get('content-length', 0))
+    if cl > 0:
+        data = reader.read(cl)
+    else:
+        data = reader.read()
+    return str(data, "utf-8") if data else ""
 
 def __read_request(client):
     message = bytearray()
-    socket_recv = True
-    
-    for _ in range(10):
+    hdr_end = -1
+    content_length = 0
+
+    for _ in range(30):
         try:
-            while socket_recv:
-                num_received = client.recv_into(_recv_buffer)
-                chunk = _recv_buffer[:num_received]
-                null_pos = -1
-                for i in range(num_received):
-                    if chunk[i] == 0x00:
-                        null_pos = i
-                        break
-                if null_pos >= 0:
-                    message.extend(chunk[:null_pos])
-                    socket_recv = False
-                else:
-                    message.extend(chunk)
+            num_received = client.recv_into(_recv_buffer)
+            if num_received == 0:
+                break
+            for i in range(num_received):
+                if _recv_buffer[i] == 0x00:
+                    num_received = i
+                    break
+            if num_received > 0:
+                message.extend(_recv_buffer[:num_received])
+            if hdr_end < 0:
+                hdr_end = message.find(b'\r\n\r\n')
+                if hdr_end >= 0:
+                    for line in str(message[:hdr_end], 'utf-8').split('\r\n'):
+                        if line.lower().startswith('content-length:'):
+                            content_length = int(line.split(':', 1)[1].strip())
+                            break
+            if hdr_end >= 0 and len(message) - (hdr_end + 4) >= content_length:
                 break
         except OSError as error:
-            time.sleep(0.01)
-            continue
+            if error.errno == EAGAIN:
+                time.sleep(0.01)
+                continue
+            break
+
+    if not message:
+        return None
 
     reader = io.BytesIO(message)
     line = str(reader.readline(), "utf-8")
@@ -79,7 +90,7 @@ def __read_request(client):
 
     request = Request(method, full_path)
     request.headers = __parse_headers(reader)
-    request.body = __parse_body(reader)
+    request.body = __parse_body(reader, request.headers)
 
     return request
 
@@ -158,7 +169,6 @@ def listen(socket):
     try:
         request = __read_request(client)
         if request is None:
-            client.close()
             return
         match = __match_route(request.path, request.method)
         if match:
@@ -173,7 +183,8 @@ def listen(socket):
             __send_response(client, 500, {}, "Error")
         except:
             pass
-    client.close()
+    finally:
+        client.close()
 
 def route(rule, method='GET'):
     return lambda func: __on_request(method, rule, func)

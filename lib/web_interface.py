@@ -11,7 +11,7 @@ bootloaderbutton = """<button class="btn btn-danger" onclick="if(confirm('Enter 
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
 unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {method: 'POST'})">&#x1F513; Unlock</button>"""
 
-# ── LED on/off toggle ─────────────────────────────────────────────────────────
+# -- LED on/off toggle ---------------------------------------------------------
 _led_off = False
 
 def _led_toggle():
@@ -70,12 +70,14 @@ def textbox(settings):
         "width": {"min": 64, "max": 640, "step": 64},
         "height": {"min": 32, "max": 320, "step": 32},
     }
+    hidden_keys = {"ai_provider", "ai_key", "ai_model"}
     advanced_keys = {"width", "height", "tiles", "repository_url"}
     advanced_order = ["width", "height", "tiles", "repository_url"]
     main_html = ""
     adv_items = {}
     settings_html = """<form onsubmit="sav(event)">"""
     for setting in settings:
+        if setting in hidden_keys: continue
         print("Setting: ", setting)
         val = settings[setting]
         is_adv = setting in advanced_keys
@@ -800,7 +802,7 @@ for _r in ampule.routes:
 
 
 def url_decoder(url):
-    url_decode = {"%C3A4":"ä", "%20": " ", "%21": "!", "%22": "\"", "%23": "#", "%24": "$", "%25": "%", "%26": "&", "%27": "'", "%28": "(", "%29": ")", "%2A": "*", "%2B": "+", "%2C": ",", "%2D": "-", "%2E": ".", "%2F": "/", "%30": "0", "%31": "1", "%32": "2", "%33": "3", "%34": "4", "%35": "5", "%36": "6", "%37": "7", "%38": "8", "%39": "9", "%3A": ":", "%3B": ";", "%3C": "<", "%3D": "=", "%3E": ">", "%3F": "?", "%40": "@", "%41": "A", "%42": "B", "%43": "C", "%44": "D", "%45": "E", "%46": "F", "%47": "G", "%48": "H", "%49": "I", "%4A": "J", "%4B": "K", "%4C": "L", "%4D": "M", "%4E": "N", "%4F": "O", "%50": "P", "%51": "Q", "%52": "R", "%53": "S", "%54": "T", "%55": "U", "%56": "V", "%57": "W", "%58": "X", "%59": "Y", "%5A": "Z", "%5B": "[", "%5C": "\\", "%5D": "]", "%5E": "^", "%5F": "_", "%60": "`", "%61": "a", "%62": "b", "%63": "c", "%64": "d", "%65": "e", "%66": "f", "%67": "g", "%68": "h", "%69": "i", "%6A": "j", "%6B": "k", "%6C": "l", "%6D": "m", "%6E": "n", "%6F": "o", "%70": "p", "%71": "q", "%72": "r", "%73": "s", "%74": "t", "%75": "u", "%76": "v", "%77": "w", "%78": "x", "%79": "y", "%7A": "z", "%7B": "{", "%7C": "|", "%7D": "}", "%7E": "~", "%E2%82%AC": "\u20ac", "%E2%80%9A": "\u201a", "%C6%92": "\u0192", "%E2%80%9E": "\u201e", "%E2%80%A6": "\u2026", "%E2%80%A0": "\u2020", "%E2%80%A1": "\u2021", "%CB%86": "\u02c6", "%E2%80%B0": "\u2030", "%C5%A0": "\u0160", "%E2%80%B9": "\u2039", "%C5%92": "\u0152", "%C5%BD": "\u017d", "%E2%80%98": "\u2018", "%E2%80%99": "\u2019", "%E2%80%9C": "\u201c", "%E2%80%9D": "\u201d", "%E2%80%A2": "\u2022", "%E2%80%93": "\u2013", "%E2%80%94": "\u2014", "%CB%9C": "\u02dc", "%E2%84": "\u2122", "%C5%A1": "\u0161", "%E2%80": "\u203a", "%C5%93": "\u0153", "%C5%B8": "\u0178", "%C2%A1": "\u00a1", "%C2%A2": "\u00a2", "%C2%A3": "\u00a3", "%C2%A4": "\u00a4", "%C2%A5": "\u00a5", "%C2%A6": "\u00a6", "%C2%A7": "\u00a7", "%C2%A8": "\u00a8", "%C2%A9": "\u00a9", "%C2%AA": "\u00aa", "%C2%AB": "\u00ab", "%C2%AD": "\u00ac", "%C2%AE": "\u00ae", "%C2%AF": "\u00af", "%C2%B0": "\u00b0", "%C2%B1": "\u00b1", "%C2%B2": "\u00b2", "%C2%B3": "\u00b3", "%C2%B4": "\u00b4", "%C2%B5": "\u00b5", "%C2%B6": "\u00b6", "%C2%B7": "\u00b7", "%C2%B8": "\u00b8", "%C2%B9": "\u00b9", "%C2%BA": "\u00ba", "%C2%BB": "\u00bb", "%C2%BC": "\u00bc", "%C2%BD": "\u00bd", "%C2%BE": "\u00be", "%C2%BF": "\u00bf", "%C3%80": "\u00c0", "%C3%81": "\u00c1", "%C3%82": "\u00c2", "%C3%83": "\u00c3", "%C3%84": "\u00c4", "%C3%85": "\u00c5", "%C3%86": "\u00c6", "%C3%87": "\u00c7", "%C3%88": "\u00c8", "%C3%89": "\u00c9", "%C3%8A": "\u00ca", "%C3%8B": "\u00cb", "%C3%8C": "\u00cc", "%C3%8D": "\u00cd", "%C3%8E": "\u00ce", "%C3%8F": "\u00cf", "%C3%90": "\u00d0", "%C3%91": "\u00d1", "%C3%92": "\u00d2", "%C3%93": "\u00d3", "%C3%94": "\u00d4", "%C3%95": "\u00d5", "%C3%96": "\u00d6", "%C3%97": "\u00d7", "%C3%98": "\u00d8", "%C3%99": "\u00d9", "%C3%9A": "\u00da", "%C3%9B": "\u00db", "%C3%9C": "\u00dc", "%C3%9D": "\u00dd", "%C3%9E": "\u00de", "%C3%9F": "\u00df", "%C3%A0": "\u00e0", "%C3%A1": "\u00e1", "%C3%A2": "\u00e2", "%C3%A3": "\u00e3", "%C3%A4": "\u00e4", "%C3%A5": "\u00e5", "%C3%A6": "\u00e6", "%C3%A7": "\u00e7", "%C3%A8": "\u00e8", "%C3%A9": "\u00e9", "%C3%AA": "\u00ea", "%C3%AB": "\u00eb", "%C3%AC": "\u00ec", "%C3%AD": "\u00ed", "%C3%AE": "\u00ee", "%C3%AF": "\u00ef", "%C3%B0": "\u00f0", "%C3%B1": "\u00f1", "%C3%B2": "\u00f2", "%C3%B3": "\u00f3", "%C3%B4": "\u00f4", "%C3%B5": "\u00f5", "%C3%B6": "\u00f6", "%C3%B7": "\u00f7", "%C3%B8": "\u00f8", "%C3%B9": "\u00f9", "%C3%BA": "\u00fa", "%C3%BB": "\u00fb", "%C3%BC": "\u00fc", "%C3%BD": "\u00fd", "%C3%BE": "\u00fe", "%C3%BF": "\u00ff", 
+    url_decode = {"%C3A4":"�", "%20": " ", "%21": "!", "%22": "\"", "%23": "#", "%24": "$", "%25": "%", "%26": "&", "%27": "'", "%28": "(", "%29": ")", "%2A": "*", "%2B": "+", "%2C": ",", "%2D": "-", "%2E": ".", "%2F": "/", "%30": "0", "%31": "1", "%32": "2", "%33": "3", "%34": "4", "%35": "5", "%36": "6", "%37": "7", "%38": "8", "%39": "9", "%3A": ":", "%3B": ";", "%3C": "<", "%3D": "=", "%3E": ">", "%3F": "?", "%40": "@", "%41": "A", "%42": "B", "%43": "C", "%44": "D", "%45": "E", "%46": "F", "%47": "G", "%48": "H", "%49": "I", "%4A": "J", "%4B": "K", "%4C": "L", "%4D": "M", "%4E": "N", "%4F": "O", "%50": "P", "%51": "Q", "%52": "R", "%53": "S", "%54": "T", "%55": "U", "%56": "V", "%57": "W", "%58": "X", "%59": "Y", "%5A": "Z", "%5B": "[", "%5C": "\\", "%5D": "]", "%5E": "^", "%5F": "_", "%60": "`", "%61": "a", "%62": "b", "%63": "c", "%64": "d", "%65": "e", "%66": "f", "%67": "g", "%68": "h", "%69": "i", "%6A": "j", "%6B": "k", "%6C": "l", "%6D": "m", "%6E": "n", "%6F": "o", "%70": "p", "%71": "q", "%72": "r", "%73": "s", "%74": "t", "%75": "u", "%76": "v", "%77": "w", "%78": "x", "%79": "y", "%7A": "z", "%7B": "{", "%7C": "|", "%7D": "}", "%7E": "~", "%E2%82%AC": "\u20ac", "%E2%80%9A": "\u201a", "%C6%92": "\u0192", "%E2%80%9E": "\u201e", "%E2%80%A6": "\u2026", "%E2%80%A0": "\u2020", "%E2%80%A1": "\u2021", "%CB%86": "\u02c6", "%E2%80%B0": "\u2030", "%C5%A0": "\u0160", "%E2%80%B9": "\u2039", "%C5%92": "\u0152", "%C5%BD": "\u017d", "%E2%80%98": "\u2018", "%E2%80%99": "\u2019", "%E2%80%9C": "\u201c", "%E2%80%9D": "\u201d", "%E2%80%A2": "\u2022", "%E2%80%93": "\u2013", "%E2%80%94": "\u2014", "%CB%9C": "\u02dc", "%E2%84": "\u2122", "%C5%A1": "\u0161", "%E2%80": "\u203a", "%C5%93": "\u0153", "%C5%B8": "\u0178", "%C2%A1": "\u00a1", "%C2%A2": "\u00a2", "%C2%A3": "\u00a3", "%C2%A4": "\u00a4", "%C2%A5": "\u00a5", "%C2%A6": "\u00a6", "%C2%A7": "\u00a7", "%C2%A8": "\u00a8", "%C2%A9": "\u00a9", "%C2%AA": "\u00aa", "%C2%AB": "\u00ab", "%C2%AD": "\u00ac", "%C2%AE": "\u00ae", "%C2%AF": "\u00af", "%C2%B0": "\u00b0", "%C2%B1": "\u00b1", "%C2%B2": "\u00b2", "%C2%B3": "\u00b3", "%C2%B4": "\u00b4", "%C2%B5": "\u00b5", "%C2%B6": "\u00b6", "%C2%B7": "\u00b7", "%C2%B8": "\u00b8", "%C2%B9": "\u00b9", "%C2%BA": "\u00ba", "%C2%BB": "\u00bb", "%C2%BC": "\u00bc", "%C2%BD": "\u00bd", "%C2%BE": "\u00be", "%C2%BF": "\u00bf", "%C3%80": "\u00c0", "%C3%81": "\u00c1", "%C3%82": "\u00c2", "%C3%83": "\u00c3", "%C3%84": "\u00c4", "%C3%85": "\u00c5", "%C3%86": "\u00c6", "%C3%87": "\u00c7", "%C3%88": "\u00c8", "%C3%89": "\u00c9", "%C3%8A": "\u00ca", "%C3%8B": "\u00cb", "%C3%8C": "\u00cc", "%C3%8D": "\u00cd", "%C3%8E": "\u00ce", "%C3%8F": "\u00cf", "%C3%90": "\u00d0", "%C3%91": "\u00d1", "%C3%92": "\u00d2", "%C3%93": "\u00d3", "%C3%94": "\u00d4", "%C3%95": "\u00d5", "%C3%96": "\u00d6", "%C3%97": "\u00d7", "%C3%98": "\u00d8", "%C3%99": "\u00d9", "%C3%9A": "\u00da", "%C3%9B": "\u00db", "%C3%9C": "\u00dc", "%C3%9D": "\u00dd", "%C3%9E": "\u00de", "%C3%9F": "\u00df", "%C3%A0": "\u00e0", "%C3%A1": "\u00e1", "%C3%A2": "\u00e2", "%C3%A3": "\u00e3", "%C3%A4": "\u00e4", "%C3%A5": "\u00e5", "%C3%A6": "\u00e6", "%C3%A7": "\u00e7", "%C3%A8": "\u00e8", "%C3%A9": "\u00e9", "%C3%AA": "\u00ea", "%C3%AB": "\u00eb", "%C3%AC": "\u00ec", "%C3%AD": "\u00ed", "%C3%AE": "\u00ee", "%C3%AF": "\u00ef", "%C3%B0": "\u00f0", "%C3%B1": "\u00f1", "%C3%B2": "\u00f2", "%C3%B3": "\u00f3", "%C3%B4": "\u00f4", "%C3%B5": "\u00f5", "%C3%B6": "\u00f6", "%C3%B7": "\u00f7", "%C3%B8": "\u00f8", "%C3%B9": "\u00f9", "%C3%BA": "\u00fa", "%C3%BB": "\u00fb", "%C3%BC": "\u00fc", "%C3%BD": "\u00fd", "%C3%BE": "\u00fe", "%C3%BF": "\u00ff", 
 "%C4%8C":"\u010c",
 "%C4%86":"\u0106",
 "%C5%BD":"\u017d",
@@ -811,8 +813,180 @@ def url_decoder(url):
 "%C5%BE":"\u017e",
 "%C4%91":"\u0111",
 "%C5%A1":"\u0161",
-"%E2%82%BF":"₿"}
+"%E2%82%BF":"?"}
 
     for char in url_decode: url = url.replace(char, url_decode[char])
     return url
+
+
+####################################################
+# REPL
+####################################################
+import binascii
+
+@ampule.route('/repl', method='POST')
+def _repl(request):
+    try:
+        code = binascii.a2b_base64(request.body).decode()
+        import io, sys
+        buf = io.StringIO()
+        old = sys.stdout
+        sys.stdout = buf
+        try:
+            exec(code)
+        finally:
+            sys.stdout = old
+        out = binascii.b2a_base64(buf.getvalue().encode()).decode().strip()
+        return (200, {}, '{"ok":true,"output":"' + out + '"}')
+    except Exception as e:
+        out = binascii.b2a_base64(str(e).encode()).decode().strip()
+        return (200, {}, '{"ok":false,"output":"' + out + '"}')
+
+
+####################################################
+# AI AGENT PAGE
+####################################################
+
+def _ai_content():
+    from load_settings import settings as _s
+    _sets = _s()
+    _aip = _sets.get("ai_provider", "github")
+    _aik = _sets.get("ai_key", "")
+    _aim = _sets.get("ai_model", "openai/gpt-4o-mini")
+    def _sel(v): return ' selected' if _aip == v else ''
+    return f"""<div class="logo"><h1>&#x1F916; AI Agent</h1><p>Chat with AI to modify your MatrixBox</p></div>
+<div class="card" id="ai-chat">
+<div id="ai-log" style="max-height:50vh;overflow-y:auto;margin-bottom:12px;font-size:.88rem"></div>
+<textarea id="ai-input" rows="3" placeholder="Ask the AI to read, modify, or create files..."
+style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 13px;color:var(--text);font-size:.95rem;font-family:inherit;outline:none;resize:vertical"></textarea>
+<div style="display:flex;gap:8px;margin-top:8px">
+<button class="btn btn-full" id="ai-send" onclick="_aiSend()">&#x2728; Send</button>
+<button class="btn btn-sm btn-ghost" onclick="_aiClear()">Clear</button>
+<button class="btn btn-sm btn-ghost" onclick="_aiSync('refresh')" title="Download latest prompt from repo">&#x2B07; Pull</button>
+<button class="btn btn-sm btn-ghost" onclick="_aiSync('push')" title="Upload prompt to repo (owner only)">&#x2B06; Push</button>
+</div>
+</div>
+<div class="card" style="margin-top:12px"><div class="section-title">AI Settings</div>
+<label>Provider</label>
+<select id="ai_prov" onchange="_aip2()">
+<option value="github"{_sel('github')}>GitHub Models</option>
+<option value="anthropic"{_sel('anthropic')}>Anthropic (Claude)</option>
+<option value="openai"{_sel('openai')}>OpenAI</option>
+<option value="gemini"{_sel('gemini')}>Google Gemini</option>
+<option value="openrouter"{_sel('openrouter')}>OpenRouter</option>
+</select>
+<label>API Key</label>
+<input type="password" id="ai_key" placeholder="Enter API key..." value="{_aik}">
+<label>Model</label>
+<select id="ai_model"></select>
+<button class="btn btn-full" style="margin-top:8px" onclick="_aisave()">Save AI Settings</button>
+</div>
+<script>
+var _aiLog=document.getElementById('ai-log');
+var _aiIn=document.getElementById('ai-input');
+function _aiMsg(role,text){{
+var d=document.createElement('div');
+d.style.cssText='padding:8px 10px;margin:4px 0;border-radius:8px;white-space:pre-wrap;word-break:break-word;';
+if(role==='user'){{d.style.background='var(--surface3)';d.style.borderLeft='3px solid var(--accent)';}}
+else if(role==='error'){{d.style.background='var(--surface2)';d.style.borderLeft='3px solid #ff4444';d.style.color='#ff7070';}}
+else if(role==='tool'){{d.style.background='var(--surface)';d.style.borderLeft='3px solid var(--accent2)';d.style.fontSize='.8rem';d.style.color='var(--muted)';}}
+else{{d.style.background='var(--surface2)';d.style.borderLeft='3px solid var(--accent2)';}}
+d.textContent=text;_aiLog.appendChild(d);_aiLog.scrollTop=_aiLog.scrollHeight;}}
+function _aiSend(){{
+var msg=_aiIn.value.trim();if(!msg)return;
+_aiMsg('user',msg);_aiIn.value='';
+var btn=document.getElementById('ai-send');btn.disabled=true;btn.textContent='Thinking...';
+fetch('/ai/chat',{{method:'POST',body:msg}}).then(function(r){{return r.json()}}).then(function(d){{
+if(d.results&&d.results.length){{
+d.results.forEach(function(r){{
+var s=r.tool+(r.path?' '+r.path:'')+(r.ok?' OK':' FAILED');
+if(r.error)s+=' - '+r.error;
+if(r.entries){{s+='\\n';r.entries.forEach(function(e){{if(typeof e==='object')s+=e.name+(e.size!=null?' ('+e.size+'b)':'')+' ';else s+=e+' '}});}}
+if(r.total!=null)s+='\\nTotal: '+(r.total/1024).toFixed(1)+'KB, Used: '+(r.used/1024).toFixed(1)+'KB, Free: '+(r.free/1024).toFixed(1)+'KB';
+if(r.output)s+='\\n'+r.output;
+if(r.content)s+='\\n'+r.content.substring(0,500);
+_aiMsg('tool',s);
+}});}}
+if(d.reply)_aiMsg('assistant',d.reply);
+else if(d.error)_aiMsg('error',d.error);
+}}).catch(function(e){{_aiMsg('error','Connection error: '+e.message);
+}}).finally(function(){{btn.disabled=false;btn.innerHTML='&#x2728; Send';}});
+}}
+function _aiClear(){{
+if(!confirm('Clear conversation history?'))return;
+fetch('/ai/clear',{{method:'POST'}}).then(function(){{_aiLog.innerHTML='';_aiMsg('assistant','History cleared. How can I help?');}});
+}}
+function _aiSync(action){{
+var btn=event.target;btn.disabled=true;var t=btn.textContent;btn.textContent='...';
+fetch('/ai/'+action+'-prompt',{{method:'POST'}}).then(function(r){{return r.json()}}).then(function(d){{
+_aiMsg(d.ok?'assistant':'error',(action==='push'?'Push':'Pull')+': '+d.result);
+}}).catch(function(e){{_aiMsg('error',e.message);}}).finally(function(){{btn.disabled=false;btn.textContent=t;}});
+}}
+var _aim2={{github:[['openai/gpt-4o-mini','GPT-4o Mini'],['openai/gpt-4o','GPT-4o'],['openai/gpt-4.1-nano','GPT-4.1 Nano'],['openai/gpt-4.1-mini','GPT-4.1 Mini'],['meta/Llama-4-Scout-17B-16E-Instruct','Llama 4 Scout']],anthropic:[['claude-sonnet-4-20250514','Claude Sonnet 4'],['claude-haiku-4-20250414','Claude Haiku 4']],openai:[['gpt-4o-mini','GPT-4o Mini'],['gpt-4o','GPT-4o']],gemini:[['gemini-2.0-flash','Gemini 2.0 Flash'],['gemini-2.5-flash','Gemini 2.5 Flash']],openrouter:[['google/gemini-2.0-flash-exp:free','Gemini Flash (Free)'],['meta-llama/llama-4-scout-17b-16e-instruct:free','Llama 4 Scout (Free)']]}};
+function _aip2(){{var p=document.getElementById('ai_prov').value,s=document.getElementById('ai_model');s.innerHTML='';_aim2[p].forEach(function(m){{var o=document.createElement('option');o.value=m[0];o.textContent=m[1];s.appendChild(o)}});var cur='{_aim}';s.querySelectorAll('option').forEach(function(o){{if(o.value==cur)o.selected=true}})}}
+_aip2();
+function _aisave(){{var b='ai_provider='+document.getElementById('ai_prov').value+'&ai_key='+encodeURIComponent(document.getElementById('ai_key').value)+'&ai_model='+encodeURIComponent(document.getElementById('ai_model').value);fetch('/',{{method:'POST',body:b,headers:{{'Content-Type':'application/x-www-form-urlencoded'}}}}).then(function(){{document.getElementById('ai_key').style.borderColor='var(--accent)';setTimeout(function(){{document.getElementById('ai_key').style.borderColor=''}},1500)}})}}
+_aiIn.addEventListener('keydown',function(e){{if(e.key==='Enter'&&!e.shiftKey){{e.preventDefault();_aiSend();}}}});
+fetch('/ai/history').then(function(r){{return r.json()}}).then(function(h){{
+if(h.length===0){{_aiMsg('assistant','Hello! I can read, write, and modify any file on your MatrixBox. What would you like to do?');return;}}
+h.forEach(function(m){{_aiMsg(m.role,m.content);}});
+}});
+</script>"""
+
+@ampule.route('/ai')
+def _ai_route(request):
+    return (200, {}, _shell(_ai_content(), "AI Agent", "/f/ai"))
+
+@ampule.route('/f/ai')
+def _f_ai(request):
+    return (200, {}, _ai_content())
+
+@ampule.route('/ai/chat', method='POST')
+def _ai_chat(request):
+    import ai_agent
+    import gc
+    gc.collect()
+    try:
+        provider = settings.get("ai_provider", "github")
+        key = settings.get("ai_key", "")
+        model = settings.get("ai_model", "openai/gpt-4o-mini")
+        result = ai_agent.chat(request.body, provider, key, model)
+        return (200, {}, json.dumps(result))
+    except Exception as e:
+        return (200, {}, json.dumps({"error": str(e)}))
+
+@ampule.route('/ai/history')
+def _ai_history(request):
+    try:
+        import ai_agent
+        return (200, {}, json.dumps(ai_agent._history))
+    except:
+        return (200, {}, "[]")
+
+@ampule.route('/ai/clear', method='POST')
+def _ai_clear(request):
+    try:
+        import ai_agent
+        ai_agent._history.clear()
+        import gc; gc.collect()
+    except: pass
+    return (200, {}, '{"ok":true}')
+
+@ampule.route('/ai/push-prompt', method='POST')
+def _ai_push(request):
+    try:
+        import ai_agent
+        r = ai_agent._push_prompt()
+        return (200, {}, json.dumps({"ok": True, "result": r}))
+    except Exception as e:
+        return (200, {}, json.dumps({"ok": False, "result": str(e)}))
+
+@ampule.route('/ai/refresh-prompt', method='POST')
+def _ai_refresh(request):
+    try:
+        import ai_agent
+        r = ai_agent._refresh_prompt()
+        return (200, {}, json.dumps({"ok": True, "result": r}))
+    except Exception as e:
+        return (200, {}, json.dumps({"ok": False, "result": str(e)}))
 

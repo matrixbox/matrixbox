@@ -12,7 +12,10 @@ def settings():
                 "tiles":1,
                 "repository_url":"https://raw.githubusercontent.com/matrixbox/matrixbox/refs/heads/main/", 
                 "repository_file":"repository.txt",
-                "wifi_power":16}
+                "wifi_power":16,
+                "ai_provider":"",
+                "ai_key":"",
+                "ai_model":""}
 
      try: #iteration
             defaults = set(settings)
