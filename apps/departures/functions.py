@@ -281,7 +281,7 @@ def disp_init():
     varinit.palette[7] = (0,20,0)    # grå
     varinit.display.root_group = varinit.group
     varinit.text = load_text()
-    if varinit.if_long > 128: varinit.palette[2] = (50,30,0)      # svart
+    #if varinit.if_long > 128: varinit.palette[2] = (50,30,0)      # svart
 
 
 def refresh(times = 2):
