@@ -109,7 +109,7 @@ display.root_group = group
 display.refresh()
 try: display.root_group.hidden = True
 except: pass
-top = displayio.Bitmap(280, 16, 10)
+top = displayio.Bitmap(max(280, if_long), 16, 10)
 bottom = displayio.Bitmap(1280, 16, 10)
 topbottom = displayio.Bitmap(max(200, if_long, if_tall), max(if_long, if_tall), 10)
 palette = displayio.Palette(10, dither=False)
