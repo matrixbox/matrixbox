@@ -1,8 +1,17 @@
 <div class="card">
 <div class="section-title">Text</div>
 <div style="display:flex;gap:8px">
-<input type="text" id="text" placeholder="Enter message…">
+<textarea id="text" rows="3" placeholder="Enter message… (line breaks add gaps)" style="flex:1;resize:vertical"></textarea>
 <button class="btn btn-sm" onclick="send()">&#9654; Send</button>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">Scroll Mode</div>
+<div class="seg" id="mode-seg">
+<button id="mode_h" class="on" onclick="pm('h')">&#8596; Horizontal</button>
+<button id="mode_v" onclick="pm('v')">&#8597; Vertical</button>
+<button id="mode_s" onclick="pm('s')">&#9632; Static</button>
 </div>
 </div>
 
@@ -47,7 +56,7 @@
 
 <div class="card">
 <div class="section-title">Direction</div>
-<div class="seg">
+<div class="seg" id="dir-seg">
 <button id="dir_rtl" class="on" onclick="pr(1)">&#8592; Right to Left</button>
 <button id="dir_ltr" onclick="pr(0)">Left to Right &#8594;</button>
 </div>
@@ -77,12 +86,12 @@
 
 <script>
 function p(q){fetch("/?"+q,{method:"POST"})}
-function send(){var t=document.getElementById("text").value;if(t)p("text="+encodeURIComponent(t))}
+function send(){var t=document.getElementById("text").value;if(t)p("text="+encodeURIComponent(t.replace(/\r?\n/g,"\\n")))}
 function pc(c){p("color="+c)}
 function psc(c){p("shadow_color="+c)}
 function pf(s){p("size="+s);document.querySelectorAll("#font-size-seg button").forEach(function(b){b.classList.toggle("on",b.id==="sz_"+s)})}
 function pr(v){p("reverse="+v);document.getElementById("dir_rtl").classList.toggle("on",v===1);document.getElementById("dir_ltr").classList.toggle("on",v===0)}
+function pm(m){p("mode="+m);document.querySelectorAll("#mode-seg button").forEach(function(b){b.classList.toggle("on",b.id==="mode_"+m)});var r=document.getElementById("dir_rtl"),l=document.getElementById("dir_ltr");if(m==="v"){r.innerHTML="&#8593; Bottom to Top";l.innerHTML="Top to Bottom &#8595;"}else{r.innerHTML="&#8592; Right to Left";l.innerHTML="Left to Right &#8594;"}}
 function pu(){var v=document.getElementById("url").value;if(v)fetch("/",{method:"POST",body:"url="+v})}
-document.getElementById("text").addEventListener("change",function(e){p("text="+encodeURIComponent(e.target.value))});
 document.getElementById("sz_large").classList.add("on");
 </script>
