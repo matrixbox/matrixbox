@@ -1,6 +1,7 @@
 import sys, json, time
 import displayio
 import bitmaptools
+import gc
 import wifi
 
 import load_screen
@@ -10,7 +11,7 @@ exit = False
 padding_length = 20
 default_offset = 0
 default_scale = 1
-scroll = 1
+scroll_mode = "h"  # "h" horizontal, "v" vertical, "s" static
 btc = 0
 currency = "usd"
 delay = 30
@@ -51,7 +52,9 @@ big_bitmap = None          # full text bitmap
 viewport_bitmap = None     # 128x32 window
 viewport_tg = None         # TileGrid for viewport
 scroller_width = 0         # width of big_bitmap
-scroll_x = 0               # current scroll offset
+scroller_height = 0        # height of big_bitmap (vertical mode)
+scroll_x = 0               # current horizontal scroll offset
+scroll_y = 0               # current vertical scroll offset
 
 DISPLAY_WIDTH = settings["width"]
 DISPLAY_HEIGHT = settings["height"]
@@ -66,30 +69,73 @@ def padded(text):
 
 def rebuild_scene():
     """Rebuild big bitmap, viewport, and display group based on current text/font/scale."""
-    global big_bitmap, viewport_bitmap, viewport_tg, scroller_width, scroll_x
+    global big_bitmap, viewport_bitmap, viewport_tg
+    global scroller_width, scroller_height, scroll_x, scroll_y
 
-    text = padded(scroller_text)
     font = load_screen.currentfont
+    lines = scroller_text.replace("\r", "").split("\n")
 
-    scroller_width = strlen(text, font)
-    if scroller_width < 1:
-        scroller_width = 1
+    if scroll_mode == "v":
+        # --- Vertical: stack lines in a tall bitmap ---
+        line_h = DISPLAY_HEIGHT
+        n = len(lines)
+        total_h = (n + 2) * line_h
+        scroller_height = total_h
 
-    # Full text bitmap
-    big_bitmap = displayio.Bitmap(scroller_width, DISPLAY_HEIGHT, PALETTE_SIZE)
+        big_bitmap = displayio.Bitmap(DISPLAY_WIDTH, total_h, PALETTE_SIZE)
 
-    # Render text once into big bitmap
-    pprint(
-        text,
-        line=0,
-        font=font,
-        color=load_screen.currentcolor,
-        _refresh=False,
-        window=big_bitmap,
-        block=True,     # <-- enable shadow
-        shadow_color=shadow_color  # <-- use red for shadow
-    )
+        for i, ln in enumerate(lines):
+            if not ln.strip():
+                continue
+            tmp = displayio.Bitmap(DISPLAY_WIDTH, DISPLAY_HEIGHT, PALETTE_SIZE)
+            pprint(
+                ln, line=0, font=font,
+                color=load_screen.currentcolor, _refresh=False,
+                window=tmp, block=True, shadow_color=shadow_color,
+            )
+            y_off = (i + 1) * line_h
+            bitmaptools.blit(
+                big_bitmap, tmp, 0, y_off,
+                x1=0, y1=0, x2=DISPLAY_WIDTH, y2=DISPLAY_HEIGHT,
+            )
 
+        gc.collect()
+        scroll_y = -DISPLAY_HEIGHT
+
+    elif scroll_mode == "s":
+        # --- Static: render text, no scroll ---
+        text = " ".join(lines) if len(lines) > 1 else lines[0]
+        scroller_width = strlen(text, font)
+        if scroller_width < 1:
+            scroller_width = 1
+
+        big_bitmap = displayio.Bitmap(scroller_width, DISPLAY_HEIGHT, PALETTE_SIZE)
+        pprint(
+            text, line=0, font=font,
+            color=load_screen.currentcolor, _refresh=False,
+            window=big_bitmap, block=True, shadow_color=shadow_color,
+        )
+        if scroller_width <= DISPLAY_WIDTH:
+            scroll_x = -(DISPLAY_WIDTH - scroller_width) // 2
+        else:
+            scroll_x = 0
+
+    else:
+        # --- Horizontal: join lines with gap, add padding ---
+        gap = " " * padding_length
+        text = padded(gap.join(lines))
+
+        scroller_width = strlen(text, font)
+        if scroller_width < 1:
+            scroller_width = 1
+
+        big_bitmap = displayio.Bitmap(scroller_width, DISPLAY_HEIGHT, PALETTE_SIZE)
+        pprint(
+            text, line=0, font=font,
+            color=load_screen.currentcolor, _refresh=False,
+            window=big_bitmap, block=True, shadow_color=shadow_color,
+        )
+        scroll_x = DISPLAY_WIDTH
 
     # Viewport bitmap (fixed display size)
     viewport_bitmap = displayio.Bitmap(DISPLAY_WIDTH, DISPLAY_HEIGHT, PALETTE_SIZE)
@@ -107,35 +153,38 @@ def rebuild_scene():
     group.append(viewport_tg)
     display.root_group = group
 
-    # Reset scroll position
-    scroll_x = DISPLAY_WIDTH  # start off-screen to the right
-
 def blit_viewport():
-    """Copy the visible slice from big_bitmap into viewport_bitmap based on scroll_x."""
+    """Copy the visible slice from big_bitmap into viewport_bitmap."""
     if big_bitmap is None or viewport_bitmap is None:
         return
 
-    global scroll_x
-    src_start = max(scroll_x, 0)
-    src_end = min(scroll_x + DISPLAY_WIDTH, scroller_width)
+    viewport_bitmap.fill(0)
 
-    #if src_end <= src_start: return  # no overlap, nothing to draw
-
-    width = src_end - src_start
-    if width <= 0: return
-
-    dst_x = max(0, -scroll_x)
-
-    bitmaptools.blit(
-        viewport_bitmap,
-        big_bitmap,
-        dst_x,
-        0,
-        x1=src_start,
-        y1=0,
-        x2=src_start + width,
-        y2=DISPLAY_HEIGHT,
-    )
+    if scroll_mode == "v":
+        src_y0 = max(scroll_y, 0)
+        src_y1 = min(scroll_y + DISPLAY_HEIGHT, scroller_height)
+        h = src_y1 - src_y0
+        if h <= 0:
+            return
+        dst_y = max(0, -scroll_y)
+        w = min(DISPLAY_WIDTH, big_bitmap.width)
+        bitmaptools.blit(
+            viewport_bitmap, big_bitmap,
+            0, dst_y,
+            x1=0, y1=src_y0, x2=w, y2=src_y0 + h,
+        )
+    else:
+        src_x0 = max(scroll_x, 0)
+        src_x1 = min(scroll_x + DISPLAY_WIDTH, scroller_width)
+        w = src_x1 - src_x0
+        if w <= 0:
+            return
+        dst_x = max(0, -scroll_x)
+        bitmaptools.blit(
+            viewport_bitmap, big_bitmap,
+            dst_x, 0,
+            x1=src_x0, y1=0, x2=src_x0 + w, y2=DISPLAY_HEIGHT,
+        )
 
 # ---------------------------------------------------------
 #  WEB ROUTES
@@ -150,21 +199,28 @@ def web_exit(request):
 @ampule.route("/", method="POST")
 def scroller_post(request):
     global scroller_text, exit, default_offset, default_scale, shadow_color
-    global btc, scroll, padding_length, scroll_x, reverse_direction
+    global btc, scroll_mode, padding_length, scroll_x, scroll_y, reverse_direction
 
     if "btc" in request.params:
         btc = 1 - btc
 
+    if "mode" in request.params:
+        m = request.params["mode"]
+        if m in ("h", "v", "s"):
+            scroll_mode = m
+            rebuild_scene()
+        return (200, {}, "OK")
+
     if "scroll" in request.params:
-        scroll = 1 - scroll
-        if scroll:
-            scroll_x = DISPLAY_WIDTH
+        if scroll_mode == "s":
+            scroll_mode = "h"
         else:
-            scroll_x = strlen(" " * padding_length, load_screen.currentfont)
+            scroll_mode = "s"
+        rebuild_scene()
         return (200, {}, "OK")
 
     if "text" in request.params:
-        scroller_text = padded(url_decoder(request.params["text"]))
+        scroller_text = url_decoder(request.params["text"]).replace("\\n", "\n").replace("\r", "")
     if "reverse" in request.params:
         try:
             reverse_direction = int(request.params["reverse"])
@@ -189,7 +245,7 @@ def scroller_post(request):
 
     if "scale" in request.params:
         default_scale = int(request.params["scale"])
-    
+
     if "shadow_color" in request.params:
         name = request.params["shadow_color"]
         if name in shadow_color_map:
@@ -241,24 +297,33 @@ rebuild_scene()
 while not exit:
     ampule.listen(socket)
 
-    if scroll:
+    if scroll_mode == "h":
         if reverse_direction == 0:
             scroll_x -= 1
             if scroll_x <= -scroller_width: scroll_x = DISPLAY_WIDTH + scroller_width
-        else: # L
+        else:
             scroll_x += 1
             if scroll_x >= DISPLAY_WIDTH + scroller_width: scroll_x = -scroller_width
-
-
+    elif scroll_mode == "v":
+        if reverse_direction == 1:
+            scroll_y += 1
+            if scroll_y >= scroller_height: scroll_y = -DISPLAY_HEIGHT
+        else:
+            scroll_y -= 1
+            if scroll_y <= -DISPLAY_HEIGHT: scroll_y = scroller_height
 
     blit_viewport()
     refresh()
 
     b = check_if_button_pressed()
     if b == 1:
-        scroll = 1 - scroll
-        if scroll:
-            scroll_x = DISPLAY_WIDTH
+        if scroll_mode == "h":
+            scroll_mode = "v"
+        elif scroll_mode == "v":
+            scroll_mode = "s"
+        else:
+            scroll_mode = "h"
+        rebuild_scene()
     if b == 2:
         sys.exit()
 
