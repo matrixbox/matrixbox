@@ -20,7 +20,7 @@ country_and_operators = {
   "cz":[["pr","Prague (PID)"]],
   "it":[["ro","Rome"]],
   "pt":[["carris","Carris"]],
-  "pl":[["wa","Warsaw"],["pkp","PKP"],["kr","Krakow"],["plk","PLK"]],
+  "pl":[["wa","Warsaw"],["pkp","PKP"],["kr","Krakow"],["wa_tram","Warszawa Tram"],["plk","PLK"]],
   "at":[["wl","Vienna"]],
   "es":[["barcelona","Barcelona (AMB)"]],
   "de":[["db_trains","DB-trains (Deutsche Bahn)"],["be","Berlin (Unofficial API)"],["vbb","VBB/BVG (Berlin-Brandenburg)"],["vrr","VRR (Rhein-Ruhr)"],["kvv","KVV (Karlsruhe)"],["rmv","RMV (Frankfurt)"],["hochbahn","HVV (Hamburg etc.)"],["vrn","VRN (Rhein-Neckar)"],["vbn","VBN (Bremen-Niedersachsen)"],["vvo","VVO (Dresden)"]]
