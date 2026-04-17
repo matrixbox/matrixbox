@@ -917,6 +917,8 @@ var msg=_aiIn.value.trim();if(!msg)return;
 _aiMsg('user',msg);_aiIn.value='';
 var btn=document.getElementById('ai-send');btn.disabled=true;btn.textContent='Thinking...';
 fetch('/ai/chat',{{method:'POST',body:msg}}).then(function(r){{return r.json()}}).then(function(d){{
+if(d.reply)_aiMsg('assistant',d.reply);
+else if(d.error)_aiMsg('error',d.error);
 if(d.results&&d.results.length){{
 d.results.forEach(function(r){{
 var s=r.tool+(r.path?' '+r.path:'')+(r.ok?' OK':' FAILED');
@@ -927,8 +929,6 @@ if(r.output)s+='\\n'+r.output;
 if(r.content)s+='\\n'+r.content.substring(0,500);
 _aiMsg('tool',s);
 }});}}
-if(d.reply)_aiMsg('assistant',d.reply);
-else if(d.error)_aiMsg('error',d.error);
 }}).catch(function(e){{_aiMsg('error','Connection error: '+e.message);
 }}).finally(function(){{btn.disabled=false;btn.innerHTML='&#x2728; Send';}});
 }}
