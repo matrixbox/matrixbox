@@ -389,12 +389,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .nav-spacer{flex:1}
 .nav-info{color:var(--muted);font-size:.68rem;letter-spacing:.2px;text-align:right;line-height:1.4}
 .nav-info span{display:block}
-.sig{display:inline-flex;align-items:flex-end;gap:2px;height:14px;vertical-align:middle;margin-left:5px}
-.sig i{display:block;width:3.5px;background:rgba(112,112,160,.35);border-radius:1px}
-.sig i:nth-child(1){height:3px}
-.sig i:nth-child(2){height:6px}
-.sig i:nth-child(3){height:10px}
-.sig i:nth-child(4){height:14px}
+.sig{display:flex;align-items:center;gap:2px;margin:0 6px}
+.sig i{display:block;width:5px;height:5px;background:rgba(112,112,160,.3);border-radius:1px}
 .sig i.on{background:#00c853}
 .nav-x{color:var(--muted);font-size:1rem;font-weight:700;text-decoration:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);transition:color .15s,border-color .15s,background .15s;margin-left:4px}
 .nav-x:hover{color:#ff6060;border-color:rgba(255,96,96,.4);background:rgba(255,96,96,.08)}
@@ -468,8 +464,8 @@ def _rssi():
         return -100
 
 def _sig_bars(rssi):
-    n = 4 if rssi > -50 else 3 if rssi > -60 else 2 if rssi > -70 else 1 if rssi > -80 else 0
-    bars = ''.join(f'<i class="{"on" if i < n else ""}"></i>' for i in range(4))
+    n = 5 if rssi > -45 else 4 if rssi > -55 else 3 if rssi > -65 else 2 if rssi > -75 else 1 if rssi > -85 else 0
+    bars = ''.join(f'<i class="{"on" if i < n else ""}"></i>' for i in range(5))
     return f'<span class="sig" id="sig" title="{rssi} dBm">{bars}</span>'
 
 def navbar():
@@ -484,12 +480,13 @@ def navbar():
 <a class="nav-link" href="/download" onclick="nav('/f/download');return false">Store</a>
 <a class="nav-link" href="/settings" onclick="nav('/f/settings');return false">Settings</a>
 <div class="nav-spacer"></div>
-<div class="nav-info"><span id="clk"></span><span>{ip} {_sig_bars(rssi)}</span></div>
+<div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
+{_sig_bars(rssi)}
 <button class="nav-led{' led-off' if _led_off else ''}" id="ledbtn" onclick="fetch('/led',{{method:'POST'}}).then(function(r){{return r.json()}}).then(function(j){{var b=document.getElementById('ledbtn');if(j.off){{b.classList.add('led-off')}}else{{b.classList.remove('led-off')}}}})" title="Toggle LED">&#x1F4A1;</button>
 <button class="nav-x{_reboot_cls}" onclick="if(confirm('Restart?'))fetch('/reset',{{method:'POST'}})" title="Restart">&#x2715;</button>
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);
-function _rs(){{fetch('/f/rssi').then(function(r){{return r.text()}}).then(function(v){{var s=document.getElementById('sig');if(!s)return;var r=parseInt(v),n=r>-50?4:r>-60?3:r>-70?2:r>-80?1:0;s.title=r+' dBm';var b=s.querySelectorAll('i');for(var i=0;i<b.length;i++){{if(i<n)b[i].classList.add('on');else b[i].classList.remove('on');}}}}).catch(function(){{}});}}_rs();setInterval(_rs,30000);</script>"""
+function _rs(){{fetch('/f/rssi').then(function(r){{return r.text()}}).then(function(v){{var s=document.getElementById('sig');if(!s)return;var r=parseInt(v),n=r>-45?5:r>-55?4:r>-65?3:r>-75?2:r>-85?1:0;s.title=r+' dBm';var b=s.querySelectorAll('i');for(var i=0;i<b.length;i++){{if(i<n)b[i].classList.add('on');else b[i].classList.remove('on');}}}}).catch(function(){{}});}}_rs();setInterval(_rs,30000);</script>"""
 
 def app_navbar(title):
     ip = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
@@ -498,12 +495,13 @@ def app_navbar(title):
 <a class="nav-x" href="/exit" title="Exit" style="margin-left:0;margin-right:4px">&#8592;</a>
 <span class="nav-title">{title}</span>
 <div class="nav-spacer"></div>
-<div class="nav-info"><span id="clk"></span><span>{ip} {_sig_bars(rssi)}</span></div>
+<div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
+{_sig_bars(rssi)}
 <button class="nav-led{' led-off' if _led_off else ''}" id="ledbtn" onclick="fetch('/led',{{method:'POST'}}).then(function(r){{return r.json()}}).then(function(j){{var b=document.getElementById('ledbtn');if(j.off){{b.classList.add('led-off')}}else{{b.classList.remove('led-off')}}}})" title="Toggle LED">&#x1F4A1;</button>
 <a class="nav-x" href="/exit" title="Exit">&#x2715;</a>
 </nav>
 <script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);
-function _rs(){{fetch('/f/rssi').then(function(r){{return r.text()}}).then(function(v){{var s=document.getElementById('sig');if(!s)return;var r=parseInt(v),n=r>-50?4:r>-60?3:r>-70?2:r>-80?1:0;s.title=r+' dBm';var b=s.querySelectorAll('i');for(var i=0;i<b.length;i++){{if(i<n)b[i].classList.add('on');else b[i].classList.remove('on');}}}}).catch(function(){{}});}}_rs();setInterval(_rs,30000);</script>"""
+function _rs(){{fetch('/f/rssi').then(function(r){{return r.text()}}).then(function(v){{var s=document.getElementById('sig');if(!s)return;var r=parseInt(v),n=r>-45?5:r>-55?4:r>-65?3:r>-75?2:r>-85?1:0;s.title=r+' dBm';var b=s.querySelectorAll('i');for(var i=0;i<b.length;i++){{if(i<n)b[i].classList.add('on');else b[i].classList.remove('on');}}}}).catch(function(){{}});}}_rs();setInterval(_rs,30000);</script>"""
 
 def header(title="Settings", app=False):
     nav = app_navbar(title) if app else navbar()
