@@ -351,7 +351,20 @@ def _parse_response(text):
         parsed = json.loads(clean)
         return parsed.get("reply", ""), parsed.get("tools", [])
     except:
-        return text, []
+        # Try to extract JSON object from mixed text
+        start = text.find("{")
+        end = text.rfind("}")
+        if start >= 0 and end > start:
+            try:
+                parsed = json.loads(text[start:end+1])
+                return parsed.get("reply", ""), parsed.get("tools", [])
+            except:
+                pass
+        # Return plain text as reply (don't dump raw JSON to user)
+        clean = text.strip()
+        if clean.startswith("{") and clean.endswith("}"):
+            clean = "(AI returned malformed JSON — try rephrasing your request)"
+        return clean, []
 
 def _result_summary(r):
     """Build a concise summary of a single tool result."""
