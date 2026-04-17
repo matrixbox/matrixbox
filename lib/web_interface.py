@@ -7,9 +7,9 @@ import __main__
 #print(dir(__main__))
 exitbutton = """<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#08080f;color:#eeeef5;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;margin:0}a.xbtn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;background:linear-gradient(135deg,#e03c3c,#ff6060);color:#fff;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 2px 14px rgba(224,60,60,.35)}.lbl{color:#7070a0;font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px}</style></head><body><p class="lbl">App Running</p><a class="xbtn" href="/exit">&#x2715; Exit App</a>"""
 backbutton = """<a class="back-btn" href="../">&#8592; Back</a>"""
-bootloaderbutton = """<button class="btn btn-danger" onclick="if(confirm('Enter bootloader mode?'))fetch('/bootloader',{method:'POST'})">&#x26A1; Bootloader</button>"""
+bootloaderbutton = """"""
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
-unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {method: 'POST'})">&#x1F513; Unlock</button>"""
+unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {method: 'POST'})">&#x1F513; Unlock disk</button>"""
 
 # -- LED on/off toggle ---------------------------------------------------------
 _led_off = False
@@ -70,9 +70,11 @@ def textbox(settings):
         "width": {"min": 64, "max": 640, "step": 64},
         "height": {"min": 32, "max": 320, "step": 32},
     }
-    hidden_keys = {"ai_provider", "ai_key", "ai_model"}
+    hidden_keys = {"ai_provider", "ai_key", "ai_model", "repository_file"}
     advanced_keys = {"width", "height", "tiles", "repository_url"}
     advanced_order = ["width", "height", "tiles", "repository_url"]
+    wifi_group = {}
+    app_group = []
     main_html = ""
     adv_items = {}
     settings_html = """<form onsubmit="sav(event)">"""
@@ -133,9 +135,20 @@ def textbox(settings):
 <input type="text" id="{setting}" name="{setting}" placeholder="{str(val)}">"""
         if is_adv:
             adv_items[setting] = chunk
+        elif setting in ("ssid", "password"):
+            wifi_group[setting] = chunk
+        elif setting in ("autostart", "screensaver"):
+            app_group.append(chunk)
         else:
             main_html += chunk
-    settings_html += main_html
+    wifi_html = ""
+    if wifi_group:
+        ordered = "".join(wifi_group.get(k, "") for k in ["ssid", "password"])
+        wifi_html = '<div class="section-title" style="margin-top:12px">Wi-Fi</div>' + ordered
+    app_html = ""
+    if app_group:
+        app_html = '<div class="section-title" style="margin-top:12px">App Behavior</div>' + "".join(app_group)
+    settings_html += wifi_html + main_html + app_html
     adv_html = "".join(adv_items[k] for k in advanced_order if k in adv_items)
     if adv_html:
         settings_html += """<div style="margin-top:12px"><button type="button" class="btn btn-sm" onclick="var a=document.getElementById('adv_section');a.style.display=a.style.display==='none'?'block':'none'">&#9881; Advanced</button></div><div id="adv_section" style="display:none">""" + adv_html + """</div>"""
@@ -989,3 +1002,4 @@ def _ai_refresh(request):
         return (200, {}, json.dumps({"ok": True, "result": r}))
     except Exception as e:
         return (200, {}, json.dumps({"ok": False, "result": str(e)}))
+
