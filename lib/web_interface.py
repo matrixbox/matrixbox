@@ -7,9 +7,9 @@ import __main__
 #print(dir(__main__))
 exitbutton = """<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#08080f;color:#eeeef5;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;margin:0}a.xbtn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;background:linear-gradient(135deg,#e03c3c,#ff6060);color:#fff;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 2px 14px rgba(224,60,60,.35)}.lbl{color:#7070a0;font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px}</style></head><body><p class="lbl">App Running</p><a class="xbtn" href="/exit">&#x2715; Exit App</a>"""
 backbutton = """<a class="back-btn" href="../">&#8592; Back</a>"""
-bootloaderbutton = """"""
+bootloaderbutton = """<button class="btn btn-danger" onclick="if(confirm('Enter bootloader mode?'))fetch('/bootloader',{method:'POST'})">&#x26A1; Bootloader</button>"""
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
-unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {method: 'POST'})">&#x1F513; Unlock disk</button>"""
+unlock = """<button class="btn btn-warning" onclick="fetch('/?unlock=true', {method: 'POST'})">&#x1F513; Unlock</button>"""
 
 # -- LED on/off toggle ---------------------------------------------------------
 _led_off = False
@@ -841,15 +841,16 @@ import binascii
 def _repl(request):
     try:
         code = binascii.a2b_base64(request.body).decode()
-        import io, sys
-        buf = io.StringIO()
-        old = sys.stdout
-        sys.stdout = buf
-        try:
-            exec(code)
-        finally:
-            sys.stdout = old
-        out = binascii.b2a_base64(buf.getvalue().encode()).decode().strip()
+        _repl_buf = []
+        def _repl_print(*args, **kwargs):
+            end = kwargs.get("end", "\n")
+            sep = kwargs.get("sep", " ")
+            _repl_buf.append(sep.join(str(a) for a in args) + end)
+        ns = {"print": _repl_print}
+        ns.update(globals())
+        ns["print"] = _repl_print
+        exec(code, ns)
+        out = binascii.b2a_base64("".join(_repl_buf).encode()).decode().strip()
         return (200, {}, '{"ok":true,"output":"' + out + '"}')
     except Exception as e:
         out = binascii.b2a_base64(str(e).encode()).decode().strip()
