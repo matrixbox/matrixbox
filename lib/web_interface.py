@@ -344,7 +344,7 @@ def list_available_apps(apps):
         sys_ver += ' &#x2192; v' + sys_r
         sys_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="installsystem(event)">&#x21BB; Update</button>'
     else:
-        sys_btn = '<button class="btn btn-sm btn-warning" onclick="installsystem(event)">&#x21BB; Update</button>'
+        sys_btn = '<button class="btn btn-sm btn-warning" onclick="installsystem(event)">&#x21BB; Reinstall</button>'
     applist = '<div class="download-item"><div><span class="download-name">&#x1F4E6; System</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">' + sys_ver + '</div></div>' + sys_btn + """\n    <script>function _busyWait(url,btn){
     var old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></span>';
     var w=document.createElement('div');w.className='busy-warn';w.textContent='\u26A0 Writing to disk \u2014 do not turn off!';document.body.appendChild(w);
@@ -362,7 +362,7 @@ def list_available_apps(apps):
                 ver_info += ' &#x2192; v' + r_ver
                 upd_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="install'+dir+'(event)">&#x21BB; Update</button>'
             else:
-                upd_btn = '<button class="btn btn-sm btn-warning" onclick="install'+dir+'(event)">&#x21BB; Update</button>'
+                upd_btn = '<button class="btn btn-sm btn-warning" onclick="install'+dir+'(event)">&#x21BB; Reinstall</button>'
             applist += f'<div class="download-item"><div><span class="download-name">&#x2713; {dir}</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">{ver_info}</div></div><div style="display:flex;gap:6px">' + upd_btn + """<button class="btn btn-sm" style="background:#ff4b4b;color:#fff;padding:7px 9px" onclick="if(confirm('Delete """+dir+"""?'))del"""+dir+"""(event)">&#x2715;</button>
 <script>function install"""+dir+"""(e){_busyWait("/?install="""+dir+"""",e.currentTarget)}
 function del"""+dir+"""(e){_busyWait("/?delete="""+dir+"""",e.currentTarget)}</script></div></div>"""
@@ -764,7 +764,9 @@ def _download_content():
     free = _fmt_size(_free_space())
     return """<div class="logo"><h1>App Store</h1><p>Install or update apps</p></div>
 <div class="card" style="text-align:center;padding:12px"><span style="font-size:.8rem;color:var(--muted)">Available space: </span><span style="font-size:.9rem;font-weight:700;color:var(--accent2)">""" + free + """</span></div>
-<div class="card"><div class="section-title">Available</div>""" + str(list_available_apps(get_updates())) + """</div>"""
+<div class="card"><div class="section-title">Available</div><div id="store-list"><div style="padding:20px 0"><div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:30%;background:var(--accent);border-radius:4px;animation:bar 1.2s ease-in-out infinite"></div></div><p style="text-align:center;color:var(--muted);font-size:.8rem;margin-top:8px">Checking for updates...</p></div></div></div>
+<style>@keyframes bar{0%{width:10%;margin-left:0}50%{width:40%;margin-left:30%}100%{width:10%;margin-left:90%}}</style>
+<script>fetch('/f/download/apps').then(function(r){return r.text()}).then(function(h){var el=document.getElementById('store-list');if(el){el.innerHTML=h;var c=el.closest('.page')||el.parentElement;var sc=el.querySelectorAll('script');for(var i=0;i<sc.length;i++){var n=document.createElement('script');n.textContent=sc[i].textContent;document.head.appendChild(n)}}}).catch(function(){var el=document.getElementById('store-list');if(el)el.innerHTML='<p style="color:#ff6060;text-align:center;padding:20px">Failed to check for updates</p>'})</script>"""
 
 @ampule.route('/download')
 def download(request):
@@ -781,6 +783,10 @@ def _f_settings(request):
 @ampule.route("/f/download")
 def _f_download(request):
     return (200, {}, _download_content())
+
+@ampule.route("/f/download/apps")
+def _f_download_apps(request):
+    return (200, {}, str(list_available_apps(get_updates())))
 
 
 ####################################################
