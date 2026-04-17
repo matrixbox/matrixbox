@@ -389,13 +389,13 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .nav-spacer{flex:1}
 .nav-info{color:var(--muted);font-size:.68rem;letter-spacing:.2px;text-align:right;line-height:1.4}
 .nav-info span{display:block}
-.sig{display:inline-flex;align-items:flex-end;gap:1.5px;height:12px;vertical-align:middle;margin-left:4px}
-.sig i{display:block;width:3px;background:var(--border);border-radius:1px}
+.sig{display:inline-flex;align-items:flex-end;gap:2px;height:14px;vertical-align:middle;margin-left:5px}
+.sig i{display:block;width:3.5px;background:rgba(112,112,160,.35);border-radius:1px}
 .sig i:nth-child(1){height:3px}
-.sig i:nth-child(2){height:5px}
-.sig i:nth-child(3){height:8px}
-.sig i:nth-child(4){height:12px}
-.sig i.on{background:var(--accent2)}
+.sig i:nth-child(2){height:6px}
+.sig i:nth-child(3){height:10px}
+.sig i:nth-child(4){height:14px}
+.sig i.on{background:#00c853}
 .nav-x{color:var(--muted);font-size:1rem;font-weight:700;text-decoration:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);transition:color .15s,border-color .15s,background .15s;margin-left:4px}
 .nav-x:hover{color:#ff6060;border-color:rgba(255,96,96,.4);background:rgba(255,96,96,.08)}
 .nav-led{color:var(--muted);font-size:.85rem;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);transition:color .15s,border-color .15s,background .15s;margin-left:4px;cursor:pointer;background:none}
