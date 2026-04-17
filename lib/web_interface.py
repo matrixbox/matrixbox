@@ -989,4 +989,3 @@ def _ai_refresh(request):
         return (200, {}, json.dumps({"ok": True, "result": r}))
     except Exception as e:
         return (200, {}, json.dumps({"ok": False, "result": str(e)}))
-
