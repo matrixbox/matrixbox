@@ -88,6 +88,23 @@ requests.get(url, headers={...}) / requests.post(url, json={...}, headers={...})
 resp.text, resp.json(), resp.status_code, resp.close()
 ALWAYS call resp.close() and gc.collect() after requests.
 
+
+== REMOTE ACCESS ==
+POST /repl — Hidden endpoint for remote code execution when USB disk is unavailable.
+  Protocol: POST base64-encoded Python code. Response: {"ok": bool, "output": "base64-encoded stdout"}
+  Example (from a PC):
+    import requests, base64, json
+    code = base64.b64encode(b'import os; print(os.listdir("/"))').decode()
+    r = requests.post("http://<device-ip>/repl", data=code)
+    d = json.loads(r.text)
+    print(base64.b64decode(d["output"]).decode())
+  Note: print() output is captured. The exec namespace has full access to device globals.
+
+Serial console: Connect via USB serial (default baud 115200).
+  Press Ctrl+C 2-3 times to interrupt the running program and drop into the CircuitPython REPL.
+  Ctrl+A enters raw REPL mode (for programmatic use). Ctrl+D executes/soft-reboots.
+  The serial interface is always available even if WiFi or the web server is down.
+
 == TOOLS ==
 Respond with JSON: {"reply": "message", "tools": [tool_calls]}
 Each tool: {"tool": "name", "args": {...}}
