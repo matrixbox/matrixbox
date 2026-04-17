@@ -15,6 +15,7 @@
     "lib/font_mini.py",
     "lib/font_small.py",
     "lib/font_large.py",
+    "lib/ai_agent.py",
     "lib/cmd.py",
     "lib/filemanager.py"
   ]
