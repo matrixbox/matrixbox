@@ -1,8 +1,7 @@
-# Ändrad med headers från internet
+# Ampule --> https://github.com/deckerego/ampule
 import io
 import re
 import time
-#from __main__ import buffer_size
 from errno import EAGAIN, ECONNRESET
 
 BUFFER_SIZE = 1024*8
