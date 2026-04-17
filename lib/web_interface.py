@@ -288,7 +288,7 @@ def get_updates(force=False):
     try:
         owner, repo = _repo_api_base()
         url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/main?recursive=1"
-        resp = requests.get(url, headers={"User-Agent": "MatrixBox"})
+        resp = requests.get(url, headers={"User-Agent": "MatrixBox"}, timeout=10)
         tree = json.loads(resp.text)["tree"]
         resp.close()
         apps = {}
@@ -389,6 +389,13 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .nav-spacer{flex:1}
 .nav-info{color:var(--muted);font-size:.68rem;letter-spacing:.2px;text-align:right;line-height:1.4}
 .nav-info span{display:block}
+.sig{display:inline-flex;align-items:flex-end;gap:1.5px;height:12px;vertical-align:middle;margin-left:4px}
+.sig i{display:block;width:3px;background:var(--border);border-radius:1px}
+.sig i:nth-child(1){height:3px}
+.sig i:nth-child(2){height:5px}
+.sig i:nth-child(3){height:8px}
+.sig i:nth-child(4){height:12px}
+.sig i.on{background:var(--accent2)}
 .nav-x{color:var(--muted);font-size:1rem;font-weight:700;text-decoration:none;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);transition:color .15s,border-color .15s,background .15s;margin-left:4px}
 .nav-x:hover{color:#ff6060;border-color:rgba(255,96,96,.4);background:rgba(255,96,96,.08)}
 .nav-led{color:var(--muted);font-size:.85rem;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);transition:color .15s,border-color .15s,background .15s;margin-left:4px;cursor:pointer;background:none}
@@ -453,8 +460,21 @@ input[type="color"]::-webkit-color-swatch{border:none;border-radius:5px}
 .busy-warn{position:fixed;top:46px;left:0;right:0;background:linear-gradient(90deg,#e8960e,#f8ca55);color:#111;text-align:center;font-weight:700;font-size:.86rem;padding:10px;z-index:200;letter-spacing:.3px}
 """
 
+def _rssi():
+    try:
+        ai = wifi.radio.ap_info
+        return ai.rssi if ai else -100
+    except:
+        return -100
+
+def _sig_bars(rssi):
+    n = 4 if rssi > -50 else 3 if rssi > -60 else 2 if rssi > -70 else 1 if rssi > -80 else 0
+    bars = ''.join(f'<i class="{"on" if i < n else ""}"></i>' for i in range(4))
+    return f'<span class="sig" id="sig" title="{rssi} dBm">{bars}</span>'
+
 def navbar():
     ip = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
+    rssi = _rssi()
     try:
         with open("reboot_required"): _reboot_cls = " reboot-needed"
     except OSError: _reboot_cls = ""
@@ -464,23 +484,26 @@ def navbar():
 <a class="nav-link" href="/download" onclick="nav('/f/download');return false">Store</a>
 <a class="nav-link" href="/settings" onclick="nav('/f/settings');return false">Settings</a>
 <div class="nav-spacer"></div>
-<div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
+<div class="nav-info"><span id="clk"></span><span>{ip} {_sig_bars(rssi)}</span></div>
 <button class="nav-led{' led-off' if _led_off else ''}" id="ledbtn" onclick="fetch('/led',{{method:'POST'}}).then(function(r){{return r.json()}}).then(function(j){{var b=document.getElementById('ledbtn');if(j.off){{b.classList.add('led-off')}}else{{b.classList.remove('led-off')}}}})" title="Toggle LED">&#x1F4A1;</button>
 <button class="nav-x{_reboot_cls}" onclick="if(confirm('Restart?'))fetch('/reset',{{method:'POST'}})" title="Restart">&#x2715;</button>
 </nav>
-<script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
+<script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);
+function _rs(){{fetch('/f/rssi').then(function(r){{return r.text()}}).then(function(v){{var s=document.getElementById('sig');if(!s)return;var r=parseInt(v),n=r>-50?4:r>-60?3:r>-70?2:r>-80?1:0;s.title=r+' dBm';var b=s.querySelectorAll('i');for(var i=0;i<b.length;i++){{if(i<n)b[i].classList.add('on');else b[i].classList.remove('on');}}}}).catch(function(){{}});}}_rs();setInterval(_rs,30000);</script>"""
 
 def app_navbar(title):
     ip = str(wifi.radio.ipv4_address) if wifi.radio.ipv4_address else "OFFLINE"
+    rssi = _rssi()
     return f"""<nav class="navbar">
 <a class="nav-x" href="/exit" title="Exit" style="margin-left:0;margin-right:4px">&#8592;</a>
 <span class="nav-title">{title}</span>
 <div class="nav-spacer"></div>
-<div class="nav-info"><span id="clk"></span><span>{ip}</span></div>
+<div class="nav-info"><span id="clk"></span><span>{ip} {_sig_bars(rssi)}</span></div>
 <button class="nav-led{' led-off' if _led_off else ''}" id="ledbtn" onclick="fetch('/led',{{method:'POST'}}).then(function(r){{return r.json()}}).then(function(j){{var b=document.getElementById('ledbtn');if(j.off){{b.classList.add('led-off')}}else{{b.classList.remove('led-off')}}}})" title="Toggle LED">&#x1F4A1;</button>
 <a class="nav-x" href="/exit" title="Exit">&#x2715;</a>
 </nav>
-<script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);</script>"""
+<script>function _ck(){{var d=new Date(),h=d.getHours(),m=d.getMinutes();document.getElementById('clk').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}}_ck();setInterval(_ck,15000);
+function _rs(){{fetch('/f/rssi').then(function(r){{return r.text()}}).then(function(v){{var s=document.getElementById('sig');if(!s)return;var r=parseInt(v),n=r>-50?4:r>-60?3:r>-70?2:r>-80?1:0;s.title=r+' dBm';var b=s.querySelectorAll('i');for(var i=0;i<b.length;i++){{if(i<n)b[i].classList.add('on');else b[i].classList.remove('on');}}}}).catch(function(){{}});}}_rs();setInterval(_rs,30000);</script>"""
 
 def header(title="Settings", app=False):
     nav = app_navbar(title) if app else navbar()
@@ -762,11 +785,10 @@ def _save(request):
 
 def _download_content():
     free = _fmt_size(_free_space())
+    apps = list_available_apps(get_updates())
     return """<div class="logo"><h1>App Store</h1><p>Install or update apps</p></div>
 <div class="card" style="text-align:center;padding:12px"><span style="font-size:.8rem;color:var(--muted)">Available space: </span><span style="font-size:.9rem;font-weight:700;color:var(--accent2)">""" + free + """</span></div>
-<div class="card"><div class="section-title">Available</div><div id="store-list"><div style="padding:20px 0"><div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:30%;background:var(--accent);border-radius:4px;animation:bar 1.2s ease-in-out infinite"></div></div><p style="text-align:center;color:var(--muted);font-size:.8rem;margin-top:8px">Checking for updates...</p></div></div></div>
-<style>@keyframes bar{0%{width:10%;margin-left:0}50%{width:40%;margin-left:30%}100%{width:10%;margin-left:90%}}</style>
-<script>fetch('/f/download/apps').then(function(r){return r.text()}).then(function(h){var el=document.getElementById('store-list');if(el){el.innerHTML=h;var c=el.closest('.page')||el.parentElement;var sc=el.querySelectorAll('script');for(var i=0;i<sc.length;i++){var n=document.createElement('script');n.textContent=sc[i].textContent;document.head.appendChild(n)}}}).catch(function(){var el=document.getElementById('store-list');if(el)el.innerHTML='<p style="color:#ff6060;text-align:center;padding:20px">Failed to check for updates</p>'})</script>"""
+<div class="card"><div class="section-title">Available</div>""" + str(apps) + """</div>"""
 
 @ampule.route('/download')
 def download(request):
@@ -784,9 +806,14 @@ def _f_settings(request):
 def _f_download(request):
     return (200, {}, _download_content())
 
-@ampule.route("/f/download/apps")
-def _f_download_apps(request):
-    return (200, {}, str(list_available_apps(get_updates())))
+@ampule.route("/f/rssi")
+def _f_rssi(request):
+    try:
+        ai = wifi.radio.ap_info
+        rssi = ai.rssi if ai else -100
+    except:
+        rssi = -100
+    return (200, {"Content-Type": "text/plain"}, str(rssi))
 
 
 ####################################################
