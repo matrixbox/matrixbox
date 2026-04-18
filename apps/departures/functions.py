@@ -311,6 +311,7 @@ def nightcheck(force=False, _switch=False, turnon=False):
     if _switch: varinit.on_off_counter = 1 - varinit.on_off_counter
     if turnon: 
         varinit.group.hidden = 1 - varinit.group.hidden
+        varinit.shared["nightcount"] = 0
         return
     
     if force: return lights(True)
@@ -574,7 +575,9 @@ def renderstring(_string, screen_partition = 0, min = 0, slow = 0, invertcolor =
     #print("LEN: ", len(_string), _string, type(_string))
     if dicts.language[varinit.settings["language"]]["display"]["no_more_departures"] in _string: varinit.shared["nightcount"] += 1 
     elif str(_string) == "-" or str(_string) == "*": pass # testing
-    else: varinit.shared["nightcount"] = 0
+    else:
+        if varinit.shared["nightcount"] > 1: varinit.on_off_counter = 1
+        varinit.shared["nightcount"] = 0
     nightcheck()
     _color = False
     offs = 2
