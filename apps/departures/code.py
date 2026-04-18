@@ -11,12 +11,15 @@ varinit.debounce_delay = debounce_delay
 def check_button():
     b = check_if_button_pressed()
     if b == 1:
-        nightcheck(_switch=True, turnon=varinit.group.hidden); refresh()
+        if int(varinit.settings.get("button_mode", 0)):
+            varinit.deviations_timer = time.monotonic()
+            if varinit.display.width > 64:
+                varinit.settings["listmode"] = 1 - int(varinit.settings["listmode"])
+            functions.switch(_screen=True)
+        else:
+            nightcheck(_switch=True, turnon=varinit.group.hidden); refresh()
     elif b == 2:
-        varinit.deviations_timer = time.monotonic()
-        if varinit.display.width > 64:
-            varinit.settings["listmode"] = 1 - int(varinit.settings["listmode"])
-        functions.switch(_screen=True)
+        varinit.exit = True
 delay = version_delay()
 #microcontroller.cpu.frequency = 240000000
 from functions import refresh
