@@ -100,6 +100,7 @@ PAGE_TPL = """<!DOCTYPE html>
 {MULTIPLE_SECTION}
 {DEVIATIONS_SECTION}
 {SLEEP_CHK}
+{BUTTON_MODE_CHK}
 {SHOW_STATION_CHK}
 </div>
 <div style="margin-bottom:.6rem">
@@ -406,6 +407,11 @@ def html():
     # sleep
     sleep_html = _chk("sleep", s["sleep"], "/?sleep=1", T["turn_off"])
 
+    # button mode
+    button_mode_html = ""
+    if if_long > 64:
+        button_mode_html = _chk("button_mode", s.get("button_mode", 0), "/?button_mode=switch", T["button_mode"])
+
     # show station
     show_stn_html = _chk("show_my_station", s["show_my_station"], "/?show_station=1", T["show_station"])
 
@@ -479,7 +485,7 @@ def html():
         "LISTMODE_CHK": listmode_html, "CLOCKTIME_CHK": clock_html,
         "MULTIPLE_SECTION": mult_html,
         "DEVIATIONS_SECTION": devs_html,
-        "SLEEP_CHK": sleep_html, "SHOW_STATION_CHK": show_stn_html,
+        "SLEEP_CHK": sleep_html, "BUTTON_MODE_CHK": button_mode_html, "SHOW_STATION_CHK": show_stn_html,
         "T_SAVE": T["save"], "T_USER": T["user"],
         "USER_PH": str(s["user"]),
         "T_ADVANCED": T["advanced"],
