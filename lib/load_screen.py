@@ -222,7 +222,7 @@ def _draw_line(win, string, lin, _c, font, _is_mini, fh, offs, clear, block, sha
                     bit = (glyph[h + 1] >> inv_w) & 1
                     if bit:
                         win[w + px_off, y] = _c
-                    elif clear:
+                    elif clear and not block:
                         win[w + px_off, y] = 0
         else:
             for w in range(gw):
