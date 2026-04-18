@@ -54,13 +54,16 @@ def check_button():
                 varinit.shared["nightcount"] = 0
                 x = 0 
                 while not varinit.button.value and x < varinit.button_delay * 2: x+=1
-                if x > varinit.button_delay and not varinit.group.hidden:# and not varinit.if_long > 128:
-                    varinit.deviations_timer = time.monotonic()
-                    if varinit.display.width > 64:
-                        varinit.settings["listmode"] = 1 - int(varinit.settings["listmode"])
-                    switch(_screen = True)
+                if x > varinit.button_delay and not varinit.group.hidden:
+                    varinit.exit = True
                 else:
-                    nightcheck(_switch=True, turnon=varinit.group.hidden); refresh()
+                    if int(varinit.settings.get("button_mode", 0)):
+                        varinit.deviations_timer = time.monotonic()
+                        if varinit.display.width > 64:
+                            varinit.settings["listmode"] = 1 - int(varinit.settings["listmode"])
+                        switch(_screen=True)
+                    else:
+                        nightcheck(_switch=True, turnon=varinit.group.hidden); refresh()
     varinit.last_button_state = varinit.button.value
 
 def check_timer():
