@@ -381,6 +381,9 @@ def huvudsidan(request):
         varinit.settings["sleep"] = 1 - varinit.settings["sleep"]
         functions.switch(_screen=False)
         return (200, {}, "")
+    elif "button_mode" in request.params:
+        varinit.settings["button_mode"] = 1 - int(varinit.settings.get("button_mode", 0))
+        return (200, {}, "")
     elif "show_station" in request.params:
         varinit.settings["show_my_station"] = 1 - varinit.settings["show_my_station"]
         functions.switch(_screen=False)
