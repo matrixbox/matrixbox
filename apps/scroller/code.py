@@ -12,7 +12,6 @@ padding_length = 20
 default_offset = 0
 default_scale = 1
 scroll_mode = "h"  # "h" horizontal, "v" vertical, "s" static
-static_align = "center"  # "left", "center", "right"
 btc = 0
 currency = "usd"
 delay = 30
@@ -104,39 +103,20 @@ def rebuild_scene():
         scroll_y = -DISPLAY_HEIGHT
 
     elif scroll_mode == "s":
-        # --- Static: render text with line breaks ---
-        fh = font["fontheight"]
-        line_h = fh + 2  # font height + small gap
-        n = len(lines)
-        total_h = max(DISPLAY_HEIGHT, n * line_h + 2)
-        max_w = max((strlen(ln, font) for ln in lines if ln.strip()), default=1)
-        if max_w < 1:
-            max_w = 1
-        scroller_width = max_w
+        # --- Static: render text, no scroll ---
+        text = " ".join(lines) if len(lines) > 1 else lines[0]
+        scroller_width = strlen(text, font)
+        if scroller_width < 1:
+            scroller_width = 1
 
-        big_bitmap = displayio.Bitmap(max_w, total_h, PALETTE_SIZE)
-        for i, ln in enumerate(lines):
-            if not ln.strip():
-                continue
-            tmp = displayio.Bitmap(max_w, DISPLAY_HEIGHT, PALETTE_SIZE)
-            pprint(
-                ln, line=0, font=font,
-                color=load_screen.currentcolor, _refresh=False,
-                window=tmp, block=True, shadow_color=shadow_color,
-            )
-            y_off = i * line_h
-            bitmaptools.blit(
-                big_bitmap, tmp, 0, y_off,
-                x1=0, y1=0, x2=max_w, y2=min(DISPLAY_HEIGHT, total_h - y_off),
-            )
-
+        big_bitmap = displayio.Bitmap(scroller_width, DISPLAY_HEIGHT, PALETTE_SIZE)
+        pprint(
+            text, line=0, font=font,
+            color=load_screen.currentcolor, _refresh=False,
+            window=big_bitmap, block=True, shadow_color=shadow_color,
+        )
         if scroller_width <= DISPLAY_WIDTH:
-            if static_align == "left":
-                scroll_x = 0
-            elif static_align == "right":
-                scroll_x = -(DISPLAY_WIDTH - scroller_width)
-            else:
-                scroll_x = -(DISPLAY_WIDTH - scroller_width) // 2
+            scroll_x = -(DISPLAY_WIDTH - scroller_width) // 2
         else:
             scroll_x = 0
 
@@ -216,16 +196,10 @@ def web_exit(request):
     exit = True
     return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
 
-@ampule.route("/save", method="POST")
-def web_save(request):
-    with open("scroller.txt", "w") as f:
-        f.write(scroller_text)
-    return (200, {}, "OK")
-
 @ampule.route("/", method="POST")
 def scroller_post(request):
     global scroller_text, exit, default_offset, default_scale, shadow_color
-    global btc, scroll_mode, padding_length, scroll_x, scroll_y, reverse_direction, static_align
+    global btc, scroll_mode, padding_length, scroll_x, scroll_y, reverse_direction
 
     if "btc" in request.params:
         btc = 1 - btc
@@ -265,25 +239,6 @@ def scroller_post(request):
 
     if "color" in request.params:
         load_screen.currentcolor = request.params["color"]
-
-    if "rgb" in request.params:
-        try:
-            raw = request.params["rgb"].replace("%23", "").replace("#", "")
-            r = int(raw[0:2], 16)
-            g = int(raw[2:4], 16)
-            b = int(raw[4:6], 16)
-            palette[5] = (r, g, b)
-            load_screen.currentcolor = "white"
-        except:
-            pass
-
-    if "align" in request.params:
-        a = request.params["align"]
-        if a in ("left", "center", "right"):
-            static_align = a
-            if scroll_mode == "s":
-                rebuild_scene()
-            return (200, {}, "OK")
 
     if "offset" in request.params:
         default_offset = int(request.params["offset"])
