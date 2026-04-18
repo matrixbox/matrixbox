@@ -187,6 +187,7 @@ def _draw_line(win, string, lin, _c, font, _is_mini, fh, offs, clear, block, sha
     px = 0
     y_base = (6 * lin) + offs
     max_x = win.width
+    chars = []
     for ch in str(string):
         if _is_mini: ch = ch.lower()
         if ch not in font: ch = "_"
@@ -194,6 +195,24 @@ def _draw_line(win, string, lin, _c, font, _is_mini, fh, offs, clear, block, sha
         gw = glyph[0]
         if px + gw > max_x:
             break
+        chars.append((ch, glyph, gw, px))
+        px += gw
+    # shadow pass
+    if block:
+        for ch, glyph, gw, px_off in chars:
+            is_bitmap = isinstance(glyph[1], int)
+            if is_bitmap:
+                for w in range(gw):
+                    inv_w = gw - w
+                    for h in range(fh):
+                        bit = (glyph[h + 1] >> inv_w) & 1
+                        if bit:
+                            sx = w + px_off + 1
+                            sy = y_base + h + 1
+                            if 0 <= sx < win.width and 0 <= sy < win.height:
+                                win[sx, sy] = shadow_color
+    # foreground pass
+    for ch, glyph, gw, px_off in chars:
         is_bitmap = isinstance(glyph[1], int)
         if is_bitmap:
             for w in range(gw):
@@ -202,20 +221,13 @@ def _draw_line(win, string, lin, _c, font, _is_mini, fh, offs, clear, block, sha
                     y = y_base + h
                     bit = (glyph[h + 1] >> inv_w) & 1
                     if bit:
-                        win[w + px, y] = _c
-                        if block:
-                            sx = w + px + 1
-                            sy = y + 1
-                            if 0 <= sx < win.width and 0 <= sy < win.height:
-                                win[sx, sy] = shadow_color
+                        win[w + px_off, y] = _c
                     elif clear:
-                        win[w + px, y] = 0
-            px += gw
+                        win[w + px_off, y] = 0
         else:
             for w in range(gw):
                 for h in range(fh):
-                    win[w + px, h + offs] = int(glyph[h + 1][w])
-            px += len(glyph[1])
+                    win[w + px_off, h + offs] = int(glyph[h + 1][w])
 
 def _clear_row_remainder(win, text_px_width, lin, fh, offs):
     y_base = (6 * lin) + offs
