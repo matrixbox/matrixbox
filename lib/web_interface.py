@@ -859,6 +859,7 @@ def url_decoder(url):
 "%C5%A1":"\u0161",
 "%E2%82%BF":"?"}
 
+    url = url.replace("+", " ")
     for char in url_decode: url = url.replace(char, url_decode[char])
     return url
 
