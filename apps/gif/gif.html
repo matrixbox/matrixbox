@@ -23,10 +23,10 @@
 <div class="card">
 <div class="section-title">Brightness</div>
 <div class="seg" id="br-seg">
-<button id="br_0" onclick="pb(0)">Full</button>
-<button id="br_1" onclick="pb(1)">1/2</button>
-<button id="br_2" class="on" onclick="pb(2)">1/4</button>
-<button id="br_3" onclick="pb(3)">1/8</button>
+<button onclick="pb(this,'1.0')">Full</button>
+<button onclick="pb(this,'0.5')">1/2</button>
+<button class="on" onclick="pb(this,'0.25')">1/4</button>
+<button onclick="pb(this,'0.125')">1/8</button>
 </div>
 </div>
 
@@ -52,5 +52,5 @@ function handle(f){
   };
   r.readAsDataURL(f);
 }
-function pb(v){fetch("/?brightness="+v,{method:"POST"});document.querySelectorAll("#br-seg button").forEach(function(b){b.classList.toggle("on",b.id==="br_"+v)})}
+function pb(el,v){fetch("/?brightness="+v,{method:"POST"});document.querySelectorAll("#br-seg button").forEach(function(b){b.classList.remove("on")});el.classList.add("on")}
 </script>
