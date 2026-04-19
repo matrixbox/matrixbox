@@ -37,6 +37,35 @@ shadow_color_map = {
 
 load_screen.currentfont = font_large
 
+SETTINGS_FILE = "scroller_settings.json"
+
+def get_font_name():
+    f = load_screen.currentfont
+    if f is font_mini: return "mini"
+    if f is font_small: return "small"
+    return "large"
+
+def save_settings():
+    try:
+        with open(SETTINGS_FILE, "w") as f:
+            json.dump({"mode": scroll_mode, "align": static_align, "reverse": reverse_direction,
+                        "shadow": shadow_color, "font": get_font_name(), "color": load_screen.currentcolor}, f)
+    except: pass
+
+def load_settings():
+    global scroll_mode, static_align, reverse_direction, shadow_color
+    try:
+        with open(SETTINGS_FILE) as f:
+            s = json.load(f)
+        scroll_mode = s.get("mode", "h")
+        static_align = s.get("align", "center")
+        reverse_direction = s.get("reverse", 1)
+        shadow_color = s.get("shadow", 0)
+        fm = {"mini": font_mini, "small": font_small, "large": font_large}
+        load_screen.currentfont = fm.get(s.get("font", "large"), font_large)
+        load_screen.currentcolor = s.get("color", "white")
+    except: pass
+
 with open("scroller.html") as f: html_body = f.read()
 
 try:
@@ -235,6 +264,7 @@ def scroller_post(request):
         if m in ("h", "v", "s"):
             scroll_mode = m
             rebuild_scene()
+        save_settings()
         return (200, {}, "OK")
 
     if "scroll" in request.params:
@@ -243,6 +273,7 @@ def scroller_post(request):
         else:
             scroll_mode = "s"
         rebuild_scene()
+        save_settings()
         return (200, {}, "OK")
 
     if "text" in request.params:
@@ -252,6 +283,7 @@ def scroller_post(request):
             reverse_direction = int(request.params["reverse"])
         except:
             reverse_direction = 1 - reverse_direction
+        save_settings()
         return (200, {}, "OK")
 
     if "size" in request.params:
@@ -283,6 +315,7 @@ def scroller_post(request):
             static_align = a
             if scroll_mode == "s":
                 rebuild_scene()
+            save_settings()
             return (200, {}, "OK")
 
     if "offset" in request.params:
@@ -296,6 +329,7 @@ def scroller_post(request):
         if name in shadow_color_map:
             shadow_color = shadow_color_map[name]
         rebuild_scene()
+        save_settings()
         return (200, {}, "OK")
 
 
@@ -305,6 +339,7 @@ def scroller_post(request):
     else:
         rebuild_scene()
 
+    save_settings()
     return (200, {}, "OK")
 
 @ampule.route("/", method="GET")
@@ -333,6 +368,7 @@ def set_btc():
 # ---------------------------------------------------------
 
 clearscreen()
+load_settings()
 rebuild_scene()
 
 # ---------------------------------------------------------
