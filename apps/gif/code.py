@@ -6,6 +6,7 @@ import time
 from check_button import check_if_button_pressed
 
 exit = False
+brightness_shift = 2  # 0=full, 1=1/2, 2=1/4, 3=1/8
 clock_window = displayio.TileGrid(window, pixel_shader=palette)
 splash = displayio.Group(scale=1)
 splash.append(clock_window)
@@ -40,7 +41,7 @@ def gif_webinterface(request):
 
 @ampule.route('/', method="POST")
 def webinterface_post(request):
-    global _index
+    global _index, brightness_shift
     print("POST:ed")
     print(_index)
     print(request.params)
@@ -57,6 +58,14 @@ def webinterface_post(request):
             _index = 0
             load_img()
         return
+
+    if "brightness" in request.params:
+        try:
+            brightness_shift = int(request.params["brightness"])
+            if brightness_shift < 0: brightness_shift = 0
+            if brightness_shift > 4: brightness_shift = 4
+        except: pass
+        return (200, {}, "OK")
     
     if "sendbase64" in request.params:
         print("SEND")
@@ -85,6 +94,25 @@ def webinterface_post(request):
     return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
     
 
+def dim_frame(bmp, w, h, shift):
+    if shift == 0:
+        return
+    for y in range(h):
+        for x in range(w):
+            v = bmp[x, y]
+            if v == 0:
+                continue
+            # swap bytes: RGB565_SWAPPED -> standard RGB565
+            s = ((v & 0xFF) << 8) | ((v >> 8) & 0xFF)
+            r = (s >> 11) & 0x1F
+            g = (s >> 5) & 0x3F
+            b = s & 0x1F
+            r >>= shift
+            g >>= shift
+            b >>= shift
+            s = (r << 11) | (g << 5) | b
+            bmp[x, y] = ((s & 0xFF) << 8) | ((s >> 8) & 0xFF)
+
 def load_img(file=False):
     if file: pass
     else: file = "images/"+files[_index]
@@ -111,6 +139,7 @@ while not exit:
     ampule.listen(socket)
     time.sleep(0.01)
     odg.next_frame()
+    dim_frame(odg.bitmap, odg.bitmap.width, odg.bitmap.height, brightness_shift)
     refresh()
     
     b = check_if_button_pressed()
