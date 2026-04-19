@@ -1,6 +1,6 @@
 from __main__ import *
 from load_screen import *
-import sys, board, binascii
+import sys, board, binascii, json
 import bitmaptools
 import gifio
 import time
@@ -31,6 +31,22 @@ _index = 0
 try:
     with open("gif.html") as f: html_body = f.read()
 except: html_body = ""
+
+def save_settings():
+    try:
+        with open("gif_settings.json", "w") as f:
+            json.dump({"brightness": brightness}, f)
+    except: pass
+
+def load_settings():
+    global brightness
+    try:
+        with open("gif_settings.json") as f:
+            s = json.load(f)
+        brightness = s.get("brightness", 0.25)
+    except: pass
+
+load_settings()
 
 @ampule.route("/exit", method="GET")
 def webinterface(request):
@@ -68,6 +84,7 @@ def webinterface_post(request):
             if brightness < 0.0: brightness = 0.0
             if brightness > 1.0: brightness = 1.0
         except: pass
+        save_settings()
         return (200, {}, "OK")
     
     if "sendbase64" in request.params:
