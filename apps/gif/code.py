@@ -9,7 +9,6 @@ from check_button import check_if_button_pressed
 exit = False
 brightness = 0.25  # 0.0-1.0
 black_bmp = None
-dim_bmp = None
 clock_window = displayio.TileGrid(window, pixel_shader=palette)
 splash = displayio.Group(scale=1)
 splash.append(clock_window)
@@ -98,20 +97,19 @@ def webinterface_post(request):
     
 
 def load_img(file=False):
-    global black_bmp, dim_bmp
+    global black_bmp
     if file: pass
     else: file = "images/"+files[_index]
     odg = gifio.OnDiskGif(file)
     w = odg.bitmap.width
     h = odg.bitmap.height
     black_bmp = displayio.Bitmap(w, h, 65536)
-    dim_bmp = displayio.Bitmap(w, h, 65536)
     start = time.monotonic()
     next_delay = odg.next_frame() # Load the first frame
     end = time.monotonic()
     overhead = end - start
     face = displayio.TileGrid(
-        dim_bmp,
+        odg.bitmap,
         pixel_shader=displayio.ColorConverter(
             input_colorspace=displayio.Colorspace.RGB565_SWAPPED,
             dither=True
@@ -124,18 +122,24 @@ if not os.listdir("images"): pprint("Upload image", _refresh=True)
 else: odg = load_img()
 time.sleep(0.5)
 
+_frame_count = 0
 while not exit:
     ampule.listen(socket)
     time.sleep(0.01)
     odg.next_frame()
-    if brightness < 1.0 and dim_bmp and black_bmp:
-        bitmaptools.alphablend(
-            dim_bmp, odg.bitmap, black_bmp,
-            displayio.Colorspace.RGB565_SWAPPED,
-            brightness, 0.0
-        )
-    else:
-        bitmaptools.blit(dim_bmp, odg.bitmap, 0, 0)
+    if brightness < 1.0 and black_bmp:
+        try:
+            bitmaptools.alphablend(
+                odg.bitmap, odg.bitmap, black_bmp,
+                colorspace=displayio.Colorspace.RGB565_SWAPPED,
+                factor1=brightness,
+            )
+            if _frame_count == 0:
+                print("alphablend OK, factor1=", brightness, "bitmap:", odg.bitmap.width, "x", odg.bitmap.height)
+        except Exception as e:
+            if _frame_count == 0:
+                print("alphablend error:", e)
+    _frame_count += 1
     refresh()
     
     b = check_if_button_pressed()
