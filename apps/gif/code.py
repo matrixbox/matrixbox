@@ -60,7 +60,7 @@ def gif_webinterface(request):
 
 @ampule.route('/', method="POST")
 def webinterface_post(request):
-    global _index, brightness
+    global _index, brightness, odg
     print("POST:ed")
     print(_index)
     print(request.params)
@@ -72,11 +72,11 @@ def webinterface_post(request):
         print(request.params["next"])
         try:
             _index += 1
-            load_img()
+            odg = load_img()
         except: 
             _index = 0
-            load_img()
-        return
+            odg = load_img()
+        return (200, {}, "OK")
 
     if "brightness" in request.params:
         try:
@@ -92,26 +92,14 @@ def webinterface_post(request):
         try:
             img = request.body
             print(type(img))
-            #img = bytes(request.body, 'utf-8')
             print(len(img))
-            #img = binascii.unhexlify(img)
             img = binascii.a2b_base64(img)
             print(img)
-            #img = bytes(img)
             with open("images/uploaded.gif", "wb") as f:
                 f.write(img)
-            #load_img(img)
+            odg = load_img("images/uploaded.gif")
         except Exception as e: print(e)
-
-        #try: 
-        #    print("trying to save")
-        #    file_bytes = bytes(request.body)
-        #    with open("uploaded.gif", "wb") as f:
-        #        f.write(file_bytes)
-        #    print(f"Received {len(file_bytes)} bytes")
-        #except Exception as e: print(e)
-    #return (200, {}, "OK")
-    return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
+    return (200, {}, """<meta http-equiv="refresh" content="0; url=./" />""")
     
 
 def load_img(file=False):
@@ -133,6 +121,9 @@ def load_img(file=False):
         displayio.Colorspace.RGB565_SWAPPED,
         factor_1=brightness,
     )
+    # Remove old face TileGrids (keep clock_window at index 0)
+    while len(splash) > 1:
+        splash.pop()
     face = displayio.TileGrid(
         dim_bmp,
         pixel_shader=displayio.ColorConverter(
