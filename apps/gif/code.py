@@ -1,12 +1,15 @@
 from __main__ import *
 from load_screen import *
 import sys, board, binascii
+import bitmaptools
 import gifio
 import time
 from check_button import check_if_button_pressed
 
 exit = False
-brightness_shift = 2  # 0=full, 1=1/2, 2=1/4, 3=1/8
+brightness = 0.25  # 0.0-1.0
+black_bmp = None
+dim_bmp = None
 clock_window = displayio.TileGrid(window, pixel_shader=palette)
 splash = displayio.Group(scale=1)
 splash.append(clock_window)
@@ -41,7 +44,7 @@ def gif_webinterface(request):
 
 @ampule.route('/', method="POST")
 def webinterface_post(request):
-    global _index, brightness_shift
+    global _index, brightness
     print("POST:ed")
     print(_index)
     print(request.params)
@@ -61,9 +64,9 @@ def webinterface_post(request):
 
     if "brightness" in request.params:
         try:
-            brightness_shift = int(request.params["brightness"])
-            if brightness_shift < 0: brightness_shift = 0
-            if brightness_shift > 4: brightness_shift = 4
+            brightness = float(request.params["brightness"])
+            if brightness < 0.0: brightness = 0.0
+            if brightness > 1.0: brightness = 1.0
         except: pass
         return (200, {}, "OK")
     
@@ -94,35 +97,21 @@ def webinterface_post(request):
     return (200, {}, """<meta http-equiv="refresh" content="0; url=../" />""")
     
 
-def dim_frame(bmp, w, h, shift):
-    if shift == 0:
-        return
-    for y in range(h):
-        for x in range(w):
-            v = bmp[x, y]
-            if v == 0:
-                continue
-            # swap bytes: RGB565_SWAPPED -> standard RGB565
-            s = ((v & 0xFF) << 8) | ((v >> 8) & 0xFF)
-            r = (s >> 11) & 0x1F
-            g = (s >> 5) & 0x3F
-            b = s & 0x1F
-            r >>= shift
-            g >>= shift
-            b >>= shift
-            s = (r << 11) | (g << 5) | b
-            bmp[x, y] = ((s & 0xFF) << 8) | ((s >> 8) & 0xFF)
-
 def load_img(file=False):
+    global black_bmp, dim_bmp
     if file: pass
     else: file = "images/"+files[_index]
     odg = gifio.OnDiskGif(file)
+    w = odg.bitmap.width
+    h = odg.bitmap.height
+    black_bmp = displayio.Bitmap(w, h, 65536)
+    dim_bmp = displayio.Bitmap(w, h, 65536)
     start = time.monotonic()
     next_delay = odg.next_frame() # Load the first frame
     end = time.monotonic()
     overhead = end - start
     face = displayio.TileGrid(
-        odg.bitmap,
+        dim_bmp,
         pixel_shader=displayio.ColorConverter(
             input_colorspace=displayio.Colorspace.RGB565_SWAPPED,
             dither=True
@@ -139,7 +128,14 @@ while not exit:
     ampule.listen(socket)
     time.sleep(0.01)
     odg.next_frame()
-    dim_frame(odg.bitmap, odg.bitmap.width, odg.bitmap.height, brightness_shift)
+    if brightness < 1.0 and dim_bmp and black_bmp:
+        bitmaptools.alphablend(
+            dim_bmp, odg.bitmap, black_bmp,
+            displayio.Colorspace.RGB565_SWAPPED,
+            brightness, 0.0
+        )
+    else:
+        bitmaptools.blit(dim_bmp, odg.bitmap, 0, 0)
     refresh()
     
     b = check_if_button_pressed()
