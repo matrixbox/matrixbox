@@ -113,8 +113,8 @@ def load_img(file=False):
     # Copy first frame into writable dim_bmp
     bitmaptools.alphablend(
         dim_bmp, odg.bitmap, black_bmp,
-        colorspace=displayio.Colorspace.RGB565_SWAPPED,
-        factor1=brightness,
+        displayio.Colorspace.RGB565_SWAPPED,
+        factor_1=brightness,
     )
     face = displayio.TileGrid(
         dim_bmp,
@@ -137,8 +137,8 @@ while not exit:
     try:
         bitmaptools.alphablend(
             dim_bmp, odg.bitmap, black_bmp,
-            colorspace=displayio.Colorspace.RGB565_SWAPPED,
-            factor1=brightness,
+            displayio.Colorspace.RGB565_SWAPPED,
+            factor_1=brightness,
         )
     except Exception as e:
         print("alphablend error:", e)
