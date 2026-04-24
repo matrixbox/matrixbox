@@ -1,3 +1,4 @@
+# ADD: ã Ã + Lithuanian special characters
 
 font_large = {
   "fontheight":14,
