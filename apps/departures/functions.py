@@ -540,7 +540,38 @@ def reformat_data(trainlist):
             else: 
                 for items in dicts.replace_list_destinations:
                     if strlen(tlist[2]) > 75: tlist[2] = tlist[2].replace(items[0], items[1])
-                if strlen(tlist[2]) > 75: tlist[2] = tlist[2][:10] + "."
+
+        # Keep the top row non-scrolling text from colliding with minutes-left text.
+        # Measure widths with the top-row (large) font so fitting is stable.
+        def _strlen_top(s):
+            f = fonts[0]
+            total = 0
+            for c in s:
+                if c in f:
+                    total += f[c][0]
+                else:
+                    total += f["_"][0]
+            return total
+
+        max_left_w = max(0, varinit.if_long - _strlen_top(tlist[3]))
+
+        # First consume extra gap before touching destination text.
+        while len(spacing) > 1 and _strlen_top(tlist[1] + spacing + tlist[2]) > max_left_w:
+            spacing = spacing[:-1]
+
+        max_dest_w = max_left_w - _strlen_top(tlist[1] + spacing)
+        if max_dest_w < 0:
+            max_dest_w = 0
+
+        if _strlen_top(tlist[2]) > max_dest_w:
+            if max_dest_w <= 0:
+                tlist[2] = ""
+            else:
+                trimmed = tlist[2]
+                while trimmed and _strlen_top(trimmed + ".") > max_dest_w:
+                    trimmed = trimmed[:-1]
+                tlist[2] = trimmed + ("." if trimmed and trimmed != tlist[2] else "")
+
         offs = varinit.if_long - (strlen(tlist[3]) + strlen(tlist[1] + spacing + tlist[2]))
         if int(trainlist[0][0]): return trainlist
         
@@ -550,7 +581,7 @@ def reformat_data(trainlist):
         #    renderstring(offs*"(" + tlist[3], 1)
         #    renderstring(tlist[1] + spacing + tlist[2], 1)
         
-        offs = varinit.if_long - strlen(tlist[3])
+        offs = max(0, varinit.if_long - strlen(tlist[3]))
         renderstring(offs*"(" + tlist[3], 1)
         renderstring(tlist[1] + spacing + tlist[2], 1)
 
