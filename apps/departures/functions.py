@@ -682,7 +682,8 @@ def renderstring(_string, screen_partition = 0, min = 0, slow = 0, invertcolor =
                     if varinit.settings["long"] == 1:
                         if __color == 5: __color = 1
                     
-                    screen_location[screen_partition][width+pixwidth,(height)+offs] =  __color
+                    try: screen_location[screen_partition][width+pixwidth,(height)+offs] =  __color
+                    except: pass
             if slow: varinit.display.refresh(minimum_frames_per_second=0)
         if isinstance(font[character][1],int):
             pixwidth += font[character][0]
