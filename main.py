@@ -7,8 +7,9 @@ settings =  load_settings.settings()
 from load_screen import *
 from check_button import *
 def show_logo():
-    pprint("¨¨MatrixBox(", line=0, color="white", hr="¨")
-    #pprint("^Matrix", line=0, color="brightwhite", _clearscreen=False)
+    pprint("MatrixBOX(", line=0, color="yellow", hr="¨", _refresh=False, overlay=True)
+    #pprint("", line=0, color="brightwhite", overlay=True)
+    pprint("Matrix", line=0, color="brightwhite", overlay=True)
 
 _anim_x = display.width+1
 def logo_anim_step():
@@ -26,10 +27,16 @@ def logo_anim_step():
             window[x, y] = 9
         elif old == 5:
             window[x, y] = 2
+        elif old == 2:
+            window[x, y] = 5
+        elif old == 1:
+            window[x, y] = 2
     refresh()
     for i, y in enumerate((2, 4)):
         window[x, y] = saved[i]
     _anim_x += 1
+    if _anim_x >= W:
+        refresh()
 
 show_logo()
 
@@ -165,7 +172,7 @@ def next_program_in_list(run=False):
     print(load_settings.installed_apps_list)
     load_settings.installed_apps_list.append(load_settings.installed_apps_list[0])
     load_settings.installed_apps_list.pop(0)
-    scroll_line(load_settings.installed_apps_list[0])
+    scroll_line(load_settings.installed_apps_list[0], color="yellow")
 
 def check_for_button_next_program():
     global screensaver
