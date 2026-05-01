@@ -5,7 +5,9 @@ import __main__
 #from main import connect_to_network
 #import __main__
 #print(dir(__main__))
-exitbutton = """<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><style>body{background:#08080f;color:#eeeef5;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;margin:0}a.xbtn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;background:linear-gradient(135deg,#e03c3c,#ff6060);color:#fff;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 2px 14px rgba(224,60,60,.35)}.lbl{color:#7070a0;font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px}</style></head><body><p class="lbl">App Running</p><a class="xbtn" href="/exit">&#x2715; Exit App</a>"""
+
+_FAVICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><filter id="led-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="32" height="32" rx="5" fill="#0d0d0d"/><rect x="0.5" y="0.5" width="31" height="31" rx="4.5" fill="none" stroke="#2a2a2a" stroke-width="1"/><circle cx="6" cy="6" r="1.8" fill="#1c1c1c"/><circle cx="11" cy="6" r="1.8" fill="#1c1c1c"/><circle cx="16" cy="6" r="1.8" fill="#1c1c1c"/><circle cx="21" cy="6" r="1.8" fill="#1c1c1c"/><circle cx="26" cy="6" r="1.8" fill="#1c1c1c"/><circle cx="6" cy="11" r="1.8" fill="#1c1c1c"/><circle cx="11" cy="11" r="1.8" fill="#1c1c1c"/><circle cx="16" cy="11" r="1.8" fill="#1c1c1c"/><circle cx="21" cy="11" r="1.8" fill="#1c1c1c"/><circle cx="26" cy="11" r="1.8" fill="#1c1c1c"/><circle cx="6" cy="16" r="1.8" fill="#1c1c1c"/><circle cx="11" cy="16" r="1.8" fill="#1c1c1c"/><circle cx="16" cy="16" r="1.8" fill="#1c1c1c"/><circle cx="21" cy="16" r="1.8" fill="#1c1c1c"/><circle cx="26" cy="16" r="1.8" fill="#1c1c1c"/><circle cx="6" cy="21" r="1.8" fill="#1c1c1c"/><circle cx="11" cy="21" r="1.8" fill="#1c1c1c"/><circle cx="16" cy="21" r="1.8" fill="#1c1c1c"/><circle cx="21" cy="21" r="1.8" fill="#1c1c1c"/><circle cx="26" cy="21" r="1.8" fill="#1c1c1c"/><circle cx="6" cy="26" r="1.8" fill="#1c1c1c"/><circle cx="11" cy="26" r="1.8" fill="#1c1c1c"/><circle cx="16" cy="26" r="1.8" fill="#1c1c1c"/><circle cx="21" cy="26" r="1.8" fill="#1c1c1c"/><circle cx="26" cy="26" r="1.8" fill="#1c1c1c"/><circle cx="6" cy="6" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="26" cy="6" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="6" cy="11" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="11" cy="11" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="21" cy="11" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="26" cy="11" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="6" cy="16" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="16" cy="16" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="26" cy="16" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="6" cy="21" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="26" cy="21" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="6" cy="26" r="1.8" fill="#ffc800" filter="url(#led-glow)"/><circle cx="26" cy="26" r="1.8" fill="#ffc800" filter="url(#led-glow)"/></svg>'
+exitbutton = """<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>body{background:#08080f;color:#eeeef5;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;margin:0}a.xbtn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;background:linear-gradient(135deg,#e03c3c,#ff6060);color:#fff;font-weight:700;font-size:.95rem;text-decoration:none;box-shadow:0 2px 14px rgba(224,60,60,.35)}.lbl{color:#7070a0;font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px}</style></head><body><p class="lbl">App Running</p><a class="xbtn" href="/exit">&#x2715; Exit App</a>"""
 backbutton = """<a class="back-btn" href="../">&#8592; Back</a>"""
 bootloaderbutton = """<button class="btn btn-danger" onclick="if(confirm('Enter bootloader mode?'))fetch('/bootloader',{method:'POST'})">&#x26A1; Bootloader</button>"""
 #unlock = """<button class="center" onclick="window.location.href='/unlock'" style='background-color:yellow'> &#128275; </button>"""
@@ -152,7 +154,7 @@ def textbox(settings):
     adv_html = "".join(adv_items[k] for k in advanced_order if k in adv_items)
     if adv_html:
         settings_html += """<div style="margin-top:12px"><button type="button" class="btn btn-sm" onclick="var a=document.getElementById('adv_section');a.style.display=a.style.display==='none'?'block':'none'">&#9881; Advanced</button></div><div id="adv_section" style="display:none">""" + adv_html + """</div>"""
-    return settings_html + """<button class="btn btn-full" type="submit">Save Settings</button></form>"""
+    return settings_html + """<button class="btn btn-full btn-success" type="submit">Save Settings</button></form>"""
     
 def _draw_progress(current, total, filename, error=False, label="installing"):
     from load_screen import window, pset, font_mini
@@ -342,10 +344,10 @@ def list_available_apps(apps):
     sys_ver = 'v' + sys_l if sys_l else 'system'
     if sys_r and sys_l and sys_r != sys_l:
         sys_ver += ' &#x2192; v' + sys_r
-        sys_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="installsystem(event)">&#x21BB; Update</button>'
+        sys_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f0c800" onclick="installsystem(event)">&#x21BB; Update</button>'
     else:
         sys_btn = '<button class="btn btn-sm btn-warning" onclick="installsystem(event)">&#x21BB; Reinstall</button>'
-    applist = '<div class="download-item"><div><span class="download-name">&#x1F4E6; System</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">' + sys_ver + '</div></div>' + sys_btn + """\n    <script>function _busyWait(url,btn){
+    applist = '<div class="download-item"><div><span class="download-name">&#x1F4E6; System</span><div style="font-size:.7rem;color:#f0c800;margin-top:2px">' + sys_ver + '</div></div>' + sys_btn + """\n    <script>function _busyWait(url,btn){
     var old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></span>';
     var w=document.createElement('div');w.className='busy-warn';w.textContent='\u26A0 Writing to disk \u2014 do not turn off!';document.body.appendChild(w);
     fetch(url,{method:"POST"}).then(function(){w.remove();nav('/f/download')}).catch(function(){w.remove();btn.innerHTML=old;btn.disabled=false});}
@@ -360,14 +362,14 @@ def list_available_apps(apps):
             ver_info = 'v' + l_ver if l_ver else sz
             if r_ver and l_ver and r_ver != l_ver:
                 ver_info += ' &#x2192; v' + r_ver
-                upd_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f5a623" onclick="install'+dir+'(event)">&#x21BB; Update</button>'
+                upd_btn = '<button class="btn btn-sm" style="background:linear-gradient(135deg,#00c85d,#00e676);color:#000;border:2px solid #f0c800" onclick="install'+dir+'(event)">&#x21BB; Update</button>'
             else:
                 upd_btn = '<button class="btn btn-sm btn-warning" onclick="install'+dir+'(event)">&#x21BB; Reinstall</button>'
-            applist += f'<div class="download-item"><div><span class="download-name">&#x2713; {dir}</span><div style="font-size:.7rem;color:var(--muted);margin-top:2px">{ver_info}</div></div><div style="display:flex;gap:6px">' + upd_btn + """<button class="btn btn-sm" style="background:#ff4b4b;color:#fff;padding:7px 9px" onclick="if(confirm('Delete """+dir+"""?'))del"""+dir+"""(event)">&#x2715;</button>
+            applist += f'<div class="download-item"><div><span class="download-name">&#x2713; {dir}</span><div style="font-size:.7rem;color:#f0c800;margin-top:2px">{ver_info}</div></div><div style="display:flex;gap:6px">' + upd_btn + """<button class="btn btn-sm" style="background:#ff4b4b;color:#fff;padding:7px 9px" onclick="if(confirm('Delete """+dir+"""?'))del"""+dir+"""(event)">&#x2715;</button>
 <script>function install"""+dir+"""(e){_busyWait("/?install="""+dir+"""",e.currentTarget)}
 function del"""+dir+"""(e){_busyWait("/?delete="""+dir+"""",e.currentTarget)}</script></div></div>"""
         else:
-            ver_label = f'{dir} <span style="color:var(--accent2)">v{r_ver}</span>' if r_ver else dir
+            ver_label = f'{dir} <span style="color:#f0c800">v{r_ver}</span>' if r_ver else dir
             applist += f'<div class="download-item"><span class="download-name">{ver_label}</span>' + """<button class="btn btn-sm btn-success" onclick="install"""+dir+"""(event)">&#x2B07; Install</button>
 <script>function install"""+dir+"""(e){_busyWait("/?install="""+dir+"""",e.currentTarget)}</script></div>"""
     return applist
@@ -382,7 +384,7 @@ def css():
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;padding-bottom:40px}
 .navbar{position:sticky;top:0;z-index:100;background:rgba(8,8,15,.85);border-bottom:1px solid var(--border);padding:0 14px;display:flex;align-items:center;height:46px;gap:4px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.nav-brand{font-weight:800;font-size:.9rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-right:6px;text-decoration:none;letter-spacing:-.2px}
+.nav-brand{font-weight:800;font-size:.9rem;color:#fff;margin-right:6px;text-decoration:none;letter-spacing:-.2px}
 .nav-title{font-weight:600;font-size:.9rem;color:var(--text);flex:1;padding-left:4px}
 .nav-link{color:var(--muted);text-decoration:none;font-size:.76rem;padding:5px 9px;border-radius:7px;transition:color .15s,background .15s;font-weight:500}
 .nav-link:hover{color:var(--text);background:var(--surface2)}
@@ -399,7 +401,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .nav-led.led-off{color:#ff4040;border-color:rgba(255,64,64,.35);background:rgba(255,64,64,.06)}
 .page{max-width:480px;margin:0 auto;padding:16px 14px}
 .logo{text-align:center;padding:26px 0 18px}
-.logo h1{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
+.logo h1{font-size:1.8rem;font-weight:800;color:#fff;letter-spacing:-.5px}
 .logo p{color:var(--muted);font-size:.82rem;margin-top:6px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:10px;box-shadow:var(--shadow)}
 .section-title{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.4px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
@@ -413,8 +415,8 @@ input[type="text"]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 
 select option{background:var(--surface2)}
 .range-wrap{display:flex;align-items:center;gap:10px;margin-top:5px}
 .range-wrap input[type="range"]{flex:1;-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;background:var(--surface3);outline:none}
-.range-wrap input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;border:2px solid var(--bg);box-shadow:0 2px 8px rgba(124,111,255,.4)}
-.range-val{min-width:34px;text-align:center;font-size:.85rem;font-weight:700;color:var(--accent2);background:var(--surface2);padding:3px 7px;border-radius:7px}
+.range-wrap input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#c8a800,#f5e040);cursor:pointer;border:2px solid var(--bg);box-shadow:0 2px 8px rgba(232,150,14,.4)}
+.range-val{min-width:34px;text-align:center;font-size:.85rem;font-weight:700;color:#f0c800;background:var(--surface2);padding:3px 7px;border-radius:7px}
 .toggle-row{display:flex;align-items:center;gap:10px;margin:10px 0}
 .toggle-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent)}
 .toggle-row label{margin:0;font-size:.85rem;color:var(--text);text-transform:none;letter-spacing:0;font-weight:500}
@@ -433,27 +435,27 @@ select option{background:var(--surface2)}
 input[type="color"]{width:36px;height:36px;border:2px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;padding:2px;-webkit-appearance:none}
 input[type="color"]::-webkit-color-swatch-wrapper{padding:0;border-radius:5px}
 input[type="color"]::-webkit-color-swatch{border:none;border-radius:5px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:var(--r);font-size:.86rem;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s,box-shadow .15s;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));text-decoration:none;box-shadow:0 2px 12px rgba(124,111,255,.3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:var(--r);font-size:.86rem;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s,box-shadow .15s;color:#111;background:linear-gradient(135deg,#c8a800,#f5e040);text-decoration:none;box-shadow:0 2px 12px rgba(200,168,0,.35)}
 .btn:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,111,255,.4)}
 .btn:active{transform:translateY(0);opacity:1;box-shadow:none}
 .btn-sm{padding:6px 12px;font-size:.8rem}
 .btn-full{width:100%;padding:12px;font-size:.93rem;margin-top:10px}
-.btn-danger{background:linear-gradient(135deg,#e03c3c,#ff6060);box-shadow:0 2px 12px rgba(224,60,60,.3)}
+.btn-danger{background:linear-gradient(135deg,#e03c3c,#ff6060);color:#fff;box-shadow:0 2px 12px rgba(224,60,60,.3)}
 .btn-success{background:linear-gradient(135deg,#00b050,#00e676);color:#000;box-shadow:0 2px 12px rgba(0,176,80,.3)}
-.btn-warning{background:linear-gradient(135deg,#e8960e,#f8ca55);color:#111;box-shadow:0 2px 12px rgba(232,150,14,.3)}
+.btn-warning{background:linear-gradient(135deg,#c8a800,#f5e040);color:#111;box-shadow:0 2px 12px rgba(200,168,0,.35)}
 .btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--text);box-shadow:none}
 .btn-ghost:hover{border-color:var(--accent);background:var(--surface3)}
 .seg{display:flex;background:var(--surface2);border-radius:var(--r);padding:3px;gap:2px;border:1px solid var(--border)}
 .seg button{flex:1;padding:6px 10px;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;background:none;color:var(--muted);transition:all .15s}
 .seg button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 8px rgba(124,111,255,.3)}
-.action-row{display:flex;gap:8px;flex-wrap:wrap}
+.action-row{display:flex;gap:8px;flex-wrap:wrap}.action-row-fill{flex-wrap:nowrap}.action-row-fill .btn{flex:1;min-width:0;padding-left:4px;padding-right:4px;justify-content:center;text-align:center}
 .back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.83rem;padding:8px 13px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-top:14px;transition:color .15s,border-color .15s}
 .back-btn:hover{color:var(--text);border-color:var(--accent)}
 .error-msg{color:#ff7070;font-size:.82rem;margin-top:10px;text-align:center}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes reboot-blink{0%,100%{color:#ff6060;border-color:rgba(255,96,96,.7);background:rgba(255,96,96,.15)}50%{color:var(--muted);border-color:var(--border);background:transparent}}
 .nav-x.reboot-needed{animation:reboot-blink 1s ease-in-out infinite}
-.busy-warn{position:fixed;top:46px;left:0;right:0;background:linear-gradient(90deg,#e8960e,#f8ca55);color:#111;text-align:center;font-weight:700;font-size:.86rem;padding:10px;z-index:200;letter-spacing:.3px}
+.busy-warn{position:fixed;top:46px;left:0;right:0;background:linear-gradient(90deg,#c8a800,#f5e040);color:#111;text-align:center;font-weight:700;font-size:.86rem;padding:10px;z-index:200;letter-spacing:.3px}
 """
 
 def _rssi():
@@ -475,8 +477,7 @@ def navbar():
         with open("reboot_required"): _reboot_cls = " reboot-needed"
     except OSError: _reboot_cls = ""
     return f"""<nav class="navbar">
-<a class="nav-brand" href="/" onclick="nav('/f/apps');return false">MatrixBox</a>
-<a class="nav-link" href="/" onclick="nav('/f/apps');return false">Apps</a>
+<a class="nav-brand" href="/" onclick="nav('/f/apps');return false">Matrix<span style="color:#f0c800;font-weight:900">BOX</span></a>
 <a class="nav-link" href="/download" onclick="nav('/f/download');return false">Store</a>
 <a class="nav-link" href="/settings" onclick="nav('/f/settings');return false">Settings</a>
 <div class="nav-spacer"></div>
@@ -510,6 +511,7 @@ def header(title="Settings", app=False):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <title>{title}</title>
     <style>{css()}</style>
 </head>
@@ -525,6 +527,7 @@ def _shell(content, title="MatrixBox", frag="/f/apps"):
 <html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>{title}</title>
 <style>{css()}</style>
 </head>
@@ -615,14 +618,14 @@ def _apps_content():
         installed_apps = '<p style="color:var(--muted);text-align:center;padding:20px 0;font-size:.9rem">No apps installed yet</p>'
     preset_html = '<div class="card" style="margin-top:10px"><div class="section-title">Screen Size</div><div class="action-row">' + _preset_buttons() + '</div></div>' if _showed_wifi else ''
     return wifi_html + preset_html + """<div class="logo">
-    <h1>MatrixBox</h1>
+    <h1><span style="color:#fff">Matrix</span><span style="color:#f0c800;font-weight:900">BOX</span></h1>
     <p>Select an app to launch</p>
 </div>
 <div class="card">
     <div class="section-title">Installed Apps</div>
     """ + installed_apps + """
 </div>
-<button class="btn btn-full" onclick="nav('/f/download')">&#x2B07; Download Apps</button>
+<button class="btn btn-full btn-success" onclick="nav('/f/download')">&#x2B07; Download Apps</button>
 <button class="btn btn-full btn-ghost" onclick="nav('/f/settings')">&#9881; Settings</button>
 <div class="card" style="margin-top:10px;border:1px dashed var(--muted)">
     <div class="section-title" style="color:var(--muted)">Built-in Tools</div>
@@ -766,10 +769,10 @@ def _settings_content():
     rotate_btn = '<button class="btn btn-sm" onclick="fetch(\'/rotate\',{method:\'POST\'}).then(()=>{{var v=document.getElementById(\'v_rotation\');if(v){{var c=parseInt(v.textContent)||0;c=(c+90)%360;v.textContent=c;var s=document.getElementById(\'rotation\');if(s)s.value=c;}}}});">&#128260; 90&deg;</button>'
     preset_btns = _preset_buttons()
     return """<div class="logo"><h1>Settings</h1><p>Configure your device</p></div>
-<div class="card"><div class="section-title">Quick Actions</div><div class="action-row">""" + rotate_btn + preset_btns + """</div></div>
+<div class="card"><div class="section-title">Quick Actions</div><div class="action-row action-row-fill">""" + rotate_btn + preset_btns + """</div></div>
 <div class="card"><div class="section-title">Device Settings</div>""" + f"""{textbox(settings)}</div>
 
-<div class="card action-row">""" + bootloaderbutton + " " + unlock + """</div>"""
+<div class="card action-row">""" + unlock + """</div>"""
 
 @ampule.route("/settings")
 def _settings_route(request):
@@ -785,7 +788,7 @@ def _download_content():
     free = _fmt_size(_free_space())
     apps = list_available_apps(get_updates())
     return """<div class="logo"><h1>App Store</h1><p>Install or update apps</p></div>
-<div class="card" style="text-align:center;padding:12px"><span style="font-size:.8rem;color:var(--muted)">Available space: </span><span style="font-size:.9rem;font-weight:700;color:var(--accent2)">""" + free + """</span></div>
+<div class="card" style="text-align:center;padding:12px"><span style="font-size:.8rem;color:var(--muted)">Available space: </span><span style="font-size:.9rem;font-weight:700;color:#fff;text-shadow:0 0 8px rgba(255,255,255,.4)">""" + free + """</span></div>
 <div class="card"><div class="section-title">Available</div>""" + str(apps) + """</div>"""
 
 @ampule.route('/download')
@@ -821,6 +824,10 @@ def _f_rssi(request):
 import cmd
 import filemanager
 
+
+@ampule.route('/favicon.svg')
+def _favicon(request):
+    return (200, {'Content-Type': 'image/svg+xml', 'Cache-Control': 'max-age=86400'}, _FAVICON_SVG)
 
 @ampule.route("/settingsx")
 def showsettings(request):

@@ -65,7 +65,7 @@ display.root_group = rf_group
 
 palette[0] = (0)    # vit
 palette[1] = (50,50,00)    # vit
-palette[2] = (50,50,50)    # vit
+palette[2] = (100,100,100)    # bright white
 palette[3] = (0, 59, 122)      # morkbla
 palette[4] = (100,0,0)     # rod
 palette[5] = (20,20,20)    # grey
@@ -78,6 +78,7 @@ palette[12] = (0,0,100)    # orange
 
 currentfont = font_mini 
 currentcolor = "white"
+_overlays = []  # list of (string, lin, _c, font, _is_mini, fh, offs, block, shadow_color)
 
 def display_width():
     return display.width
@@ -92,7 +93,7 @@ def strlen(_string, font_size=font_mini):
 def _current_window():
     return window
 
-_color_map = {"black":0,"yellow":1,"brightwhite":2,"blue":3,"red":4,"white":5,"light_blue":6,"green":7,"grey":8,"black2":9,"pink":10,"orange":11}
+_color_map = {"black":0,"yellow":1,"brightwhite":2,"bright_white":2,"bright-white":2,"blue":3,"red":4,"white":5,"light_blue":6,"green":7,"grey":8,"black2":9,"pink":10,"orange":11}
 
 def _pprint(string, line=False, color="white", font=font_mini, _refresh=False, clear=True, top_offset=0, window=None, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0):
     """Original pprint with debug output — use for diagnostics."""
@@ -146,7 +147,7 @@ def _pprint(string, line=False, color="white", font=font_mini, _refresh=False, c
     except Exception as e:
         print(e)
 
-def pprint(string, line=False, color="white", font=font_mini, _refresh=True, clear=True, top_offset=0, window=None, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0):
+def pprint(string, line=False, color="white", font=font_mini, _refresh=True, clear=True, top_offset=0, window=None, _clearscreen=True, hr="(", slow=False, block=False, shadow_color=0, overlay=False):
     if window is None: window = _current_window()
     _is_mini = (font == font_mini)
     global line_window
@@ -164,6 +165,15 @@ def pprint(string, line=False, color="white", font=font_mini, _refresh=True, cle
             if remaining > 0 and cw > 0:
                 string = string + hr * (remaining // cw)
 
+    if overlay:
+        # Pure overlay: only write lit pixels, touch nothing else
+        lin = line if ("int" in str(type(line)) and line) else 0
+        if "int" in str(type(line)) and line == -1: lin = max_lines - 1
+        _overlays.append((string, lin, _c, font, _is_mini, fh, offs, block, shadow_color))
+        _draw_line(window, string, lin, _c, font, _is_mini, fh, offs, False, block, shadow_color)
+        if slow or _refresh: refresh()
+        return
+
     if "int" in str(type(line)):
         lin = line if line else 0
         if line == -1: lin = max_lines - 1
@@ -180,6 +190,14 @@ def pprint(string, line=False, color="white", font=font_mini, _refresh=True, cle
             _draw_line(window, stringline, lin, _c, font, _is_mini, fh, offs, clear, block, shadow_color)
             if _clearscreen:
                 _clear_row_remainder(window, strlen(stringline, font), lin, fh, offs)
+
+    cleared_lines = set()
+    for ov in _overlays:
+        if ov[1] not in cleared_lines:
+            _clear_row_remainder(window, 0, ov[1], ov[5], ov[6])
+            cleared_lines.add(ov[1])
+    for ov in _overlays:
+        _draw_line(window, ov[0], ov[1], ov[2], ov[3], ov[4], ov[5], ov[6], False, ov[7], ov[8])
 
     if slow or _refresh: refresh()
 
@@ -285,11 +303,12 @@ def scroll_line(new_text, line_num=-1, color="yellow"):
 def refresh(): display.refresh()
 
 def clearscreen(on_or_off=False, lines=False):
-    global line_window
+    global line_window, _overlays
     display.root_group.hidden = on_or_off
     if lines: 
         window.fill(0)
         line_window = []
+        _overlays = []
     refresh()
 
 def pset(x,y,c):
