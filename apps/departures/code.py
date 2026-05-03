@@ -13,7 +13,7 @@ def check_button():
     if b == 1:
         if int(varinit.settings.get("button_mode", 0)):
             varinit.deviations_timer = time.monotonic()
-            if varinit.display.width > 64:
+            if varinit.display.width > 64 and varinit.display.height <= 32:
                 varinit.settings["listmode"] = 1 - int(varinit.settings["listmode"])
             functions.switch(_screen=True)
         else:
@@ -24,7 +24,7 @@ delay = version_delay()
 #microcontroller.cpu.frequency = 240000000
 from functions import refresh
 disp_init()
-if varinit.display.width <= 64:
+if varinit.display.width <= 64 or varinit.display.height > 32:
     varinit.settings["listmode"] = 1
 scroll_mode()
 while not varinit.exit:

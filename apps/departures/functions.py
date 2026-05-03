@@ -59,7 +59,7 @@ def check_button():
                 else:
                     if int(varinit.settings.get("button_mode", 0)):
                         varinit.deviations_timer = time.monotonic()
-                        if varinit.display.width > 64:
+                        if varinit.display.width > 64 and varinit.display.height <= 32:
                             varinit.settings["listmode"] = 1 - int(varinit.settings["listmode"])
                         switch(_screen=True)
                     else:

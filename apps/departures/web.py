@@ -389,7 +389,7 @@ def html():
 
     # list mode
     listmode_html = ""
-    if if_long > 64:
+    if if_long > 64 and varinit.display.height <= 32:
         listmode_html = _chk("abc", s["listmode"], "/?listmode=switch", T["list"])
 
     # clocktime
@@ -410,7 +410,7 @@ def html():
 
     # button mode
     button_mode_html = ""
-    if if_long > 64:
+    if if_long > 64 and varinit.display.height <= 32:
         button_mode_html = _chk("button_mode", s.get("button_mode", 0), "/?button_mode=switch", T["button_mode"])
 
     # show station

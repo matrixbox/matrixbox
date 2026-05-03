@@ -448,7 +448,7 @@ def huvudsidan(request):
         if int(varinit.settings["listmode"]): functions.switch(_screen=False)
         return (200, {}, "")
     elif "listmode" in request.params: 
-        if varinit.display.width > 64:
+        if varinit.display.width > 64 and varinit.display.height <= 32:
             varinit.settings["listmode"] = 1 - int(varinit.settings["listmode"])
         functions.switch(_screen = True)
         return (200, {}, "")
