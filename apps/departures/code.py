@@ -38,7 +38,7 @@ while not varinit.exit:
         while wifi.radio.connected == False and not varinit.exit:
             if time.monotonic() > varinit.reset_timer + varinit.network_delay:
                 varinit.reset_timer = time.monotonic()                  
-                wifiattempt(errmsg=False, _timeout=1, skipversion=True)
+                wifiattempt(errmsg=False, _timeout=3, skipversion=True)
                 update_screen()
             ampule.listen(socket)
     if varinit.settings["listmode"] and not varinit.tg3.y == 0: functions.switch(force=False, _cls=bottom)
