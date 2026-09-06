@@ -216,9 +216,11 @@ def _draw_progress(current, total, filename, error=False, label="installing"):
     from load_screen import window, pset, font_mini
     w = display.width
     h = display.height
-    window.fill(0)
+    #window.fill(0)
+
     # Draw filename on line 1 first (line=1 does NOT auto-refresh)
     name = filename.split("/")[-1]
+    pprint("("*128, 1, _clearscreen=False)
     pprint(name, 1, _clearscreen=False, color="yellow" if not error else "red")
     # Draw progress bar (no refresh yet)
     bar_h = 4
@@ -287,6 +289,7 @@ def install_app(app):
         clearscreen(False)
         # Pass 1: download all files, verify each returns 200
         downloads = []
+        window.fill(0)
         for x, file in enumerate(_files):
             if "/" in file:
                 parts = file.split("/")[:-1]
