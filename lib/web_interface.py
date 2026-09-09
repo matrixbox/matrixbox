@@ -831,14 +831,22 @@ def webinterface_post(request):
                 total = len(files)
                 clearscreen(False)
                 window.fill(0)
-                for x, file in enumerate(files):
-                    _draw_progress(x, total, file, label="deleting")
+                # Remove files with no drawing in between: os.remove() briefly
+                # halts execution for the flash write, and if that lands next
+                # to a display refresh it visibly glitches the panel. Record
+                # results here and replay real progress after, once all the
+                # flash writes are done.
+                failed = []
+                for file in files:
                     try:
                         os.remove(file)
+                        failed.append(False)
                     except Exception as e:
                         error_color = "red"
+                        failed.append(True)
                         print(e)
-                _draw_progress(total, total, files[-1] if files else "", error_color == "red", label="deleting")
+                for x, file in enumerate(files):
+                    _draw_progress(x + 1, total, file, failed[x], label="deleting")
             finally:
                 os.chdir("/")
             try: os.rmdir(dir)
