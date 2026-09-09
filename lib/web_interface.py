@@ -853,7 +853,6 @@ def webinterface_post(request):
             except: pass
             window.fill(0)
             pprint("Done." if error_color != "red" else "Error!", 1, color=error_color, _clearscreen=True)
-            __main__.show_logo()
         if "install" in request.params:
             print(request.params["install"])
             install_app(request.params["install"])
