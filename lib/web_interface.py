@@ -827,7 +827,17 @@ def webinterface_post(request):
             from load_screen import window
             try:
                 os.chdir(dir)
-                files = os.listdir()
+                files = []
+                subdirs = []
+                def _collect(path):
+                    for name in os.listdir(path if path else "."):
+                        fp = name if not path else path + "/" + name
+                        if os.stat(fp)[0] & 0x4000:
+                            subdirs.append(fp)
+                            _collect(fp)
+                        else:
+                            files.append(fp)
+                _collect("")
                 total = len(files)
                 clearscreen(False)
                 window.fill(0)
@@ -847,6 +857,10 @@ def webinterface_post(request):
                         print(e)
                 for x, file in enumerate(files):
                     _draw_progress(x + 1, total, file, failed[x], label="deleting")
+                # Subdirectories are now empty; remove deepest first.
+                for subdir in reversed(subdirs):
+                    try: os.rmdir(subdir)
+                    except: pass
             finally:
                 os.chdir("/")
             try: os.rmdir(dir)
