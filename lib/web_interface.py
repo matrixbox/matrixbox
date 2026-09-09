@@ -216,12 +216,10 @@ def _draw_progress(current, total, filename, error=False, label="installing"):
     from load_screen import window, pset, font_mini
     w = display.width
     h = display.height
-    #window.fill(0)
 
     # Draw filename on line 1 first (line=1 does NOT auto-refresh)
     name = filename.split("/")[-1]
-    pprint("("*128, 1, _clearscreen=False)
-    pprint(name, 1, _clearscreen=False, color="yellow" if not error else "red")
+    pprint(name, 1, color="yellow" if not error else "red")
     # Draw progress bar (no refresh yet)
     bar_h = 4
     bar_y = h - bar_h - 9
