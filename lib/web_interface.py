@@ -216,12 +216,10 @@ def _draw_progress(current, total, filename, error=False, label="installing"):
     from load_screen import window, pset, font_mini
     w = display.width
     h = display.height
-    #window.fill(0)
 
     # Draw filename on line 1 first (line=1 does NOT auto-refresh)
     name = filename.split("/")[-1]
-    pprint("("*128, 1, _clearscreen=False)
-    pprint(name, 1, _clearscreen=False, color="yellow" if not error else "red")
+    pprint(name, 1, color="yellow" if not error else "red", _refresh=False)
     # Draw progress bar (no refresh yet)
     bar_h = 4
     bar_y = h - bar_h - 9
@@ -825,28 +823,36 @@ def webinterface_post(request):
             #wifi.radio.connect(settings["ssid"], settings["password"])
         if "delete" in request.params:
             dir = request.params["delete"]
-            error_color = "green"
+            error_color = "white"
+            from load_screen import window
             try:
                 os.chdir(dir)
                 files = os.listdir()
                 total = len(files)
                 clearscreen(False)
-                for x, file in enumerate(files):
-                    _draw_progress(x, total, file, label="deleting")
-                clearscreen(True)
-                for x, file in enumerate(files):
+                window.fill(0)
+                # Remove files with no drawing in between: os.remove() briefly
+                # halts execution for the flash write, and if that lands next
+                # to a display refresh it visibly glitches the panel. Record
+                # results here and replay real progress after, once all the
+                # flash writes are done.
+                failed = []
+                for file in files:
                     try:
                         os.remove(file)
+                        failed.append(False)
                     except Exception as e:
                         error_color = "red"
+                        failed.append(True)
                         print(e)
-                clearscreen(False)
-                _draw_progress(total, total, files[-1] if files else "", error_color == "red", label="deleting")
+                for x, file in enumerate(files):
+                    _draw_progress(x + 1, total, file, failed[x], label="deleting")
             finally:
                 os.chdir("/")
             try: os.rmdir(dir)
             except: pass
-            pprint("done!", color=error_color, line=-1, _refresh=True)
+            window.fill(0)
+            pprint("Done." if error_color != "red" else "Error!", 1, color=error_color, _clearscreen=True)
         if "install" in request.params:
             print(request.params["install"])
             install_app(request.params["install"])
