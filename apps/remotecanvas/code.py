@@ -6,6 +6,7 @@ import ampule
 import bitmaptools
 import wifi
 from check_button import check_if_button_pressed
+from colors import hex_to_rgb
 from load_screen import (
     clearscreen,
     display,
@@ -34,17 +35,6 @@ FONTS = {"mini": font_mini, "small": font_small, "large": font_large}
 COLOR_CACHE_SIZE = 11
 _color_slots = {}  # hex -> slot
 _color_lru = []  # hex values, oldest first
-
-
-def hex_to_rgb(value: str) -> tuple:
-    value = value.lstrip("#").lower()
-    if len(value) != 6:
-        return (255, 255, 255)
-
-    try:
-        return (int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16))
-    except ValueError:
-        return (255, 255, 255)
 
 
 def color_slot(value: str) -> int:
