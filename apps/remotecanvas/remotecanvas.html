@@ -1,0 +1,99 @@
+<style>
+.page{max-width:560px}
+pre{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:.78rem;line-height:1.5;color:var(--text)}
+code{font-family:'Cascadia Mono','Fira Code','Consolas',monospace}
+.card h3{font-size:.85rem;margin-bottom:8px}
+.card p{font-size:.82rem;color:var(--muted);margin-bottom:8px}
+.route{display:inline-flex;align-items:center;gap:8px;margin-bottom:8px;font-family:'Cascadia Mono','Fira Code','Consolas',monospace}
+.verb{padding:2px 7px;border-radius:5px;font-weight:700;font-size:.68rem;letter-spacing:.4px}
+.verb-get{background:rgba(0,180,255,.15);color:#4fc3f7}
+.verb-post{background:rgba(0,200,120,.15);color:#3ddc84}
+.path{font-size:.82rem;color:var(--text)}
+</style>
+
+<h2>Remote Canvas</h2>
+<p style="color:var(--muted);font-size:.82rem;margin:4px 0 14px">
+Any device on the network can POST JSON to this app to draw on the
+__WIDTH__x__HEIGHT__ matrix. Base URL: <code>http://__IP__/</code>
+</p>
+
+<div class="card">
+<h3>Set background</h3>
+<p>Fills the whole display with one color.</p>
+<div class="route"><span class="verb verb-post">POST</span><span class="path">/background</span></div>
+<pre>{
+  "color": "#003366"
+}</pre>
+</div>
+
+<div class="card">
+<h3>Draw pixel</h3>
+<div class="route"><span class="verb verb-post">POST</span><span class="path">/pixel</span></div>
+<pre>{
+  "x": 5,
+  "y": 5,
+  "color": "#ffffff"
+}</pre>
+</div>
+
+<div class="card">
+<h3>Draw line</h3>
+<div class="route"><span class="verb verb-post">POST</span><span class="path">/line</span></div>
+<pre>{
+  "x0": 2,
+  "y0": 2,
+  "x1": 20,
+  "y1": 10,
+  "color": "#ffffff"
+}</pre>
+</div>
+
+<div class="card">
+<h3>Draw rect</h3>
+<p>Coordinates are inclusive pixel positions. Include either or both colors.</p>
+<div class="route"><span class="verb verb-post">POST</span><span class="path">/rect</span></div>
+<pre>{
+  "x0": 2,
+  "y0": 2,
+  "x1": 20,
+  "y1": 10,
+  "border_color": "#ffffff",
+  "fill_color": "#ff0000"
+}</pre>
+</div>
+
+<div class="card">
+<h3>Draw circle</h3>
+<p>x/y is the center. Include either or both colors.</p>
+<div class="route"><span class="verb verb-post">POST</span><span class="path">/circle</span></div>
+<pre>{
+  "x": 16,
+  "y": 16,
+  "radius": 8,
+  "border_color": "#ffffff",
+  "fill_color": "#ff0000"
+}</pre>
+</div>
+
+<div class="card">
+<h3>Draw text</h3>
+<p>font_size is one of "mini", "small", "large". Give x/y for an exact
+position, or align/valign with an optional padding (ignored on "center").</p>
+<div class="route"><span class="verb verb-post">POST</span><span class="path">/text</span></div>
+<pre>{
+  "text": "Hello",
+  "font_size": "small",
+  "color": "#ffffff",
+  "align": "center",
+  "valign": "center"
+}</pre>
+</div>
+
+<div class="card">
+<h3>Display info</h3>
+<div class="route"><span class="verb verb-get">GET</span><span class="path">/info</span></div>
+<pre>{
+  "width": __WIDTH__,
+  "height": __HEIGHT__
+}</pre>
+</div>
